@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#374151"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="700" fill="#fafafa" rx="8"/>
+
+  <!-- Title -->
+  <text x="600" y="35" text-anchor="middle" font-size="18" font-weight="bold" fill="#1f2937">Ishikawa-diagram (6M) - Oorzaakanalyse kernprobleem</text>
+
+  <!-- Main spine -->
+  <line x1="80" y1="350" x2="1030" y2="350" stroke="#374151" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Effect box -->
+  <rect x="1030" y="285" width="160" height="130" rx="6" fill="#dc2626" opacity="0.9"/>
+  <text x="1110" y="315" text-anchor="middle" font-size="11" font-weight="bold" fill="white">De leerervaring in</text>
+  <text x="1110" y="332" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Canvas is module-</text>
+  <text x="1110" y="349" text-anchor="middle" font-size="11" font-weight="bold" fill="white">gericht en ondersteunt</text>
+  <text x="1110" y="366" text-anchor="middle" font-size="11" font-weight="bold" fill="white">vraaggestuurd</text>
+  <text x="1110" y="383" text-anchor="middle" font-size="11" font-weight="bold" fill="white">onderwijs niet</text>
+
+  <!-- Category 1: Mens (top-left) -->
+  <line x1="230" y1="100" x2="330" y2="350" stroke="#2563eb" stroke-width="2"/>
+  <rect x="150" y="60" width="120" height="32" rx="4" fill="#2563eb"/>
+  <text x="210" y="81" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Mens</text>
+  <!-- Causes -->
+  <line x1="150" y1="130" x2="255" y2="175" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="145" y="128" text-anchor="end" font-size="11" fill="#374151">Studenten vragen docent</text>
+  <text x="145" y="142" text-anchor="end" font-size="11" fill="#374151">i.p.v. systeem te gebruiken</text>
+  <line x1="170" y1="180" x2="270" y2="215" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="165" y="178" text-anchor="end" font-size="11" fill="#374151">Workshops niet bezocht</text>
+  <text x="165" y="192" text-anchor="end" font-size="11" fill="#374151">door wie het nodig heeft</text>
+  <line x1="140" y1="225" x2="285" y2="255" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="135" y="223" text-anchor="end" font-size="11" fill="#374151">Activiteit na eerste</text>
+  <text x="135" y="237" text-anchor="end" font-size="11" fill="#374151">weken neemt af</text>
+  <line x1="190" y1="270" x2="300" y2="295" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="185" y="268" text-anchor="end" font-size="11" fill="#374151">Coaches houden overzicht</text>
+  <text x="185" y="282" text-anchor="end" font-size="11" fill="#374151">handmatig bij</text>
+
+  <!-- Category 2: Methode (top-middle) -->
+  <line x1="500" y1="100" x2="560" y2="350" stroke="#059669" stroke-width="2"/>
+  <rect x="440" y="60" width="120" height="32" rx="4" fill="#059669"/>
+  <text x="500" y="81" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Methode</text>
+  <!-- Causes -->
+  <line x1="420" y1="130" x2="518" y2="185" stroke="#059669" stroke-width="1.2"/>
+  <text x="415" y="128" text-anchor="end" font-size="11" fill="#374151">Onderwijs is vraaggestuurd,</text>
+  <text x="415" y="142" text-anchor="end" font-size="11" fill="#374151">LMS is module-gericht</text>
+  <line x1="440" y1="185" x2="528" y2="225" stroke="#059669" stroke-width="1.2"/>
+  <text x="435" y="183" text-anchor="end" font-size="11" fill="#374151">Studenten werken niet</text>
+  <text x="435" y="197" text-anchor="end" font-size="11" fill="#374151">lineair door modules</text>
+  <line x1="430" y1="235" x2="538" y2="270" stroke="#059669" stroke-width="1.2"/>
+  <text x="425" y="233" text-anchor="end" font-size="11" fill="#374151">Challenges hebben</text>
+  <text x="425" y="247" text-anchor="end" font-size="11" fill="#374151">willekeurige lengte</text>
+  <line x1="460" y1="280" x2="548" y2="305" stroke="#059669" stroke-width="1.2"/>
+  <text x="455" y="278" text-anchor="end" font-size="11" fill="#374151">Geen plek om week rondom</text>
+  <text x="455" y="292" text-anchor="end" font-size="11" fill="#374151">activiteiten te plannen</text>
+
+  <!-- Category 3: Meting (top-right) -->
+  <line x1="770" y1="100" x2="790" y2="350" stroke="#d97706" stroke-width="2"/>
+  <rect x="710" y="60" width="120" height="32" rx="4" fill="#d97706"/>
+  <text x="770" y="81" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Meting</text>
+  <!-- Causes -->
+  <line x1="700" y1="130" x2="778" y2="200" stroke="#d97706" stroke-width="1.2"/>
+  <text x="695" y="128" text-anchor="end" font-size="11" fill="#374151">Competentieframeworks</text>
+  <text x="695" y="142" text-anchor="end" font-size="11" fill="#374151">verschillen per opleiding</text>
+  <line x1="710" y1="195" x2="782" y2="245" stroke="#d97706" stroke-width="1.2"/>
+  <text x="705" y="193" text-anchor="end" font-size="11" fill="#374151">Studenten weten niet hoe</text>
+  <text x="705" y="207" text-anchor="end" font-size="11" fill="#374151">werk als bewijs te gebruiken</text>
+  <line x1="720" y1="250" x2="786" y2="290" stroke="#d97706" stroke-width="1.2"/>
+  <text x="715" y="248" text-anchor="end" font-size="11" fill="#374151">Voortgang is niet zichtbaar</text>
+  <text x="715" y="262" text-anchor="end" font-size="11" fill="#374151">voor student of coach</text>
+
+  <!-- Category 4: Machine (bottom-left) -->
+  <line x1="230" y1="600" x2="360" y2="350" stroke="#7c3aed" stroke-width="2"/>
+  <rect x="150" y="608" width="120" height="32" rx="4" fill="#7c3aed"/>
+  <text x="210" y="629" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Machine</text>
+  <!-- Causes -->
+  <line x1="150" y1="570" x2="270" y2="510" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="145" y="573" text-anchor="end" font-size="11" fill="#374151">Canvas gebouwd voor</text>
+  <text x="145" y="587" text-anchor="end" font-size="11" fill="#374151">klassiek onderwijs</text>
+  <line x1="170" y1="515" x2="295" y2="465" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="165" y="518" text-anchor="end" font-size="11" fill="#374151">Zoekfunctie hapert</text>
+  <line x1="190" y1="465" x2="325" y2="425" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="185" y="468" text-anchor="end" font-size="11" fill="#374151">Tools versnipperd zonder</text>
+  <text x="185" y="482" text-anchor="end" font-size="11" fill="#374151">onderlinge samenhang</text>
+  <line x1="210" y1="420" x2="340" y2="390" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="205" y="423" text-anchor="end" font-size="11" fill="#374151">AI-tool competentiemapping</text>
+  <text x="205" y="437" text-anchor="end" font-size="11" fill="#374151">werkt onvoldoende</text>
+
+  <!-- Category 5: Materiaal (bottom-middle) -->
+  <line x1="500" y1="600" x2="590" y2="350" stroke="#be185d" stroke-width="2"/>
+  <rect x="440" y="608" width="120" height="32" rx="4" fill="#be185d"/>
+  <text x="500" y="629" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Materiaal</text>
+  <!-- Causes -->
+  <line x1="420" y1="570" x2="555" y2="500" stroke="#be185d" stroke-width="1.2"/>
+  <text x="415" y="573" text-anchor="end" font-size="11" fill="#374151">Content is overwegend</text>
+  <text x="415" y="587" text-anchor="end" font-size="11" fill="#374151">tekst-gebaseerd</text>
+  <line x1="440" y1="515" x2="565" y2="455" stroke="#be185d" stroke-width="1.2"/>
+  <text x="435" y="518" text-anchor="end" font-size="11" fill="#374151">Geen alternatieve</text>
+  <text x="435" y="532" text-anchor="end" font-size="11" fill="#374151">modaliteiten (audio, video)</text>
+  <line x1="460" y1="460" x2="575" y2="415" stroke="#be185d" stroke-width="1.2"/>
+  <text x="455" y="463" text-anchor="end" font-size="11" fill="#374151">Ervaring is voor iedereen</text>
+  <text x="455" y="477" text-anchor="end" font-size="11" fill="#374151">hetzelfde, geen personalisatie</text>
+
+  <!-- Category 6: Omgeving/Milieu (bottom-right) -->
+  <line x1="770" y1="600" x2="810" y2="350" stroke="#92400e" stroke-width="2"/>
+  <rect x="690" y="608" width="160" height="32" rx="4" fill="#92400e"/>
+  <text x="770" y="629" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Omgeving / Milieu</text>
+  <!-- Causes -->
+  <line x1="700" y1="570" x2="800" y2="505" stroke="#92400e" stroke-width="1.2"/>
+  <text x="695" y="573" text-anchor="end" font-size="11" fill="#374151">LMS-markt richt zich</text>
+  <text x="695" y="587" text-anchor="end" font-size="11" fill="#374151">op klassiek onderwijs</text>
+  <line x1="720" y1="515" x2="805" y2="455" stroke="#92400e" stroke-width="1.2"/>
+  <text x="715" y="518" text-anchor="end" font-size="11" fill="#374151">Digital Transformer combineert</text>
+  <text x="715" y="532" text-anchor="end" font-size="11" fill="#374151">ICT met andere domeinen</text>
+  <line x1="740" y1="460" x2="808" y2="415" stroke="#92400e" stroke-width="1.2"/>
+  <text x="735" y="463" text-anchor="end" font-size="11" fill="#374151">Verschil dag/avond in</text>
+  <text x="735" y="477" text-anchor="end" font-size="11" fill="#374151">contactintensiteit en aanpak</text>
+</svg>
