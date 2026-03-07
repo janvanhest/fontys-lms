@@ -13,7 +13,7 @@
 **1. Welke opleiding volg je?**
 
 - HBO-ICT Open Learning (avond)
-- Digital Transformer (dag)
+- Dagopleiding
 - Anders, namelijk: \_\_\_
 
 **2. In welk semester zit je?**
