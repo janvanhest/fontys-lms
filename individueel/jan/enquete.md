@@ -25,14 +25,16 @@
 
 ### Canvas-gebruik
 
-**3. Hoe vaak gebruik je Canvas per week?**
+**3. Waar gebruik je Canvas het meest voor?**
 
-- Dagelijks
-- Een paar keer per week
-- Ongeveer een keer per week
-- Minder dan een keer per week
+- Opdrachten inleveren
+- Cursusmateriaal bekijken
+- Rooster/planning checken
+- Communicatie met docenten
+- Cijfers/voortgang bekijken
+- Anders, namelijk: \_\_\_
 
-**4. Waarvoor gebruik je Canvas vooral? (meerdere antwoorden mogelijk)**
+**4. Waarvoor gebruik je Canvas verder nog? (meerdere antwoorden mogelijk)**
 
 - Opdrachten inleveren
 - Cursusmateriaal bekijken
@@ -49,7 +51,17 @@
 - Redelijk moeilijk
 - Heel moeilijk
 
-**6. Hoe vaak kom je er niet uit en vraag je het aan een docent of medestudent?**
+**6. Met welk type informatie in Canvas heb je de meeste moeite om het te vinden? (meerdere antwoorden mogelijk)**
+
+- Opdrachten
+- Cursusmateriaal
+- Competenties / beoordelingscriteria
+- Rooster/planning
+- Cijfers/voortgang
+- Communicatie (berichten, aankondigingen)
+- Anders, namelijk: \_\_\_
+
+**7. Hoe vaak kom je er niet uit en vraag je het aan een docent of medestudent?**
 
 - Nooit
 - Zelden
@@ -59,7 +71,7 @@
 
 ### Tools en versnippering
 
-**7. Welke tools gebruik je naast Canvas? (meerdere antwoorden mogelijk)**
+**8. Welke tools gebruik je naast Canvas? (meerdere antwoorden mogelijk)**
 
 - FeedPulse
 - Portfolio (Portflow)
@@ -69,7 +81,7 @@
 - Geen van bovenstaande
 - Anders, namelijk: \_\_\_
 
-**8. Hoe ervaar je het werken met meerdere losse tools naast Canvas?**
+**9. Hoe ervaar je het werken met meerdere losse tools naast Canvas?**
 
 - Geen probleem, ik vind mijn weg
 - Soms verwarrend, maar het lukt
@@ -78,14 +90,22 @@
 
 ### Leerervaring en content
 
-**9. Canvas is vooral tekst-gebaseerd. Hoe sluit dat aan bij hoe jij het liefst leert?**
+**10. Hoe vaak lees je de teksten in de cursussen op Canvas?**
+
+- Altijd of bijna altijd
+- Meestal
+- Soms
+- Zelden
+- Nooit of bijna nooit
+
+**11. Canvas is vooral tekst-gebaseerd. Hoe sluit dat aan bij hoe jij het liefst leert?**
 
 - Prima, ik leer goed via tekst
 - Ik lees het wel maar het beklijft niet altijd
 - Ik heb liever andere vormen
 - Ik lees het eerlijk gezegd zelden
 
-**10. Op welke manier zou je cursusinhoud het liefst aangeboden krijgen? (meerdere antwoorden mogelijk)**
+**12. Op welke manier zou je cursusinhoud het liefst aangeboden krijgen? (meerdere antwoorden mogelijk)**
 
 - Tekst (zoals nu)
 - Korte video's
@@ -97,14 +117,17 @@
 
 ### Activiteiten en planning
 
-**11. Hoe plan je je studieactiviteiten voor de week?**
+**13. Waar houd je bij wat je voor je studie moet doen? (meerdere antwoorden mogelijk)**
 
 - In Canvas
-- In een eigen tool (agenda, Notion, Excel, etc.)
-- In mijn hoofd
-- Ik plan niet echt vooruit
+- Eigen notities (papier of digitaal)
+- Eigen agenda (papier of digitaal)
+- Andere app (Notion, Todoist, Excel, etc.)
+- Alleen in mijn hoofd
+- Ik houd het niet echt bij
+- Anders, namelijk: \_\_\_
 
-**12. Zou je het nuttig vinden als je in Canvas je weekactiviteiten centraal kon zetten in plaats van de modulelijst?**
+**14. Zou je het nuttig vinden als je in Canvas je weekactiviteiten centraal kon zetten in plaats van de modulelijst?**
 
 - Ja, dat zou helpen
 - Misschien, hangt van de uitwerking af
@@ -113,14 +136,14 @@
 
 ### Competenties
 
-**13. Weet je hoe je je werkzaamheden kunt koppelen aan de competenties waar je op beoordeeld wordt?**
+**15. Weet je hoe je je werkzaamheden kunt koppelen aan de competenties waar je op beoordeeld wordt?**
 
 - Ja, dat is me duidelijk
 - Een beetje, maar ik moet er moeite voor doen
 - Niet echt, ik vind dat lastig
 - Nee, geen idee
 
-**14. Zou je het handig vinden als een systeem je daarbij helpt (bijv. suggesties doet op basis van wat je hebt gedaan)?**
+**16. Zou je het handig vinden als een systeem je daarbij helpt (bijv. suggesties doet op basis van wat je hebt gedaan)?**
 
 - Ja, heel handig
 - Misschien nuttig
@@ -129,7 +152,7 @@
 
 ### Open
 
-**15. Als je een ding zou mogen veranderen aan hoe Canvas nu werkt, wat zou dat zijn?** (open vraag)
+**17. Als je een ding zou mogen veranderen aan hoe Canvas nu werkt, wat zou dat zijn?** (open vraag)
 
 ---
 
