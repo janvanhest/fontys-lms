@@ -1,6 +1,6 @@
 # Projectplan - Studentgericht leerplatform voor vraaggestuurd onderwijs
 
-**Projectgroep:** Jan van Hest, Tamara Lemmens, Burak Ergin, Wares Helmand, Karin van Gompel
+**Projectgroep:** Jan van Hest, Tamara Lemmens, Burak Ergin, Wares Helmand, Karin van Gompel, Tijn Knapen. 
 **Stakeholder:** Eric Slaats (Digital Transformer, Fontys)
 **Coaches:** Lennart, Robin, Coen
 **Periode:** Februari - Juli 2026 (16-18 weken)
