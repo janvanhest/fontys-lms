@@ -12,12 +12,12 @@ Canvas blijft de basis - een nieuw LMS bouwen is niet de bedoeling. Ik onderzoek
 
 **Competenties:**
 
-|                    |        |                                                                |
-| ------------------ | ------ | -------------------------------------------------------------- |
-| Architectuurlaag   | Niveau | Activiteiten                                                   |
-| Software (primair) | 3      | Analyseren, Adviseren, Ontwerpen, Realiseren, Manage & Control |
-| Infrastructuur     | 2      | Analyseren, Adviseren, Ontwerpen, Realiseren, Manage & Control |
-| User Interaction   | 2      | Analyseren, Adviseren, Ontwerpen, Realiseren, Manage & Control |
+|   |   |   |
+|---|---|---|
+|Architectuurlaag|Niveau|Activiteiten|
+|Software (primair)|3|Analyseren, Adviseren, Ontwerpen, Realiseren, Manage & Control|
+|Infrastructuur|2|Analyseren, Adviseren, Ontwerpen, Realiseren, Manage & Control|
+|User Interaction|2|Analyseren, Adviseren, Ontwerpen, Realiseren, Manage & Control|
 
 De verhouding tussen Infrastructuur en User Interaction hangt af van wat uit de analyse naar voren komt.
 
@@ -31,65 +31,89 @@ De verhouding tussen Infrastructuur en User Interaction hangt af van wat uit de 
 
 ## 3. Hoe ga ik dat doen?
 
-De HBO-i activiteiten zijn leidend maar niet strikt lineair - ze kunnen ook cyclisch doorlopen worden.
+> "De activiteiten per sprint liggen niet vast - de volgorde kan veranderen op basis van nieuwe inzichten. Waar mogelijk worden activiteiten verdeeld binnen het team. De uitkomsten van de analyse bepalen uiteindelijk of de nadruk komt te liggen op software-architectuur, infrastructuur of user interaction."
 
 ### Sprint 1: Analyseren (t/m 17 maart)
 
 Het probleem en de context helder krijgen.
 
-- **Stakeholderanalyse** - behoeften en pijnpunten inventariseren bij studenten (dag + avond), coaches en docenten. Enquete als breed startpunt, aangevuld met paper prototypes om behoeften concreet te maken.
+- **Stakeholderanalyse** - behoeften en pijnpunten inventariseren bij studenten (dag + avond), coaches en docenten. Interviews worden deze sprint afgerond als primaire bron van gebruikersinzichten. Aangevuld met een enquete als breed startpunt en paper prototypes om behoeften concreet te maken en vast te leggen.
+    
 - **Analyse huidig ecosysteem** - Canvas, FeedPulse, M365 en overige tools analyseren op functionaliteit, beperkingen en koppelmogelijkheden (API, LTI, OAuth).
+    
 - **Benchmarkonderzoek** - vergelijkbare platformen onderzoeken: hoe pakken anderen studentgericht leren aan?
+    
 - **Start requirementsanalyse** - eerste functionele en niet-functionele eisen opstellen.
+    
+- **Projectplan -** Het projectplan wordt deze sprint grotendeels afgerond en bijgesteld op basis van de eerste bevindingen
+    
 
 ### Sprint 2: Analyseren afronden + Adviseren + start Ontwerpen (t/m 19 april)
 
 De eerste helft rondt de analyse af. De tweede helft vertaalt bevindingen naar keuzes.
 
 - **Requirementsanalyse afronden** - eisen aanscherpen, acceptatiecriteria formuleren, prioriteren.
+    
 - **Technologieadvies** - adviseren over geschikte technologieen, frameworks en koppelingen. Vastleggen in ADR's.
+    
 - **Bouw-vs-koop-advies** - wat bouw ik zelf, waar sluit ik aan op bestaande systemen, wat laat ik buiten scope?
+    
 - **Advies aan stakeholder** - terugkoppeling naar Eric over wat haalbaar en wenselijk is.
+    
 - **Paper prototyping** - meerdere ontwerprichtingen verkennen op papier voordat keuzes worden vastgelegd.
+    
 - **Eerste architectuurschets** - C4-diagrammen (level 1-2), eerste wireframes.
+    
 
 ### Sprint 3: Ontwerpen + Realiseren (t/m 24 mei)
 
 Van ontwerp naar een werkend proof of concept.
 
 - Softwarearchitectuur uitwerken (C4 level 2-3, ADR's aanscherpen)
+    
 - Interactieontwerp en wireframes verfijnen
+    
 - Database-ontwerp en infrastructuurontwerp
+    
 - Kernflow implementeren als PoC, aansluitend op Canvas via API/LTI
+    
 - Eerste usability-tests met echte gebruikers
+    
 
 ### Sprint 4: Realiseren + Manage & Control (t/m 23 juni)
 
 Afronding, kwaliteitsborging en overdracht. Posterpresentatie op 16 juni.
 
 - PoC uitbreiden en bijsturen op basis van testresultaten
+    
 - CI/CD-pipeline inrichten
+    
 - Kwaliteitsborging (integration tests, code reviews)
+    
 - Documentatie en overdracht via [git.fhict.nl](http://git.fhict.nl/)
+    
 - Portfolio en reflecties afronden
+    
 
 Beoordeling: 3 juli.
 
 ## 4. Welke expertise heb ik nodig?
 
-|                           |                                                                |                                          |
-| ------------------------- | -------------------------------------------------------------- | ---------------------------------------- |
-| Expertisegebied           | Waarvoor                                                       | Hoe                                      |
-| Software-architectuur     | C4-modellen, ADR's, koppelingen Canvas API/LTI                 | Experttafel, peerfeedback                |
-| UX / Gebruikersonderzoek  | Validatie enquete-aanpak en paper prototypes                   | Experttafel, feedback docent             |
-| Infrastructuur & DevOps   | Container-opzet en CI/CD-pipeline                              | Experttafel, peers                       |
-| Domeinexpertise onderwijs | Valideren of het platform aansluit bij vraaggestuurd onderwijs | Gesprekken met Eric, docenten en coaches |
+|   |   |   |
+|---|---|---|
+|Expertisegebied|Waarvoor|Hoe|
+|Software-architectuur|C4-modellen, ADR's, koppelingen Canvas API/LTI|Experttafel, peerfeedback|
+|UX / Gebruikersonderzoek|Validatie enquete-aanpak en paper prototypes|Experttafel, feedback docent|
+|Infrastructuur & DevOps|Container-opzet en CI/CD-pipeline|Experttafel, peers|
+|Domeinexpertise onderwijs|Valideren of het platform aansluit bij vraaggestuurd onderwijs|Gesprekken met Eric, docenten en coaches|
 
 ## 5. Persoonlijke ontwikkeling
 
 In vorige semesters heb ik feedback ontvangen op perfectionisme en het geven van ruimte aan teamgenoten. Dit semester wil ik bewust werken aan:
 
 - **Loslaten van perfectionisme** - "houtje touwtje mag" zoals Eric zegt. Het gaat om validatie, niet om een gepolijst eindproduct.
+    
 - **Gebruikersonderzoek als vaardigheid** - ik heb weinig ervaring met het ophalen van behoeften bij gebruikers en vind dat lastig. Dit semester dwing ik mezelf om dat te doen via enquetes en paper prototype-testen.
+    
 
 Ik bespreek dit doorlopend met mijn coach en reflecteer erop in mijn portfolio.
