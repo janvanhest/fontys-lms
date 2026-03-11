@@ -1,86 +1,79 @@
-# Onderzoeksvragen – Studentgericht leerplatform
+## Vraagstelling.
 
-Onderzoeksvragen die aansluiten op de kernvraag, de 5W+1H, het projectplan en de enquête. Ze zijn beantwoordbaar met enquête, interviews en (waar mogelijk) gebruikersdata of usability-tests.
+De volgende vragen sturen de activiteiten binnen het project aan. Ze zijn geen onderzoeksdoel op zich, maar helpen om de juiste dingen te onderzoeken, ontwerpen en valideren. Per deelvraag is aangegeven welke methodes uit het DOT-framework worden ingezet.
 
----
+### Hoofdvraag
 
-## 1. Gebruik in de praktijk
+Hoe kan de Canvas-omgeving binnen Fontys zo ingericht worden dat niet de module maar de student en diens leeractiviteiten centraal staan, en vraaggestuurd onderwijs ondersteund wordt met zo weinig mogelijk frictie?
 
-**Hoe gebruiken studenten Canvas in de praktijk?**  
-Waarvoor gebruiken ze het het meest, welke onderdelen gebruiken ze daarnaast, en hoe vaak consumeren ze cursuscontent (tekst)?  
-→ *Enquete vragen 3, 4, 10; eventueel Canvas-gebruiksdata als beschikbaar.*
+#### **Deelvraag 1:** Welke knelpunten ervaren studenten, coaches en docenten in de huidige Canvas-omgeving bij vraaggestuurd onderwijs?
 
-**Welke onderdelen van Canvas gebruiken studenten zelden of nooit, en waarom?**  
-Welke functies (Discussies, Kalender, Inbox, To-do’s, etc.) blijven ongebruikt?  
-→ *Aparte enquêtevraag toevoegen; logdata kan dit bevestigen.*
+·       Hoe gebruiken studenten Canvas, en welke onderdelen gebruiken ze zelden of nooit?
 
----
+·       Waar lopen studenten vast bij het vinden van informatie?
 
-## 2. Vastlopen bij informatie
+·       Waar lopen coaches en docenten tegenaan in hun dagelijkse gebruik?
 
-**Waar lopen studenten vast bij het vinden van informatie in Canvas?**  
-Hoe makkelijk vinden ze de juiste info, met welk type informatie hebben ze de meeste moeite, en hoe vaak vragen ze daarom een docent of medestudent?  
-→ *Enquete vragen 5, 6, 7.*
+·       Hoe organiseren studenten hun planning en taken buiten Canvas?
 
-**Waar lopen coaches en docenten tegenaan?**  
-Waar zijn ze de meeste tijd aan kwijt, hoe makkelijk signaleren ze vastlopende studenten, en hoe vaak krijgen ze vragen over dingen die al in Canvas staan?  
-→ *Enquete 2, vragen 4, 6, 7.*
+·       Hoe ervaren studenten het werken met meerdere losse tools naast Canvas?
 
----
+Methodes: Survey, Interview, Root cause analysis
 
-## 3. Organisatie buiten Canvas
+#### **Deelvraag 2:** Hoe verschilt het gebruik van Canvas tussen dag- en avondstudenten, en wat betekent dat voor een oplossing?
 
-**Hoe organiseren studenten hun studieactiviteiten en planning buiten Canvas?**  
-Waar houden ze bij wat ze moeten doen (Canvas, eigen agenda, notities, andere apps, alleen in hun hoofd)?  
-→ *Enquete vraag 13.*
+·       Wat zijn de verschillen in contactintensiteit, sturing en Canvas-gebruik tussen beide groepen?
 
-**Hoe ervaren studenten het werken met meerdere losse tools naast Canvas?**  
-Versnippering: vinden ze hun weg of leidt het tot verwarring en frustratie?  
-→ *Enquete vragen 8, 9.*
+·       Hoe richt de dagopleiding hun eigen Canvas-course in, en hoe wijkt dat af van de avondopleiding?
 
----
+Methodes: Interview, Stakeholder analysis
 
-## 4. Behoeften t.a.v. activiteiten en content
+#### **Deelvraag 3:** Welke behoeften hebben studenten, coaches en docenten ten aanzien van een verbeterde leeromgeving?
 
-**Zou een activiteiten-/weekoverzicht in plaats van alleen een modulelijst helpen?**  
-Behoefte aan een weergave die draait om “wat moet ik deze week doen” in plaats van “in welke module zit ik”.  
-→ *Enquete vraag 14.*
+·       Is er behoefte aan een activiteiten- of weekoverzicht in plaats van alleen modules?
 
-**Op welke manieren willen studenten cursusinhoud het liefst aangeboden krijgen?**  
-Tekst, video, interactieve voorbeelden, AI-assistent, etc.  
-→ *Enquete vraag 12.*
+·       Welke contentvormen hebben de voorkeur boven de huidige tekstgebaseerde aanpak?
 
-**Wat zou coaches en docenten het meest helpen?**  
-Beter overzicht, signalering van vastlopende studenten, minder herhaalde vragen, eenvoudiger content beheren, koppeling met competenties.  
-→ *Enquete 2, vraag 9.*
+·       Wat zou coaches en docenten het meest helpen in hun dagelijkse werk?
 
----
+Methodes: Survey, Expert interview, Prototyping
 
-## 5. Competenties en ondersteuning
+#### **Deelvraag 4:** In hoeverre sluit de bestaande AI-tool voor competentiemapping aan bij de behoeften van studenten, en waar zitten de gaten?
 
-**Weten studenten hoe ze hun werk kunnen koppelen aan competenties?**  
-En zou ondersteuning daarbij (bijv. suggesties op basis van gedane activiteiten) nuttig zijn?  
-→ *Enquete vragen 15, 16.*
+·       Waarom wordt de huidige tool te weinig gebruikt?
 
----
+·       Welke functionaliteit ontbreekt, bijvoorbeeld ondersteuning bij het vinden van course-inhoud in plaats van alleen competenties?
 
-## 6. Verschillen tussen groepen
+·       Hoe koppelen studenten hun werkzaamheden aan competenties, en waar hebben ze daarbij ondersteuning nodig?
 
-**Hoe verschillen gebruik en behoeften tussen dag- en avondstudenten?**  
-Verschil in sturing, contact met coaches, gebruik van tools en behoefte aan overzicht.  
-→ *Enquete uitvragen per opleidingstype; eventueel verdiepende interviews.*
+·       Hoe kan de tool worden uitgebreid of aangevuld zonder de bestaande werking te verstoren?
 
----
+Methodes: Expert interview, Available product analysis, Root cause analysis
 
-## Overzicht per thema
+#### **Deelvraag 5:** Welke technische mogelijkheden bieden de Canvas API en LTI voor het bouwen van een externe tool?
 
-| Thema              | Hoofdvraag                                           | Methode                    |
-|--------------------|------------------------------------------------------|----------------------------|
-| Gebruik            | Hoe gebruiken studenten Canvas; wat gebruiken ze niet? | Enquete (+ data indien mogelijk) |
-| Vastlopen          | Waar lopen studenten/coaches vast bij informatie?    | Enquete, interviews        |
-| Organisatie        | Hoe plannen ze buiten Canvas; ervaring met versnippering? | Enquete                 |
-| Activiteiten/content | Behoefte aan weekoverzicht en andere contentvormen? | Enquete                    |
-| Competenties       | Koppeling werk–competenties; behoefte aan ondersteuning? | Enquete                 |
-| Groepen            | Verschil dag vs. avond?                              | Enquete (segmentatie), interviews |
+·       Wat kan er via de Canvas REST API worden opgehaald en weggeschreven?
 
-De open vragen in beide enquetes (één ding veranderen aan Canvas) vangen aanvullende behoeften en ideeën die niet in deze vragen zitten.
+·       Wat zijn de beperkingen en randvoorwaarden van LTI-integratie?
+
+·       Hoe is de bestaande AI-tool technisch gebouwd, en waar sluit een uitbreiding op aan?
+
+Methodes: Available product analysis, Document analysis, IT architecture sketching
+
+#### **Deelvraag 6:** Welke oplossingsrichting sluit het beste aan bij de behoeften van gebruikers én de technische context?
+
+·       Welke richtingen komen uit de ideation-fase naar voren?
+
+·       Hoe scoren die op haalbaarheid, impact en overdraagbaarheid?
+
+·       In hoeverre speelt de bestaande AI-tool een rol in de gekozen richting?
+
+Methodes: Competitive analysis, Multi-criteria decision making, Prototyping
+
+#### **Deelvraag 7:** In hoeverre vermindert het ontwikkelde concept de ervaren frictie bij studenten en coaches?
+
+·       Wat zeggen usability-tests met echte gebruikers?
+
+·       Wat moet er nog bijgesteld worden op basis van feedback?
+
+Methodes: Usability testing, Peer review
