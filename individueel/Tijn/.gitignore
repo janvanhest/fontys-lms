@@ -6,6 +6,9 @@ rules.txt
 # Dev scripts
 _dev.bat
 
+# Tijdelijke kopieerteksten
+copy.txt
+
 # OS rommel
 .DS_Store
 Thumbs.db
