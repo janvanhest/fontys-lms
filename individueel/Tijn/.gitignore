@@ -1,0 +1,15 @@
+# Persoonlijke Claude/AI bestanden
+CLAUDE.md
+rules.txt
+.claude/
+
+# Dev scripts
+_dev.bat
+
+# Tijdelijke kopieerteksten
+copy.txt
+
+# OS rommel
+.DS_Store
+Thumbs.db
+desktop.ini
