@@ -2,6 +2,11 @@
 
 **Doel:** Verkennend onderzoek naar de technische mogelijkheden voor integratie met Canvas en het intelligent ontsluiten van cursusinhoud via een taalmodel. Dit document dient als input voor de ideation-fase en als bewijs voor Software-Analyseren (niveau 3): analyse van functionaliteit en interfaces van bestaande en nieuwe systemen in een complexe context.
 
+**DOT-methodes:**
+- **Document analysis** (Library) — Canvas API documentatie en LTI 1.3 specificaties bestudeerd
+- **Available product analysis** (Library) — bestaande libraries, vector databases en taalmodellen vergeleken
+- **Literature study** (Library) — RAG als techniek onderbouwd en afgewogen tegen fine-tuning
+
 ---
 
 ## 1. LTI (Learning Tools Interoperability)
@@ -225,42 +230,6 @@ De Anthropic API (Claude Sonnet 4.6) kost $3 per miljoen input tokens en $15 per
 
 ---
 
-## 7. Nudging als ontwerpprincipe
-
-### Wat is het?
-
-Nudging is het stimuleren van gewenst gedrag via kleine, niet-dwingende aanwijzingen op het juiste moment. Het concept komt uit de gedragseconomie (Thaler & Sunstein) en wordt in onderwijstechnologie ingezet om studenten te helpen betere keuzes te maken zonder hun autonomie aan te tasten.
-
-Voor dit project is nudging relevant omdat het workshop-paradox-probleem en het afnemende activiteitspatroon na de eerste weken niet puur technische problemen zijn - het zijn gedragsproblemen. Een beter systeem lost dat niet automatisch op; een systeem dat op het juiste moment een duwtje geeft, mogelijk wel.
-
-### Concrete toepassingen in de chatbot
-
-**Activiteitsgebaseerde nudges**
-- Student heeft drie dagen geen activiteit gelogd → chatbot opent met: *"Je hebt deze week nog geen activiteiten geregistreerd. Wil je beginnen met [suggestie op basis van planning]?"*
-- Student nadert een deadline zonder inlevering → systeem attendeert proactief
-
-**Competentiegericht nudgen**
-- Student vraagt iets wat al in de cursus staat → chatbot wijst naar de bron in plaats van het antwoord te geven, om zelfstandig zoeken te stimuleren
-- Student logt een activiteit → systeem suggereert welke competentie daaraan gekoppeld kan worden
-
-**Workshop-paradox aanpakken**
-- Studenten die workshops aanvragen maar niet bezoeken → systeem detecteert dit patroon en attendeert de student of coach
-
-### Randvoorwaarden
-
-Nudging werkt alleen als het niet betuttelend voelt. Ontwerpprincipes om te toetsen in gebruikersonderzoek:
-
-- Nudges zijn optioneel en wegklikbaar
-- De student heeft controle over welke nudges hij ontvangt
-- Nudges zijn concreet en actiegericht, niet vaag of moralistisch
-- Frequentie is beperkt - te veel nudges worden genegeerd
-
-### Relevantie voor het DOT-framework
-
-Nudging is geen technische methode maar een ontwerpprincipe. Het valt binnen de Workshop-strategie van DOT: het is een ontwerpkeuze die gevalideerd moet worden via prototyping en usability testing. De vraag of nudging werkt voor deze doelgroep is onderdeel van deelvraag 3 (behoeften gebruikers) en deelvraag 7 (vermindert het concept de frictie).
-
----
-
 ## 8. Conclusie
 
 Dit document heeft drie technische lagen verkend die samen een samenhangende denkrichting vormen voor het project.
@@ -271,6 +240,4 @@ Dit document heeft drie technische lagen verkend die samen een samenhangende den
 
 **RAG** maakt die data intelligent doorzoekbaar — in plaats van studenten door modules te laten navigeren, beantwoordt een chatbot vragen op basis van de echte cursusinhoud.
 
-**Nudging** als ontwerpprincipe verbindt de techniek aan het gedragsprobleem — het systeem attendeert studenten op het juiste moment zonder te dwingen.
-
-Deze denkrichting is nog niet vastgesteld als oplossingsrichting. Dat is het doel van de ideation-fase in sprint 2, gevoed door de enquête- en interviewresultaten. Dit document dient als technische onderbouwing voor die keuze.
+Deze drie lagen vormen samen een technisch haalbare denkrichting die aansluit bij het kernprobleem. Of dit de juiste oplossingsrichting is, wordt bepaald in de ideation-fase van sprint 2, gevoed door de enquête- en interviewresultaten. Een aanvullend ontwerpprincipe dat in dit project wordt verkend — nudging — is uitgewerkt in een separate literature study.
