@@ -1,6 +1,6 @@
-# Technische verkenning: LTI en Canvas API
+# Technische verkenning: LTI, Canvas API en RAG
 
-**Doel:** Verkennend onderzoek naar de technische mogelijkheden voor integratie met Canvas. Dit document dient als input voor de ideation-fase en als bewijs voor Software-Analyseren (niveau 3): analyse van functionaliteit en interfaces van bestaande systemen.
+**Doel:** Verkennend onderzoek naar de technische mogelijkheden voor integratie met Canvas en het intelligent ontsluiten van cursusinhoud via een taalmodel. Dit document dient als input voor de ideation-fase en als bewijs voor Software-Analyseren (niveau 3): analyse van functionaliteit en interfaces van bestaande en nieuwe systemen in een complexe context.
 
 ---
 
@@ -155,24 +155,18 @@ De meest waarschijnlijke aanpak is een **combinatie van alle drie**: LTI voor de
 
 ## 5. Bestaande libraries en tooling
 
-| Taal    | LTI 1.3 library              | Canvas API library   |
-| ------- | ---------------------------- | -------------------- |
-| Python  | pylti1p3                     | canvasapi (UCF Open) |
-| Node.js | ltijs                        | node-canvas-api      |
-| PHP     | packback/lti-1-3-php-library | -                    |
-| .NET    | - (handmatig)                | - (handmatig)        |
+| Taal | LTI 1.3 library | Canvas API library |
+|---|---|---|
+| Python | pylti1p3 | canvasapi (UCF Open) |
+| Node.js | ltijs | node-canvas-api |
+| PHP | packback/lti-1-3-php-library | - |
+| .NET | - (handmatig) | - (handmatig) |
 
 De keuze voor technologiestack is nog niet gemaakt - dat is onderdeel van de adviesfase. Dit overzicht dient als input voor die keuze.
 
 ---
 
-## 6. Conclusie LTI en Canvas API
-
-Canvas biedt via LTI en de REST API voldoende mogelijkheden om een externe tool te bouwen die naadloos integreert met de bestaande omgeving. De combinatie van LTI (voor embedding en SSO) en de REST API (voor data) is de meest logische aanpak. De belangrijkste beperking is dat Canvas geen native ondersteuning biedt voor activiteit-gebaseerde navigatie of blokkade-signalering - dat is precies wat wij zouden moeten bouwen.
-
----
-
-## 7. RAG (Retrieval Augmented Generation)
+## 6. RAG (Retrieval Augmented Generation)
 
 ### Wat is het?
 
@@ -231,7 +225,7 @@ De Anthropic API (Claude Sonnet 4.6) kost $3 per miljoen input tokens en $15 per
 
 ---
 
-## 8. Nudging als ontwerpprincipe
+## 7. Nudging als ontwerpprincipe
 
 ### Wat is het?
 
@@ -267,8 +261,16 @@ Nudging is geen technische methode maar een ontwerpprincipe. Het valt binnen de 
 
 ---
 
-## 9. Geactualiseerde conclusie
+## 8. Conclusie
 
-Canvas biedt via LTI en de REST API een solide technische basis voor een externe tool die naadloos integreert met de bestaande omgeving. De combinatie van LTI (voor embedding en SSO), Canvas API (voor data), RAG (voor slimme contentontsluitng) en nudging (als ontwerpprincipe) vormt een samenhangende technische denkrichting die aansluit bij het kernprobleem.
+Dit document heeft drie technische lagen verkend die samen een samenhangende denkrichting vormen voor het project.
 
-Deze denkrichting is nog niet vastgesteld als oplossingsrichting - dat is het doel van de ideation-fase in sprint 2. Dit document dient als technische onderbouwing voor die keuze en als bewijs voor Software-Analyseren niveau 3: analyse van functionaliteit en interfaces van bestaande en nieuwe systemen in een complexe context.
+**LTI** zorgt dat de tool naadloos in Canvas leeft — studenten hoeven niet apart in te loggen en de tool ontvangt direct de cursuscontext en gebruikersrol.
+
+**Canvas API** levert de data — cursusinhoud, studentactiviteit en voortgang zijn allemaal opvraagbaar via goed gedocumenteerde endpoints.
+
+**RAG** maakt die data intelligent doorzoekbaar — in plaats van studenten door modules te laten navigeren, beantwoordt een chatbot vragen op basis van de echte cursusinhoud.
+
+**Nudging** als ontwerpprincipe verbindt de techniek aan het gedragsprobleem — het systeem attendeert studenten op het juiste moment zonder te dwingen.
+
+Deze denkrichting is nog niet vastgesteld als oplossingsrichting. Dat is het doel van de ideation-fase in sprint 2, gevoed door de enquête- en interviewresultaten. Dit document dient als technische onderbouwing voor die keuze.
