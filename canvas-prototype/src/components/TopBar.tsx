@@ -42,13 +42,16 @@ export default function TopBar({
           {themeMode === 'wireframe' ? '[platform naam]' : 'Canvas Prototype'}
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 0.5, flex: 1 }}>
+        <Box sx={{ display: 'flex', gap: 0.5, flex: 1, flexWrap: 'wrap' }}>
           {TABS.map(({ id, label }) => (
             <Button
               key={id}
               size="small"
               onClick={() => onTabChange(id)}
               sx={{
+                minWidth: 0,
+                px: 1.25,
+                fontSize: { xs: 12, md: 13 },
                 fontWeight: activeTab === id ? 'bold' : 'normal',
                 borderBottom:
                   activeTab === id ? '2px solid currentColor' : '2px solid transparent',

@@ -7,8 +7,10 @@ import { INITIAL_HISTORY, INITIAL_MESSAGES, STATIC_RESPONSE } from './constants'
 import type { AppTab, Message, ThemeMode } from './types';
 import ActivitiesPanel from './components/ActivitiesPanel';
 import ChatWindow from './components/ChatWindow';
-import LearningPanel from './components/LearningPanel';
+import ChallengePanel from './components/ChallengePanel';
+import CompetenciesPanel from './components/CompetenciesPanel';
 import Sidebar from './components/Sidebar';
+import StudyPlanPanel from './components/StudyPlanPanel';
 import TopBar from './components/TopBar';
 import muiTheme from './themes/muiTheme';
 import wireframeTheme from './themes/wireframeTheme';
@@ -33,7 +35,7 @@ export default function App() {
 
   const handleTabChange = (tab: AppTab) => {
     setActiveTab(tab);
-    if (tab === 'activities') {
+    if (tab !== 'chat') {
       setSidebarOpen(false);
     }
   };
@@ -81,10 +83,14 @@ export default function App() {
             activeChat={activeChat}
             onSelectChat={setActiveChat}
           />
-          {activeTab === 'learning' ? (
-            <LearningPanel />
-          ) : (
+          {activeTab === 'chat' || activeTab === 'activities' ? (
             <ChatWindow messages={messages} onSendMessage={handleSendMessage} />
+          ) : activeTab === 'challenge' ? (
+            <ChallengePanel />
+          ) : activeTab === 'study-plan' ? (
+            <StudyPlanPanel />
+          ) : (
+            <CompetenciesPanel />
           )}
           <ActivitiesPanel open={activeTab === 'activities'} />
         </Box>

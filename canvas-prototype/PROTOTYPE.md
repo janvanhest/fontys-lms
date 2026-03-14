@@ -106,7 +106,7 @@ createTheme() // geen overrides — puur de MUI default
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ TOPBAR                                                  │
-│ [☰] [platform naam]        [Chat][Activities][Learning] [theme toggle] │
+│ [☰] [platform naam] [Chat][Activities][Challenge][Competenties][Stappenplan] [theme toggle] │
 ├──────────────┬──────────────────────────┬───────────────┤
 │              │                          │               │
 │   SIDEBAR    │      CHAT WINDOW         │  ACTIVITIES   │
@@ -121,7 +121,7 @@ createTheme() // geen overrides — puur de MUI default
 
 - Totale hoogte: `100vh`
 - Sidebar en Activities Panel hebben CSS transitions op `width` (0.25s ease)
-- Input bar is altijd zichtbaar onderaan, behalve wanneer Learning tab actief is
+- Input bar is alleen zichtbaar in de chat-flow (`Chat` en `Activities`)
 
 ---
 
@@ -131,14 +131,14 @@ createTheme() // geen overrides — puur de MUI default
 
 Verantwoordelijk voor:
 - `themeMode` state: `'wireframe'` | `'mui'`
-- `activeTab` state: `'chat'` | `'activities'` | `'learning'`
+- `activeTab` state: `'chat'` | `'activities'` | `'challenge'` | `'competencies'` | `'study-plan'`
 - `sidebarOpen` state: `boolean`
 - ThemeProvider met het juiste theme object
-- Rendert: `TopBar`, `Sidebar`, `ChatWindow` + `ActivitiesPanel` of `LearningPanel`
+- Rendert: `TopBar`, `Sidebar`, `ChatWindow`, `ActivitiesPanel`, `ChallengePanel`, `CompetenciesPanel`, `StudyPlanPanel`
 
 Automatisch gedrag:
-- Als `activeTab` naar `'activities'` gaat → `sidebarOpen` wordt `false`
-- Als `activeTab` terug naar `'chat'` of `'learning'` gaat → sidebar blijft dicht (gebruiker opent hem zelf)
+- Als `activeTab` naar een niet-chat tab gaat → `sidebarOpen` wordt `false`
+- Als `activeTab` terug naar `'chat'` gaat → sidebar blijft dicht tot de gebruiker hem zelf opent
 
 ---
 
@@ -152,7 +152,9 @@ Elementen (links naar rechts):
 3. Tab buttons (MUI `Tabs` of drie losse `Button` componenten):
    - `Chat`
    - `Activities`
-   - `Learning`
+   - `Challenge`
+   - `Competenties`
+   - `Stappenplan`
    - Actieve tab heeft een visueel onderscheid (underline of background)
 4. Theme toggle button — uiterst rechts
 
@@ -240,13 +242,37 @@ Activity card structuur:
 
 ---
 
-### 5.8 `LearningPanel.tsx`
+### 5.8 `ChallengePanel.tsx`
 
-- Vervangt de `ChatWindow` wanneer Learning tab actief is
-- Toont een gecentreerde placeholder:
-  - Grote tekst: `Leerpad`
-  - Kleine tekst: `Competenties en voortgang verschijnen hier`
-- Input bar is verborgen wanneer Learning actief is
+- Vervangt de `ChatWindow` wanneer Challenge actief is
+- Bevat:
+  - intro-sectie met uitleg en CTA naar `https://www.fontyschallenges.nl/`
+  - embedded iframe van de challenge-tool
+  - fallback-link voor browsers waar embedding wordt geblokkeerd
+
+### 5.9 `CompetenciesPanel.tsx`
+
+- Vervangt de `ChatWindow` wanneer Competenties actief is
+- Toont een statische mockup van de competentietool, gebaseerd op de aangeleverde HTML-dump
+- Bevat:
+  - studentheader met naam en disabled `Save` knop
+  - samenvattende kaarten voor `Personal leadership` en `Professional standard`
+  - competency-matrix met capability-kolommen
+  - detailweergave van de geselecteerde competency in EN/NL
+- Input bar is verborgen wanneer Competenties actief is
+
+### 5.10 `StudyPlanPanel.tsx`
+
+- Vervangt de `ChatWindow` wanneer Stappenplan actief is
+- Toont een wireframe-first mockup van de Canvas-pagina "Stappenplan: alles wat je nodig hebt dit semester"
+- Bevat:
+  - hero-blok met titel en intro
+  - vier genummerde stappen
+  - per stap één of meer linkkaarten met beschrijving
+  - afsluitende callout `Start nu`
+  - knop `Terug naar Homepage`
+- Content staat gecentreerd met een `max-width` van ongeveer `1200px` voor betere leesbaarheid op grote schermen
+- Teksten zijn inhoudelijk overgenomen uit de aangeleverde HTML, met alleen kleine technische normalisatie van corrupte escape-sequenties
 
 ---
 
@@ -263,7 +289,17 @@ canvas-prototype/
 │   │   ├── MessageBubble.tsx
 │   │   ├── InputBar.tsx
 │   │   ├── ActivitiesPanel.tsx
-│   │   └── LearningPanel.tsx
+│   │   ├── ChallengePanel.tsx
+│   │   ├── CompetenciesPanel.tsx
+│   │   └── StudyPlanPanel.tsx
+│   ├── data/
+│   │   ├── activities.ts
+│   │   ├── competencies.ts
+│   │   └── studyPlan.ts
+│   ├── hooks/
+│   │   ├── useActivitiesPanelState.ts
+│   │   ├── useCompetencyExplorer.ts
+│   │   └── useIsWireframeTheme.ts
 │   ├── themes/
 │   │   ├── wireframeTheme.ts
 │   │   └── muiTheme.ts
@@ -339,3 +375,6 @@ claude
 | 28 | ActivitiesPanel: zichtbare status-border fix + groep `eerder` toegevoegd | `ActivitiesPanel.jsx` rendert de activity cards nu lokaal zodat de border exact als `border: '1px solid'`, `borderColor: 'divider'`, `borderLeft: '4px solid <statuskleur>'` gezet kan worden zonder uniforme all-side border die de linkerrand visueel neutraliseert. Wireframe gebruikt dezelfde full-opacity hex-kleuren voor duidelijke statusverschillen. Boven `deze week` staat nu een nieuwe groep `eerder` met datum `voor 14 mrt` en twee realistische completed challenge-cards: `Challenge markering` (`wo 5 mrt`) en `Gekozen challenge` (`vr 7 mrt`). Afgeronde kaarten krijgen in MUI `opacity: 0.75`; in wireframe blijven ze volledig opaak met groene linkerrand. |
 | 29 | Volledige migratie naar TypeScript met strikte validatie | Alle bronbestanden zijn omgezet naar `.ts` / `.tsx`, met centrale domeintypes in `src/types.ts`, MUI theme-augmentatie in `src/mui.d.ts`, `tsconfig.json` met `strict: true`, en nieuwe scripts `pnpm typecheck` en `pnpm check`. Doel: compile-time validatie van props, statische data en theme-uitbreidingen, zonder extra architectuurlagen of overengineering. |
 | 18 | Klikbaar detail-panel onderaan ActivitiesPanel via `maxHeight` slide-in transitie | Klik op een kaart toont een detail-panel (260px) dat omhoog schuift via `max-height: 0 → 260px, transition 0.3s ease`. Nogmaals klikken op dezelfde kaart sluit het panel. Inhoud: tag, titel, omschrijving (placeholder), deadline, status, gekoppelde competentie, actieknop. Sluitknop rechtsboven. Wireframe: dashed bovenrand, italic omschrijving. MUI: gekleurde bovenrand in primary, lichte primaire achtergrond. |
+| 30 | Topnavigatie uitgebreid met `Challenge` en `Competenties` | `Learning` is vervangen door twee concretere proto-tabbladen. `Challenge` embedt de externe Fontys Challenges-tool met open-in-new-tab fallback. `Competenties` toont een statische competence-tool mockup op basis van de aangeleverde HTML-dump, met alle vijf architectuurlagen in de matrix, zodat de pagina leesbaar blijft in prototypevorm. |
+| 31 | Extra tab `Stappenplan` toegevoegd | Nieuwe pagina gebouwd op basis van de aangeleverde Canvas HTML met vier semesterstappen, linkkaarten en een afsluitende call-to-action. Wireframe-modus blijft leidend; MUI-modus geeft dezelfde inhoud in een nettere productiestijl. |
+| 32 | `Stappenplan` gecentreerd binnen vaste leesbreedte | De pagina gebruikt nu een `max-width` van 1200px binnen de scrollcontainer, zodat lange regels op grote schermen rustiger en beter scanbaar blijven. |

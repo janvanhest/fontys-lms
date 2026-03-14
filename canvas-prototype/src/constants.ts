@@ -18,5 +18,7 @@ export const STATIC_RESPONSE =
 export const TABS: TabItem[] = [
   { id: 'chat', label: 'Chat' },
   { id: 'activities', label: 'Activities' },
-  { id: 'learning', label: 'Learning' },
+  { id: 'challenge', label: 'Challenge' },
+  { id: 'competencies', label: 'Competenties' },
+  { id: 'study-plan', label: 'Stappenplan' },
 ];
