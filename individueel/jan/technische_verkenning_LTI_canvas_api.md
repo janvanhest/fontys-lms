@@ -126,19 +126,21 @@ Twee opties:
 
 ---
 
-## 3. LTI vs. Canvas API: wanneer wat?
+## 3. LTI vs. Canvas API vs. RAG: wanneer wat?
 
-| Scenario                             | LTI     | Canvas API           | Combinatie                                    |
-| ------------------------------------ | ------- | -------------------- | --------------------------------------------- |
-| Tool embedden in Canvas              | x       |                      |                                               |
-| Gebruiker identificeren zonder login | x       |                      |                                               |
-| Cursusinhoud ophalen en anders tonen |         | x                    |                                               |
-| Eigen activiteiten loggen            |         |                      | x (LTI voor context, eigen backend voor data) |
-| Cijfers terugsturen                  | x (AGS) | x                    |                                               |
-| Coach-dashboard bouwen               |         | x (Users, Analytics) | x (LTI voor launch, API voor data)            |
-| Chatbot in Canvas                    |         |                      | x (LTI voor embedding, API voor content)      |
+| Scenario | LTI | Canvas API | RAG | Combinatie |
+|---|---|---|---|---|
+| Tool embedden in Canvas | x | | | |
+| Gebruiker identificeren zonder login | x | | | |
+| Cursusinhoud ophalen | | x | | |
+| Cursusinhoud doorzoekbaar en conversationeel aanbieden | | | x | x (API haalt op, RAG indexeert en ontsluit) |
+| Eigen activiteiten loggen | | | | x (LTI voor context, eigen backend voor data) |
+| Cijfers terugsturen naar Canvas | x (AGS) | x | | |
+| Coach-dashboard bouwen | | x (Users, Analytics) | | x (LTI voor launch, API voor data) |
+| Chatbot in Canvas die vragen beantwoordt op basis van cursusinhoud | | | | x (LTI voor embedding, API voor content, RAG voor antwoorden) |
+| Blokkades signaleren en nudgen | | | | x (Analytics voor detectie, RAG voor gepersonaliseerde respons) |
 
-De meest waarschijnlijke aanpak is een **combinatie**: LTI voor de integratie in Canvas (launch, SSO, context), Canvas API voor het ophalen van data (cursusinhoud, studentactiviteit), en een eigen backend voor functionaliteit die Canvas niet biedt (activiteiten loggen, blokkades signaleren, nudging).
+De meest waarschijnlijke aanpak is een **combinatie van alle drie**: LTI voor de integratie in Canvas (launch, SSO, context), Canvas API voor het ophalen van data (cursusinhoud, studentactiviteit), en RAG voor het intelligent ontsluiten van die content via een conversatie-interface. Een eigen backend verbindt deze drie lagen en voegt functionaliteit toe die Canvas zelf niet biedt.
 
 ---
 

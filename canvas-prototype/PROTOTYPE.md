@@ -22,10 +22,11 @@ De gebruiker kan live wisselen tussen de twee modi via een toggle-knop in de top
 
 | Onderdeel | Keuze |
 |---|---|
-| Framework | React 18 (functional components + hooks) |
+| Framework | React 19 (functional components + hooks) |
 | Package manager | pnpm |
 | Build tool | Vite |
-| UI library | Material UI (MUI) v6 |
+| Taal | TypeScript (`strict: true`) |
+| UI library | Material UI (MUI) v7 |
 | Icons | @mui/icons-material |
 | Styling | @emotion/react + @emotion/styled |
 | Deploy | Netlify (`pnpm build` → `dist/`) |
@@ -95,7 +96,7 @@ createTheme() // geen overrides — puur de MUI default
 
 - Toggle-knop in de topbar, rechts van de tabs
 - Label wisselt tussen `"Switch to MUI"` en `"Switch to Wireframe"`
-- State zit in `App.jsx`, wordt doorgegeven via ThemeProvider
+- State zit in `App.tsx`, wordt doorgegeven via ThemeProvider
 - Geen page reload — alles re-rendert via ThemeProvider
 
 ---
@@ -126,7 +127,7 @@ createTheme() // geen overrides — puur de MUI default
 
 ## 5. Componenten
 
-### 5.1 `App.jsx`
+### 5.1 `App.tsx`
 
 Verantwoordelijk voor:
 - `themeMode` state: `'wireframe'` | `'mui'`
@@ -141,7 +142,7 @@ Automatisch gedrag:
 
 ---
 
-### 5.2 `TopBar.jsx`
+### 5.2 `TopBar.tsx`
 
 Props: `sidebarOpen`, `onToggleSidebar`, `activeTab`, `onTabChange`, `themeMode`, `onToggleTheme`
 
@@ -157,7 +158,7 @@ Elementen (links naar rechts):
 
 ---
 
-### 5.3 `Sidebar.jsx`
+### 5.3 `Sidebar.tsx`
 
 Props: `open`, `onNewChat`, `history`, `activeChat`, `onSelectChat`
 
@@ -172,7 +173,7 @@ Props: `open`, `onNewChat`, `history`, `activeChat`, `onSelectChat`
 
 ---
 
-### 5.4 `ChatWindow.jsx`
+### 5.4 `ChatWindow.tsx`
 
 Props: `messages`, `onSendMessage`
 
@@ -192,7 +193,7 @@ Initiële berichten (statisch):
 
 ---
 
-### 5.5 `MessageBubble.jsx`
+### 5.5 `MessageBubble.tsx`
 
 Props: `role` (`'user'` | `'assistant'`), `text`
 
@@ -204,7 +205,7 @@ Props: `role` (`'user'` | `'assistant'`), `text`
 
 ---
 
-### 5.6 `InputBar.jsx`
+### 5.6 `InputBar.tsx`
 
 Props: `onSend`
 
@@ -218,7 +219,7 @@ Props: `onSend`
 
 ---
 
-### 5.7 `ActivitiesPanel.jsx`
+### 5.7 `ActivitiesPanel.tsx`
 
 Props: `open`
 
@@ -239,7 +240,7 @@ Activity card structuur:
 
 ---
 
-### 5.8 `LearningPanel.jsx`
+### 5.8 `LearningPanel.tsx`
 
 - Vervangt de `ChatWindow` wanneer Learning tab actief is
 - Toont een gecentreerde placeholder:
@@ -256,20 +257,23 @@ canvas-prototype/
 ├── public/
 ├── src/
 │   ├── components/
-│   │   ├── TopBar.jsx
-│   │   ├── Sidebar.jsx
-│   │   ├── ChatWindow.jsx
-│   │   ├── MessageBubble.jsx
-│   │   ├── InputBar.jsx
-│   │   ├── ActivitiesPanel.jsx
-│   │   └── LearningPanel.jsx
+│   │   ├── TopBar.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── ChatWindow.tsx
+│   │   ├── MessageBubble.tsx
+│   │   ├── InputBar.tsx
+│   │   ├── ActivitiesPanel.tsx
+│   │   └── LearningPanel.tsx
 │   ├── themes/
-│   │   ├── wireframeTheme.js
-│   │   └── muiTheme.js
-│   ├── App.jsx
-│   └── main.jsx
+│   │   ├── wireframeTheme.ts
+│   │   └── muiTheme.ts
+│   ├── mui.d.ts
+│   ├── types.ts
+│   ├── App.tsx
+│   └── main.tsx
 ├── index.html
-├── vite.config.js
+├── vite.config.ts
+├── tsconfig.json
 ├── package.json
 └── PROTOTYPE.md  ← dit bestand
 ```
@@ -285,6 +289,7 @@ pnpm create vite canvas-prototype --template react
 cd canvas-prototype
 pnpm install
 pnpm add @mui/material @mui/icons-material @emotion/react @emotion/styled
+pnpm add -D typescript typescript-eslint
 ```
 
 **Start Claude Code:**
@@ -332,4 +337,5 @@ claude
 | 26 | Kleurgecodeerde linker borderaccentlijn per status op activity cards | 4px solid left border op elke kaart waarvan de kleur de status weergeeft: open=blauw (#1976d2), bezig=oranje (#ed6c02), feedback=rood (#d32f2f), afgerond=groen (#2e7d32). Achtergrondkleur van de kaart blijft ongewijzigd — alleen de linkerrand verandert. Wireframe: zelfde hex-waarden maar op 0.6 opacity via `alpha()` zodat het schetsmatige gevoel bewaard blijft. Status-to-color mapping opgeslagen in `src/constants/activityStatus.js` (nieuw bestand) samen met `STATUS_LABELS`, `STATUSES` en `ACTIVITY_TYPES`. Beginstatus per kaart afgeleid uit `activity.statusKey` in de data; valt terug op `'open'` als dat veld ontbreekt. `cardStatuses` state (`Record<id, statusKey>`) beheert overrides in `ActivitiesPanel.jsx`. |
 | 27 | Drie-punt contextmenu op elke activity card | `MoreVertIcon` `IconButton` toegevoegd rechtsboven in de kaart (in dezelfde Stack-rij als de tag-chip). Eén `useRef` op de knop dient als anker voor alle drie `Menu`-componenten. Enkelvoudige `activeMenu` state (`null \| 'main' \| 'type' \| 'status'`) bepaalt welk menu open is — voorkomt positioneringsbugs met gesloten ankers. Hoofdmenu: "Hernoem titel", "Bewerk", "Verander soort ›", Divider, "Markeer als... ›". Type-submenu: terugknop + Coaching/Workshop/Sprint review/Semesterplan/Posterpresentatie/Overdracht. Status-submenu: terugknop + vier opties met gekleurde dot (matches status color). "Markeer als..." keuze is de enige met echte functionaliteit: roept `onStatusChange` aan en updatet direct de linkerrand. Alle andere items sluiten het menu zonder actie. |
 | 28 | ActivitiesPanel: zichtbare status-border fix + groep `eerder` toegevoegd | `ActivitiesPanel.jsx` rendert de activity cards nu lokaal zodat de border exact als `border: '1px solid'`, `borderColor: 'divider'`, `borderLeft: '4px solid <statuskleur>'` gezet kan worden zonder uniforme all-side border die de linkerrand visueel neutraliseert. Wireframe gebruikt dezelfde full-opacity hex-kleuren voor duidelijke statusverschillen. Boven `deze week` staat nu een nieuwe groep `eerder` met datum `voor 14 mrt` en twee realistische completed challenge-cards: `Challenge markering` (`wo 5 mrt`) en `Gekozen challenge` (`vr 7 mrt`). Afgeronde kaarten krijgen in MUI `opacity: 0.75`; in wireframe blijven ze volledig opaak met groene linkerrand. |
+| 29 | Volledige migratie naar TypeScript met strikte validatie | Alle bronbestanden zijn omgezet naar `.ts` / `.tsx`, met centrale domeintypes in `src/types.ts`, MUI theme-augmentatie in `src/mui.d.ts`, `tsconfig.json` met `strict: true`, en nieuwe scripts `pnpm typecheck` en `pnpm check`. Doel: compile-time validatie van props, statische data en theme-uitbreidingen, zonder extra architectuurlagen of overengineering. |
 | 18 | Klikbaar detail-panel onderaan ActivitiesPanel via `maxHeight` slide-in transitie | Klik op een kaart toont een detail-panel (260px) dat omhoog schuift via `max-height: 0 → 260px, transition 0.3s ease`. Nogmaals klikken op dezelfde kaart sluit het panel. Inhoud: tag, titel, omschrijving (placeholder), deadline, status, gekoppelde competentie, actieknop. Sluitknop rechtsboven. Wireframe: dashed bovenrand, italic omschrijving. MUI: gekleurde bovenrand in primary, lichte primaire achtergrond. |

@@ -1,4 +1,7 @@
 import { createTheme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
+
+const wireframeShadows = createTheme().shadows.map(() => 'none') as Theme['shadows'];
 
 const wireframeTheme = createTheme({
   custom: { isWireframe: true },
@@ -23,7 +26,7 @@ const wireframeTheme = createTheme({
   // Rule: never hardcode borderRadius in components — always inherit from shape.borderRadius.
   // Exception: MuiIconButton and MuiChip deliberately override to 0 for the square wireframe aesthetic.
   shape: { borderRadius: 4 },
-  shadows: Array(25).fill('none'),
+  shadows: wireframeShadows,
   components: {
     MuiButton: {
       styleOverrides: {
@@ -32,7 +35,10 @@ const wireframeTheme = createTheme({
           color: theme.palette.primary.main,
           backgroundColor: theme.palette.background.default,
           '&:hover': { backgroundColor: theme.palette.action.hover },
-          '&:focus-visible': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 2 },
+          '&:focus-visible': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: 2,
+          },
         }),
       },
     },

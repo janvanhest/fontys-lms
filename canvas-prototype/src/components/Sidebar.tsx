@@ -1,12 +1,28 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 
-export default function Sidebar({ open, onNewChat, history, activeChat, onSelectChat }) {
+import type { ChatHistoryItem } from '../types';
+
+interface SidebarProps {
+  open: boolean;
+  onNewChat: () => void;
+  history: ChatHistoryItem[];
+  activeChat: string;
+  onSelectChat: (id: string) => void;
+}
+
+export default function Sidebar({
+  open,
+  onNewChat,
+  history,
+  activeChat,
+  onSelectChat,
+}: SidebarProps) {
   return (
     <Box
       sx={{
@@ -38,10 +54,7 @@ export default function Sidebar({ open, onNewChat, history, activeChat, onSelect
             onClick={() => onSelectChat(item.id)}
             sx={{ fontWeight: activeChat === item.id ? 'bold' : 'normal' }}
           >
-            <ListItemText
-              primary={item.title}
-              primaryTypographyProps={{ noWrap: true, fontSize: 12 }}
-            />
+            <ListItemText primary={item.title} primaryTypographyProps={{ noWrap: true, fontSize: 12 }} />
           </ListItemButton>
         ))}
       </List>

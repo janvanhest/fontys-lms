@@ -1,4 +1,6 @@
-export const ACTIVITY_GROUPS = [
+import type { ActivityGroup } from '../types';
+
+export const ACTIVITY_GROUPS: ActivityGroup[] = [
   {
     id: 'deze-week',
     label: 'deze week',
@@ -11,7 +13,8 @@ export const ACTIVITY_GROUPS = [
         deadline: 'vr 14 mrt',
         statusKey: 'open',
         status: 'open',
-        description: '[omschrijving van de opdracht verschijnt hier — wat wordt er van de student verwacht?]',
+        description:
+          '[omschrijving van de opdracht verschijnt hier — wat wordt er van de student verwacht?]',
         competentie: '[gekoppelde competentie]',
         actieLabel: 'Bekijk opdracht',
       },
@@ -22,7 +25,8 @@ export const ACTIVITY_GROUPS = [
         deadline: 'wo 16 mrt',
         statusKey: 'bezig',
         status: 'aangemeld',
-        description: '[omschrijving van de workshop — onderwerp, locatie of link, begeleider]',
+        description:
+          '[omschrijving van de workshop — onderwerp, locatie of link, begeleider]',
         competentie: '[gekoppelde competentie]',
         actieLabel: 'Open workshop',
       },
@@ -33,7 +37,8 @@ export const ACTIVITY_GROUPS = [
         deadline: 'do 17 mrt',
         statusKey: 'feedback',
         status: 'in progress',
-        description: '[beschrijving van de competentie en wat er nog gedaan moet worden om deze af te ronden]',
+        description:
+          '[beschrijving van de competentie en wat er nog gedaan moet worden om deze af te ronden]',
         competentie: '[gekoppelde competentie]',
         actieLabel: 'Bekijk voortgang',
       },
@@ -50,7 +55,8 @@ export const ACTIVITY_GROUPS = [
         title: '[activiteit titel]',
         deadline: 'ma 21 mrt',
         status: 'open',
-        description: '[omschrijving van de opdracht verschijnt hier — wat wordt er van de student verwacht?]',
+        description:
+          '[omschrijving van de opdracht verschijnt hier — wat wordt er van de student verwacht?]',
         competentie: '[gekoppelde competentie]',
         actieLabel: 'Bekijk opdracht',
       },
@@ -78,7 +84,8 @@ export const ACTIVITY_GROUPS = [
         title: '[activiteit titel]',
         deadline: 'ma 28 mrt',
         status: 'open',
-        description: '[omschrijving van de opdracht verschijnt hier — wat wordt er van de student verwacht?]',
+        description:
+          '[omschrijving van de opdracht verschijnt hier — wat wordt er van de student verwacht?]',
         competentie: '[gekoppelde competentie]',
         actieLabel: 'Bekijk opdracht',
       },
@@ -88,7 +95,8 @@ export const ACTIVITY_GROUPS = [
         title: '[activiteit titel]',
         deadline: 'wo 30 mrt',
         status: 'open',
-        description: '[omschrijving van de workshop — onderwerp, locatie of link, begeleider]',
+        description:
+          '[omschrijving van de workshop — onderwerp, locatie of link, begeleider]',
         competentie: '[gekoppelde competentie]',
         actieLabel: 'Open workshop',
       },
@@ -98,7 +106,8 @@ export const ACTIVITY_GROUPS = [
         title: '[activiteit titel]',
         deadline: 'vr 1 apr',
         status: 'open',
-        description: '[beschrijving van de competentie en wat er nog gedaan moet worden om deze af te ronden]',
+        description:
+          '[beschrijving van de competentie en wat er nog gedaan moet worden om deze af te ronden]',
         competentie: '[gekoppelde competentie]',
         actieLabel: 'Bekijk voortgang',
       },
@@ -118,7 +127,8 @@ export const ACTIVITY_GROUPS = [
         title: '[activiteit titel]',
         deadline: 'vr 8 apr',
         status: 'open',
-        description: '[omschrijving van de opdracht verschijnt hier — wat wordt er van de student verwacht?]',
+        description:
+          '[omschrijving van de opdracht verschijnt hier — wat wordt er van de student verwacht?]',
         competentie: '[gekoppelde competentie]',
         actieLabel: 'Bekijk opdracht',
       },

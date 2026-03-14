@@ -1,40 +1,63 @@
-import { useRef, useState } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Divider from '@mui/material/Divider';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
+
+import {
+  ACTIVITY_TYPES,
+  STATUS_COLORS,
+  STATUS_LABELS,
+  STATUSES,
+} from '../constants/activityStatus';
 import { useIsWireframeTheme } from '../hooks/useIsWireframeTheme';
+import type { Activity, ActivityMenu, ActivityStatusKey } from '../types';
 import TimelineDot from './TimelineDot';
-import { STATUS_COLORS, STATUS_LABELS, STATUSES, ACTIVITY_TYPES } from '../constants/activityStatus';
 
-const DOT_COL = 24; // px — must match ActivitiesPanel
+const DOT_COL = 24;
 
-export default function ActivityCard({ activity, status, onStatusChange, isSelected, onClick }) {
+interface ActivityCardProps {
+  activity: Activity;
+  status: ActivityStatusKey;
+  onStatusChange: (status: ActivityStatusKey) => void;
+  isSelected: boolean;
+  onClick: () => void;
+}
+
+export default function ActivityCard({
+  activity,
+  status,
+  onStatusChange,
+  isSelected,
+  onClick,
+}: ActivityCardProps) {
   const theme = useTheme();
   const isWireframe = useIsWireframeTheme();
   const primary = theme.palette.primary.main;
+  const [activeMenu, setActiveMenu] = useState<ActivityMenu | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
-  // Menu state: null | 'main' | 'type' | 'status'
-  const [activeMenu, setActiveMenu] = useState(null);
-  const menuAnchorRef = useRef(null);
-
-  const openMenu = (e) => {
-    e.stopPropagation();
+  const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setMenuAnchor(event.currentTarget);
     setActiveMenu('main');
   };
-  const closeMenu = () => setActiveMenu(null);
 
-  const statusColor = STATUS_COLORS[status] ?? primary;
-  const borderAccent = isWireframe
-    ? alpha(statusColor, 0.6)
-    : statusColor;
+  const closeMenu = () => {
+    setMenuAnchor(null);
+    setActiveMenu(null);
+  };
+
+  const statusColor = STATUS_COLORS[status];
+  const borderAccent = isWireframe ? alpha(statusColor, 0.6) : statusColor;
 
   const wireframeCardSx = {
     border: isSelected
@@ -53,18 +76,21 @@ export default function ActivityCard({ activity, status, onStatusChange, isSelec
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-      {/* Dot column */}
       <Box sx={{ width: DOT_COL, flexShrink: 0, display: 'flex', justifyContent: 'center', pt: '14px' }}>
         <TimelineDot variant="card" isSelected={isSelected} />
       </Box>
 
-      {/* Card */}
       <Paper
-        elevation={isWireframe ? 0 : (isSelected ? 4 : 2)}
+        elevation={isWireframe ? 0 : isSelected ? 4 : 2}
         role="button"
         tabIndex={0}
         onClick={onClick}
-        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
+        onKeyDown={(event: KeyboardEvent) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onClick();
+          }
+        }}
         aria-pressed={isSelected}
         sx={{
           flex: 1,
@@ -73,9 +99,7 @@ export default function ActivityCard({ activity, status, onStatusChange, isSelec
           cursor: 'pointer',
           transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
           '&:hover': {
-            backgroundColor: isWireframe
-              ? theme.palette.action.hover
-              : alpha(primary, 0.07),
+            backgroundColor: isWireframe ? theme.palette.action.hover : alpha(primary, 0.07),
           },
           '&:focus-visible': {
             outline: `2px solid ${primary}`,
@@ -84,7 +108,6 @@ export default function ActivityCard({ activity, status, onStatusChange, isSelec
           ...(isWireframe ? wireframeCardSx : muiCardSx),
         }}
       >
-        {/* Top row: tag chip + three-dot button */}
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.75 }}>
           <Chip
             label={activity.tag}
@@ -95,17 +118,18 @@ export default function ActivityCard({ activity, status, onStatusChange, isSelec
               fontSize: 10,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              ...(isWireframe ? {} : {
-                backgroundColor: alpha(primary, 0.12),
-                color: primary,
-                fontWeight: 'bold',
-                border: 'none',
-              }),
+              ...(isWireframe
+                ? {}
+                : {
+                    backgroundColor: alpha(primary, 0.12),
+                    color: primary,
+                    fontWeight: 'bold',
+                    border: 'none',
+                  }),
             }}
           />
 
           <IconButton
-            ref={menuAnchorRef}
             size="small"
             onClick={openMenu}
             aria-label="Opties"
@@ -135,17 +159,16 @@ export default function ActivityCard({ activity, status, onStatusChange, isSelec
               fontWeight: isWireframe ? 'normal' : 'medium',
             }}
           >
-            {STATUS_LABELS[status] ?? activity.status}
+            {STATUS_LABELS[status]}
           </Typography>
         </Stack>
       </Paper>
 
-      {/* Main context menu */}
       <Menu
-        anchorEl={menuAnchorRef.current}
+        anchorEl={menuAnchor}
         open={activeMenu === 'main'}
         onClose={closeMenu}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
         <MenuItem onClick={closeMenu}>Hernoem titel</MenuItem>
         <MenuItem onClick={closeMenu}>Bewerk</MenuItem>
@@ -154,38 +177,41 @@ export default function ActivityCard({ activity, status, onStatusChange, isSelec
         <MenuItem onClick={() => setActiveMenu('status')}>Markeer als... ›</MenuItem>
       </Menu>
 
-      {/* Type submenu */}
       <Menu
-        anchorEl={menuAnchorRef.current}
+        anchorEl={menuAnchor}
         open={activeMenu === 'type'}
         onClose={closeMenu}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
         <MenuItem onClick={() => setActiveMenu('main')} sx={{ color: 'text.secondary', fontSize: 12 }}>
           ‹ Terug
         </MenuItem>
         <Divider />
         {ACTIVITY_TYPES.map((type) => (
-          <MenuItem key={type} onClick={closeMenu}>{type}</MenuItem>
+          <MenuItem key={type} onClick={closeMenu}>
+            {type}
+          </MenuItem>
         ))}
       </Menu>
 
-      {/* Status submenu */}
       <Menu
-        anchorEl={menuAnchorRef.current}
+        anchorEl={menuAnchor}
         open={activeMenu === 'status'}
         onClose={closeMenu}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
         <MenuItem onClick={() => setActiveMenu('main')} sx={{ color: 'text.secondary', fontSize: 12 }}>
           ‹ Terug
         </MenuItem>
         <Divider />
-        {STATUSES.map((s) => (
+        {STATUSES.map((nextStatus) => (
           <MenuItem
-            key={s}
-            selected={s === status}
-            onClick={() => { onStatusChange(s); closeMenu(); }}
+            key={nextStatus}
+            selected={nextStatus === status}
+            onClick={() => {
+              onStatusChange(nextStatus);
+              closeMenu();
+            }}
           >
             <Box
               component="span"
@@ -194,12 +220,12 @@ export default function ActivityCard({ activity, status, onStatusChange, isSelec
                 width: 10,
                 height: 10,
                 borderRadius: '50%',
-                backgroundColor: STATUS_COLORS[s],
+                backgroundColor: STATUS_COLORS[nextStatus],
                 mr: 1.5,
                 flexShrink: 0,
               }}
             />
-            {STATUS_LABELS[s]}
+            {STATUS_LABELS[nextStatus]}
           </MenuItem>
         ))}
       </Menu>

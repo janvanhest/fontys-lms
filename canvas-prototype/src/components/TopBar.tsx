@@ -1,17 +1,40 @@
 import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import MenuIcon from '@mui/icons-material/Menu';
-import { TABS } from '../constants';
 
-export default function TopBar({ sidebarOpen, onToggleSidebar, activeTab, onTabChange, themeMode, onToggleTheme }) {
+import { TABS } from '../constants';
+import type { AppTab, ThemeMode } from '../types';
+
+interface TopBarProps {
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
+  activeTab: AppTab;
+  onTabChange: (tab: AppTab) => void;
+  themeMode: ThemeMode;
+  onToggleTheme: () => void;
+}
+
+export default function TopBar({
+  sidebarOpen,
+  onToggleSidebar,
+  activeTab,
+  onTabChange,
+  themeMode,
+  onToggleTheme,
+}: TopBarProps) {
   return (
     <AppBar position="static" color="default" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
       <Toolbar variant="dense" sx={{ gap: 1 }}>
-        <IconButton edge="start" onClick={onToggleSidebar} size="small">
+        <IconButton
+          edge="start"
+          onClick={onToggleSidebar}
+          size="small"
+          aria-label={sidebarOpen ? 'Sluit sidebar' : 'Open sidebar'}
+        >
           <MenuIcon />
         </IconButton>
 
@@ -27,12 +50,15 @@ export default function TopBar({ sidebarOpen, onToggleSidebar, activeTab, onTabC
               onClick={() => onTabChange(id)}
               sx={{
                 fontWeight: activeTab === id ? 'bold' : 'normal',
-                borderBottom: activeTab === id ? '2px solid currentColor' : '2px solid transparent',
+                borderBottom:
+                  activeTab === id ? '2px solid currentColor' : '2px solid transparent',
                 borderRadius: 0,
-                ...(themeMode === 'wireframe' ? {} : {
-                  border: 'none',
-                  '&:hover': { border: 'none', backgroundColor: 'action.hover' },
-                }),
+                ...(themeMode === 'wireframe'
+                  ? {}
+                  : {
+                      border: 'none',
+                      '&:hover': { border: 'none', backgroundColor: 'action.hover' },
+                    }),
               }}
             >
               {label}

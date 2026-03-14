@@ -1,25 +1,38 @@
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useIsWireframeTheme } from '../hooks/useIsWireframeTheme';
+
+import {
+  ACTIVITY_TYPES,
+  STATUS_COLORS,
+  STATUS_LABELS,
+  STATUSES,
+} from '../constants/activityStatus';
 import { ACTIVITY_GROUPS } from '../data/activities';
-import { ACTIVITY_TYPES, STATUS_COLORS, STATUS_LABELS, STATUSES } from '../constants/activityStatus';
-import TimelineDot from './TimelineDot';
+import { useIsWireframeTheme } from '../hooks/useIsWireframeTheme';
+import type {
+  Activity,
+  ActivityGroup,
+  ActivityStatusKey,
+  CardStatusMap,
+} from '../types';
 import ActivityDetailPanel from './ActivityDetailPanel';
+import TimelineDot from './TimelineDot';
 
-const DOT_COL = 24; // px — must match TimelineDot / panel layout
+const DOT_COL = 24;
 
-const EARLIER_GROUP = {
+const EARLIER_GROUP: ActivityGroup = {
   id: 'eerder',
   label: 'eerder',
   date: 'voor 14 mrt',
@@ -42,26 +55,34 @@ const EARLIER_GROUP = {
       deadline: 'vr 7 mrt',
       statusKey: 'afgerond',
       status: 'afgerond',
-      description: 'De challengekeuze is bevestigd en gekoppeld aan de leerdoelen voor deze periode.',
+      description:
+        'De challengekeuze is bevestigd en gekoppeld aan de leerdoelen voor deze periode.',
       competentie: '[gekoppelde competentie]',
       actieLabel: 'Bekijk challenge',
     },
   ],
 };
 
-const PANEL_GROUPS = [EARLIER_GROUP, ...ACTIVITY_GROUPS];
+const PANEL_GROUPS: ActivityGroup[] = [EARLIER_GROUP, ...ACTIVITY_GROUPS];
 
-const buildInitialStatuses = () => {
-  const map = {};
-  PANEL_GROUPS.forEach((group) => {
-    group.activities.forEach((activity) => {
+function buildInitialStatuses(): CardStatusMap {
+  const map: CardStatusMap = {};
+
+  for (const group of PANEL_GROUPS) {
+    for (const activity of group.activities) {
       map[activity.id] = activity.statusKey ?? 'open';
-    });
-  });
-  return map;
-};
+    }
+  }
 
-function GroupSeparator({ label, date }) {
+  return map;
+}
+
+interface GroupSeparatorProps {
+  label: string;
+  date: string;
+}
+
+function GroupSeparator({ label, date }: GroupSeparatorProps) {
   const theme = useTheme();
   const isWireframe = useIsWireframeTheme();
 
@@ -102,26 +123,36 @@ function GroupSeparator({ label, date }) {
   );
 }
 
+interface ActivityTimelineCardProps {
+  activity: Activity;
+  status: ActivityStatusKey;
+  onStatusChange: (status: ActivityStatusKey) => void;
+  isSelected: boolean;
+  onClick: () => void;
+}
+
 function ActivityTimelineCard({
   activity,
   status,
   onStatusChange,
   isSelected,
   onClick,
-}) {
+}: ActivityTimelineCardProps) {
   const theme = useTheme();
   const isWireframe = useIsWireframeTheme();
   const primary = theme.palette.primary.main;
-  const [activeMenu, setActiveMenu] = useState(null);
-  const statusColor = STATUS_COLORS[status] ?? primary;
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const statusColor = STATUS_COLORS[status];
   const isCompleted = status === 'afgerond';
 
-  const openMenu = (event) => {
+  const openMenu = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    setActiveMenu(event.currentTarget);
+    setMenuAnchor(event.currentTarget);
   };
 
-  const closeMenu = () => setActiveMenu(null);
+  const closeMenu = () => {
+    setMenuAnchor(null);
+  };
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
@@ -130,11 +161,11 @@ function ActivityTimelineCard({
       </Box>
 
       <Paper
-        elevation={isWireframe ? 0 : (isSelected ? 4 : 2)}
+        elevation={isWireframe ? 0 : isSelected ? 4 : 2}
         role="button"
         tabIndex={0}
         onClick={onClick}
-        onKeyDown={(event) => {
+        onKeyDown={(event: KeyboardEvent) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             onClick();
@@ -155,20 +186,20 @@ function ActivityTimelineCard({
           opacity: !isWireframe && isCompleted ? 0.75 : 1,
           transition: 'background-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease',
           '&:hover': {
-            backgroundColor: isWireframe
-              ? theme.palette.action.hover
-              : alpha(primary, 0.07),
+            backgroundColor: isWireframe ? theme.palette.action.hover : alpha(primary, 0.07),
           },
           '&:focus-visible': {
             outline: `2px solid ${primary}`,
             outlineOffset: 2,
           },
-          ...(isSelected ? {
-            boxShadow: isWireframe ? 'none' : theme.shadows[4],
-            backgroundColor: isWireframe
-              ? theme.palette.action.selected
-              : alpha(primary, 0.04),
-          } : {}),
+          ...(isSelected
+            ? {
+                boxShadow: isWireframe ? 'none' : theme.shadows[4],
+                backgroundColor: isWireframe
+                  ? theme.palette.action.selected
+                  : alpha(primary, 0.04),
+              }
+            : {}),
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.75 }}>
@@ -181,12 +212,14 @@ function ActivityTimelineCard({
               fontSize: 10,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              ...(isWireframe ? {} : {
-                backgroundColor: alpha(primary, 0.12),
-                color: primary,
-                fontWeight: 'bold',
-                border: 'none',
-              }),
+              ...(isWireframe
+                ? {}
+                : {
+                    backgroundColor: alpha(primary, 0.12),
+                    color: primary,
+                    fontWeight: 'bold',
+                    border: 'none',
+                  }),
             }}
           />
 
@@ -220,14 +253,14 @@ function ActivityTimelineCard({
               fontWeight: isWireframe ? 'normal' : 'medium',
             }}
           >
-            {STATUS_LABELS[status] ?? activity.status}
+            {STATUS_LABELS[status]}
           </Typography>
         </Stack>
       </Paper>
 
       <Menu
-        anchorEl={activeMenu}
-        open={!!activeMenu}
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
         onClose={closeMenu}
         onClick={(event) => event.stopPropagation()}
       >
@@ -235,7 +268,9 @@ function ActivityTimelineCard({
         <MenuItem onClick={closeMenu}>Bewerk</MenuItem>
         <Divider />
         {ACTIVITY_TYPES.map((type) => (
-          <MenuItem key={type} onClick={closeMenu}>{type}</MenuItem>
+          <MenuItem key={type} onClick={closeMenu}>
+            {type}
+          </MenuItem>
         ))}
         <Divider />
         {STATUSES.map((nextStatus) => (
@@ -267,24 +302,31 @@ function ActivityTimelineCard({
   );
 }
 
-export default function ActivitiesPanel({ open }) {
+interface ActivitiesPanelProps {
+  open: boolean;
+}
+
+export default function ActivitiesPanel({ open }: ActivitiesPanelProps) {
   const theme = useTheme();
   const isWireframe = useIsWireframeTheme();
-  const [selectedId, setSelectedId] = useState(null);
-  const [cardStatuses, setCardStatuses] = useState(buildInitialStatuses);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [cardStatuses, setCardStatuses] = useState<CardStatusMap>(buildInitialStatuses);
 
-  const handleStatusChange = (id, status) =>
+  const handleStatusChange = (id: string, status: ActivityStatusKey) => {
     setCardStatuses((prev) => ({ ...prev, [id]: status }));
+  };
 
   const lineColor = isWireframe
     ? theme.palette.divider
     : alpha(theme.palette.primary.main, 0.25);
 
-  const selectedActivity = PANEL_GROUPS
-    .flatMap((group) => group.activities)
-    .find((activity) => activity.id === selectedId) ?? null;
+  const selectedActivity =
+    PANEL_GROUPS.flatMap((group) => group.activities).find((activity) => activity.id === selectedId) ??
+    null;
 
-  const handleCardClick = (id) => setSelectedId((prev) => (prev === id ? null : id));
+  const handleCardClick = (id: string) => {
+    setSelectedId((prev) => (prev === id ? null : id));
+  };
 
   return (
     <Box

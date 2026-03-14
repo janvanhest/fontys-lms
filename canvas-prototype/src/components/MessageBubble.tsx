@@ -2,9 +2,16 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
-import { useIsWireframeTheme } from '../hooks/useIsWireframeTheme';
 
-export default function MessageBubble({ role, text }) {
+import { useIsWireframeTheme } from '../hooks/useIsWireframeTheme';
+import type { MessageRole } from '../types';
+
+interface MessageBubbleProps {
+  role: MessageRole;
+  text: string;
+}
+
+export default function MessageBubble({ role, text }: MessageBubbleProps) {
   const theme = useTheme();
   const isUser = role === 'user';
   const isWireframe = useIsWireframeTheme();
@@ -28,11 +35,15 @@ export default function MessageBubble({ role, text }) {
           py: 1,
           maxWidth: '75%',
           backgroundColor: isUser
-            ? (isWireframe ? theme.palette.action.selected : theme.palette.grey[100])
+            ? isWireframe
+              ? theme.palette.action.selected
+              : theme.palette.grey[100]
             : 'transparent',
           border: isWireframe
             ? `1px dashed ${theme.palette.divider}`
-            : isUser ? `1px solid ${theme.palette.divider}` : 'none',
+            : isUser
+              ? `1px solid ${theme.palette.divider}`
+              : 'none',
           fontStyle: isWireframe ? 'italic' : 'normal',
         }}
       >
