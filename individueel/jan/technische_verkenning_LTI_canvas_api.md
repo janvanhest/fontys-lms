@@ -164,6 +164,109 @@ De keuze voor technologiestack is nog niet gemaakt - dat is onderdeel van de adv
 
 ---
 
-## 6. Conclusie
+## 6. Conclusie LTI en Canvas API
 
 Canvas biedt via LTI en de REST API voldoende mogelijkheden om een externe tool te bouwen die naadloos integreert met de bestaande omgeving. De combinatie van LTI (voor embedding en SSO) en de REST API (voor data) is de meest logische aanpak. De belangrijkste beperking is dat Canvas geen native ondersteuning biedt voor activiteit-gebaseerde navigatie of blokkade-signalering - dat is precies wat wij zouden moeten bouwen.
+
+---
+
+## 7. RAG (Retrieval Augmented Generation)
+
+### Wat is het?
+
+RAG is een techniek waarbij een taalmodel niet op basis van zijn trainingsdata antwoord geeft, maar op basis van content die op het moment van de vraag wordt opgehaald uit een externe databron. Het model wordt zo gevoed met actuele, domeinspecifieke informatie zonder dat het opnieuw getraind hoeft te worden.
+
+Voor dit project betekent dat: cursusinhoud uit Canvas wordt opgeslagen in een doorzoekbare database. Als een student een vraag stelt, worden de meest relevante stukken content opgehaald en meegegeven aan het taalmodel. Het model antwoordt op basis van die echte cursusinhoud.
+
+### Waarom RAG en niet fine-tuning?
+
+Fine-tuning betekent dat je een bestaand model bijtraint op eigen data. Dat klinkt aantrekkelijk, maar heeft voor dit use case drie grote nadelen:
+
+- **Kosten** - een trainingsrun kost honderden euro's en vereist ML-expertise
+- **Statisch** - zodra cursusinhoud verandert, moet je opnieuw trainen
+- **Onbetrouwbaar voor feiten** - taalmodellen onthouden feiten niet betrouwbaar via training; ze verzinnen plausibele antwoorden
+
+RAG lost dit op: de content zit in een database die je live kunt updaten. Het model hoeft alleen maar te redeneren over de aangeleverde context.
+
+### Hoe werkt het technisch?
+
+**Stap 1 - Indexeren (eenmalig)**
+Canvas-content (pagina's, modules, opdrachten) wordt opgehaald via de REST API. De tekst wordt opgesplitst in kleine stukken ("chunks") en omgezet naar vectoren via een embedding model. Die vectoren worden opgeslagen in een vector database.
+
+**Stap 2 - Ophalen (bij elke vraag)**
+De vraag van de student wordt ook omgezet naar een vector. De vector database zoekt de meest gelijkende chunks op - dat zijn de stukken content die semantisch het meest aansluiten bij de vraag.
+
+**Stap 3 - Beantwoorden**
+De relevante chunks worden samen met de gespreksgeschiedenis meegegeven in de context van de API-call naar het taalmodel. Het model genereert een antwoord op basis van die echte cursusinhoud.
+
+### Relevantie voor dit project
+
+| Wat we willen | Hoe RAG dat oplost |
+|---|---|
+| Studenten vinden informatie niet in Canvas | Chatbot zoekt en vat samen op basis van echte content |
+| Herhalende vragen aan docenten | Chatbot beantwoordt ze zelfstandig met bronvermelding |
+| Content tekstgebaseerd en slecht leesbaar | Chatbot biedt content aan in conversatievorm |
+| Cursusinhoud up-to-date houden | Database updaten is voldoende, geen hertraining nodig |
+
+### Technische keuzes (nog te maken in adviesfase)
+
+| Onderdeel | Opties |
+|---|---|
+| Embedding model | OpenAI text-embedding-3-small, Anthropic, of open source (e.g. sentence-transformers) |
+| Vector database | Supabase pgvector (eenvoudig, PostgreSQL-gebaseerd), Pinecone (managed), Chroma (lokaal) |
+| Taalmodel | Claude Sonnet via Anthropic API |
+| Backend | Node.js of Python als proxy tussen frontend en API |
+
+### Kosten inschatting
+
+De Anthropic API (Claude Sonnet 4.6) kost $3 per miljoen input tokens en $15 per miljoen output tokens. Een gemiddeld studentgesprek van 10 berichten inclusief RAG-context is circa 3.000 tokens. Bij 500 studenten die elk 5 gesprekken per dag voeren: circa €20-30 per dag. Voor een PoC met beperkt testgebruik zijn de kosten verwaarloosbaar - enkele euro's per week.
+
+### Beperkingen
+
+- **AVG** - studentdata wordt verwerkt en opgeslagen. Dit vereist een verwerkersovereenkomst en documentatie.
+- **Kwaliteit van chunks** - slecht opgesplitste content leidt tot slechte antwoorden. De chunking-strategie is bepalend voor de kwaliteit.
+- **Hallucinaties** - het model kan buiten de aangeleverde context redeneren. Dit vereist een strenge systeem-prompt die het model instrueert alleen op basis van de aangeleverde content te antwoorden.
+
+---
+
+## 8. Nudging als ontwerpprincipe
+
+### Wat is het?
+
+Nudging is het stimuleren van gewenst gedrag via kleine, niet-dwingende aanwijzingen op het juiste moment. Het concept komt uit de gedragseconomie (Thaler & Sunstein) en wordt in onderwijstechnologie ingezet om studenten te helpen betere keuzes te maken zonder hun autonomie aan te tasten.
+
+Voor dit project is nudging relevant omdat het workshop-paradox-probleem en het afnemende activiteitspatroon na de eerste weken niet puur technische problemen zijn - het zijn gedragsproblemen. Een beter systeem lost dat niet automatisch op; een systeem dat op het juiste moment een duwtje geeft, mogelijk wel.
+
+### Concrete toepassingen in de chatbot
+
+**Activiteitsgebaseerde nudges**
+- Student heeft drie dagen geen activiteit gelogd → chatbot opent met: *"Je hebt deze week nog geen activiteiten geregistreerd. Wil je beginnen met [suggestie op basis van planning]?"*
+- Student nadert een deadline zonder inlevering → systeem attendeert proactief
+
+**Competentiegericht nudgen**
+- Student vraagt iets wat al in de cursus staat → chatbot wijst naar de bron in plaats van het antwoord te geven, om zelfstandig zoeken te stimuleren
+- Student logt een activiteit → systeem suggereert welke competentie daaraan gekoppeld kan worden
+
+**Workshop-paradox aanpakken**
+- Studenten die workshops aanvragen maar niet bezoeken → systeem detecteert dit patroon en attendeert de student of coach
+
+### Randvoorwaarden
+
+Nudging werkt alleen als het niet betuttelend voelt. Ontwerpprincipes om te toetsen in gebruikersonderzoek:
+
+- Nudges zijn optioneel en wegklikbaar
+- De student heeft controle over welke nudges hij ontvangt
+- Nudges zijn concreet en actiegericht, niet vaag of moralistisch
+- Frequentie is beperkt - te veel nudges worden genegeerd
+
+### Relevantie voor het DOT-framework
+
+Nudging is geen technische methode maar een ontwerpprincipe. Het valt binnen de Workshop-strategie van DOT: het is een ontwerpkeuze die gevalideerd moet worden via prototyping en usability testing. De vraag of nudging werkt voor deze doelgroep is onderdeel van deelvraag 3 (behoeften gebruikers) en deelvraag 7 (vermindert het concept de frictie).
+
+---
+
+## 9. Geactualiseerde conclusie
+
+Canvas biedt via LTI en de REST API een solide technische basis voor een externe tool die naadloos integreert met de bestaande omgeving. De combinatie van LTI (voor embedding en SSO), Canvas API (voor data), RAG (voor slimme contentontsluitng) en nudging (als ontwerpprincipe) vormt een samenhangende technische denkrichting die aansluit bij het kernprobleem.
+
+Deze denkrichting is nog niet vastgesteld als oplossingsrichting - dat is het doel van de ideation-fase in sprint 2. Dit document dient als technische onderbouwing voor die keuze en als bewijs voor Software-Analyseren niveau 3: analyse van functionaliteit en interfaces van bestaande en nieuwe systemen in een complexe context.
