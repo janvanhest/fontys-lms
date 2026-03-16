@@ -1,10 +1,17 @@
-# Todo — Sprint overzicht
+# Todo - Sprint overzicht
 
 ## Sprint 1: Analyseren (deadline 17 maart)
 
-- [ ] **Canvas API & LTI technische verkenning**
+- [~] **Canvas API & LTI technische verkenning** *(document klaar: `canvas-api-lti-verkenning.md`)*
   Hoe werkt de Canvas API technisch: welke endpoints zijn er, hoe werkt LTI authenticatie, wat zijn de beperkingen, en wat betekent dit voor ons prototype.
   *Competenties: Infrastructuur – Analyseren – Niveau 1*
+  > Nog te doen: Developer Key aanvragen bij Fontys Canvas-beheerder + testomgeving regelen.
+
+- [ ] **Libraries & tooling overzicht toevoegen aan verkenning** *(optioneel)*
+  Tabel van bestaande LTI 1.3- en Canvas API-libraries per taal (Python, Node.js, PHP, .NET) toevoegen aan `canvas-api-lti-verkenning.md`.
+
+- [ ] **RAG-verkenning** *(optioneel, alleen als team dit nodig vindt)*
+  Kort uitleggen wat RAG is en of het relevant is voor ons prototype. Niet onze prioriteit, maar als aanvulling op de teamkennis.
 
 - [ ] **Ecosysteemanalyse**
   Het bredere landschap in kaart brengen: welke tools zijn er (Canvas, Portflow, FeedPulse, Fontys Links, Studycoach), hoe hangen ze samen, wie praat met wie, en waar zitten de gaten in de integratie.
