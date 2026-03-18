@@ -1,33 +1,39 @@
 # Todo - Sprint overzicht
 
-## Sprint 1: Analyseren (deadline 17 maart)
+## Sprint 1: Analyseren (deadline 17 maart) - AFGEROND
 
-- [~] **Canvas API & LTI technische verkenning** *(document klaar: `canvas-api-lti-verkenning.md`)*
-  Hoe werkt de Canvas API technisch: welke endpoints zijn er, hoe werkt LTI authenticatie, wat zijn de beperkingen, en wat betekent dit voor ons prototype.
+- [x] **Canvas API & LTI technische verkenning** *(document: `canvas-api-lti-verkenning.md`)*
   *Competenties: Infrastructuur – Analyseren – Niveau 1*
-  > Nog te doen: Developer Key aanvragen bij Fontys Canvas-beheerder + testomgeving regelen.
+  > Openstaand (niet sprint-gebonden): Developer Key aanvragen bij Fontys Canvas-beheerder + testomgeving regelen.
 
-- [ ] **Libraries & tooling overzicht toevoegen aan verkenning** *(optioneel)*
-  Tabel van bestaande LTI 1.3- en Canvas API-libraries per taal (Python, Node.js, PHP, .NET) toevoegen aan `canvas-api-lti-verkenning.md`.
+- [x] **Libraries & tooling overzicht** *(verwerkt in `canvas-api-lti-verkenning.md`)*
 
-- [ ] **RAG-verkenning** *(optioneel, alleen als team dit nodig vindt)*
-  Kort uitleggen wat RAG is en of het relevant is voor ons prototype. Niet onze prioriteit, maar als aanvulling op de teamkennis.
-
-- [ ] **Ecosysteemanalyse**
-  Het bredere landschap in kaart brengen: welke tools zijn er (Canvas, Portflow, FeedPulse, Fontys Links, Studycoach), hoe hangen ze samen, wie praat met wie, en waar zitten de gaten in de integratie.
+- [x] **Ecosysteemanalyse** *(document: `ecosysteemanalyse.md`)*
   *Competenties: Infrastructuur – Analyseren – Niveau 1*
 
-- [ ] **Sprint 1 reflectie**
-  Terugblik op sprint 1: wat heb ik gedaan, wat ging goed, wat kan beter, wat neem ik mee naar sprint 2. Koppelen aan persoonlijke leerdoelen uit het semesterplan.
+- [x] **Sprint 1 reflectie** *(document: `reflectie-sprint1.md`)*
   *Competenties: PL-2, PS-2*
+
+- [x] **Versiebeheer opgezet** *(document: `versiebeheer.md`)*
+  *Competenties: Infrastructuur – Manage & Control – Niveau 1*
+
+- [x] **Feedback-log aangemaakt** *(document: `feedback-log.md`)*
+  *Competenties: PS-2*
+
+- [x] **Semesterplan omgezet naar markdown + feedback verwerkt** *(Context/Semesterplan.md)*
+
+- [x] **Challenge voorstel feedback verwerkt** *(Context/Challenge voorstel.md)*
+  Stakeholderinzichten verwerkt, scope aangepast naar LTI-prototype, grading bottleneck verwijderd.
 
 ---
 
 ## Sprint 2: Adviseren + start Ontwerpen (deadline 19 april)
 
-- [ ] Architectuurontwerp (C4-diagrammen level 1-2 + eerste ADR's)
+- [ ] Architectuurontwerp (C4-diagrammen level 1-2)
 - [ ] Technisch advies over infra-keuzes (hosting, koppeling Canvas)
 - [ ] Afstemming met team over wat we zelf bouwen vs. hergebruiken via Canvas
+- [ ] **Versiebeheer uitbreiden** *(versie-tabel aanvullen, nieuwe afspraken vastleggen)*
+  *Competenties: Infrastructuur – Manage & Control – Niveau 1*
 
 ## Sprint 3: Ontwerpen + Realiseren (deadline 24 mei)
 

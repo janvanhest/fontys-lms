@@ -7,13 +7,11 @@
 - Literature study (Library): Canvas API-documentatie en LTI 1.3-specificaties bestudeerd
 - Available product analysis (Library): bestaande LTI- en Canvas API-libraries per taal vergeleken
 
----
 
 ## Inleiding
 
 Dit document beschrijft hoe de Canvas REST API en het LTI-protocol technisch werken, welke mogelijkheden en beperkingen ze bieden, en wat dit betekent voor ons prototype. De centrale vraag is: wat kunnen we realisereren via Canvas-integratie, en waar zitten de grenzen?
 
----
 
 ## 1. Canvas REST API
 
@@ -35,7 +33,6 @@ Naast de productieomgeving zijn er twee extra omgevingen:
 
 Voor ontwikkeling is de testomgeving het meest geschikt, omdat die stabiel blijft en niet wekelijks wordt gereset.
 
----
 
 ### 1.2 Authenticatie
 
@@ -82,7 +79,6 @@ Dit geeft een access token terug (geldig 1 uur) plus een refresh token voor verl
 
 **Developer Key vereist:** OAuth2 werkt alleen met een Developer Key (client_id + client_secret), die door een Canvas-beheerder bij Fontys aangemaakt moet worden. Dit is een praktische afhankelijkheid: zonder medewerking van de Canvas-beheerder kun je geen OAuth2-applicatie registreren.
 
----
 
 ### 1.3 Relevante API-endpoints
 
@@ -137,7 +133,6 @@ Een inlevering (`submission`) bevat:
 
 Met de parameter `include[]=items,content_details` en `student_id=X` geeft de modules-endpoint ook de voltooiingsstatus per student terug. Voortgangstypen zijn: `must_view`, `must_submit`, `min_score`, `must_mark_done`.
 
----
 
 ### 1.4 Rate limiting en paginering
 
@@ -162,7 +157,6 @@ Link: <https://...?page=2&per_page=100>; rel="next", <https://...?page=1>; rel="
 
 Behandel deze URL's als ondoorzichtig - bouw ze niet zelf na. Controleer altijd of er een volgende pagina is, ook als je veel resultaten per pagina opvraagt.
 
----
 
 ## 2. LTI - Learning Tools Interoperability
 
@@ -174,7 +168,6 @@ LTI is een open standaard van IMS Global (nu 1EdTech) voor het veilig starten va
 - In LTI 1.1: het LMS heet "Tool Consumer", de externe tool heet "Tool Provider"
 - In LTI 1.3: het LMS heet "Platform", de externe tool heet "Tool"
 
----
 
 ### 2.2 LTI 1.1 vs LTI 1.3
 
@@ -188,7 +181,6 @@ LTI is een open standaard van IMS Global (nu 1EdTech) voor het veilig starten va
 
 LTI 1.1 is nog steeds ondersteund, maar wordt uitgefaseerd. Nieuwe tools moeten LTI 1.3 gebruiken.
 
----
 
 ### 2.3 LTI 1.3 authenticatie: het OIDC-startproces
 
@@ -238,7 +230,6 @@ https://sso.canvaslms.com/api/lti/security/jwks
 
 De tool controleert of `state` overeenkomt met de opgeslagen waarde, en toont vervolgens de gevraagde resource.
 
----
 
 ### 2.4 Inhoud van het LTI JWT
 
@@ -257,7 +248,6 @@ Het JWT bevat standaard OpenID Connect-claims plus LTI-specifieke claims:
 - `roles`: rol van de gebruiker (bijv. `Learner`, `Instructor`)
 - `custom`: vrij te configureren velden (bijv. `$Canvas.user.sisIntegrationId`)
 
----
 
 ### 2.5 LTI Advantage services
 
@@ -281,7 +271,6 @@ Scope: `https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonl
 
 Docenten kunnen content vanuit de tool selecteren en insluiten in Canvas-modules of opdrachten. De tool stuurt een `LtiDeepLinkingResponse` JWT terug met de geselecteerde inhoud.
 
----
 
 ### 2.6 Wat een tool technisch moet bieden
 
@@ -318,7 +307,6 @@ De tool wordt geregistreerd als Developer Key in Canvas door een beheerder. De m
 }
 ```
 
----
 
 ## 3. Praktische beperkingen
 
@@ -345,7 +333,6 @@ De tool wordt geregistreerd als Developer Key in Canvas door een beheerder. De m
 - **Privacywetgeving (AVG/GDPR).** Studentgegevens verwerken via de API of LTI valt onder de AVG. Voor een prototype in een onderwijscontext moet worden afgestemd met Fontys ICT wat toelaatbaar is.
 - **Persoonlijk token voor prototyping.** Studenten kunnen zelf een persoonlijk token aanmaken in hun Canvas-profiel. Voor prototyping met de eigen account werkt dit prima zonder dat een beheerder iets hoeft te doen.
 
----
 
 ## 4. Bestaande libraries en tooling
 
@@ -360,7 +347,6 @@ Bij de implementatie hoeven we het wiel niet opnieuw uit te vinden. Er zijn best
 
 De keuze voor een technologiestack is nog niet gemaakt en hoort thuis in de adviesfase. Dit overzicht dient als input voor die keuze.
 
----
 
 ## 5. Conclusie: wat betekent dit voor ons prototype?
 
@@ -376,7 +362,6 @@ Op basis van deze verkenning komen we tot het volgende beeld:
 1. Contact opnemen met de Fontys Canvas-beheerder voor een Developer Key (OAuth2) en LTI-registratie.
 2. Een publiek bereikbare testomgeving opzetten (VPS of tunnel) zodat Canvas onze tool kan bereiken.
 
----
 
 ## Bronnen
 
@@ -389,10 +374,9 @@ Op basis van deze verkenning komen we tot het volgende beeld:
 - [IMS Global LTI Advantage Overzicht](https://www.imsglobal.org/lti-advantage-overview)
 - [Instructure API-beleid](https://www.instructure.com/policies/canvas-api-policy)
 
----
 
 ## Competentieverantwoording
 
 **Infrastructure (Infrastructure) – Analyse – Niveau 1**
 
-In dit document analyseer ik de technische infrastructuur die ten grondslag ligt aan een Canvas-integratie: de Canvas REST API en het LTI 1.3-protocol. Ik breng in kaart hoe authenticatie werkt (OAuth2, Developer Keys, OIDC), welke endpoints relevant zijn voor een studentgericht prototype, wat de beperkingen zijn van de API (rate limits, paginering, rechtenstelsel), en wat er technisch nodig is om een LTI-tool te registreren en te starten. Ik verbind de bevindingen direct aan concrete vervolgstappen voor ons project, namelijk het aanvragen van een Developer Key bij de Fontys Canvas-beheerder en het vroeg opzetten van een publiek bereikbare testomgeving. Hiermee toon ik aan dat ik een eenvoudige ICT-infrastructuur kan analyseren op basis van kwaliteitseisen (beschikbaarheid, veiligheid, integratiemogelijkheden) in een gestructureerde en voorspelbare context.
+In dit document analyseer ik de technische infrastructuur achter een Canvas-integratie: de Canvas REST API en het LTI 1.3-protocol. Ik breng in kaart hoe authenticatie werkt, welke endpoints relevant zijn voor ons prototype, en wat de beperkingen zijn. De bevindingen vertaal ik naar concrete vervolgstappen: een Developer Key aanvragen bij de Fontys Canvas-beheerder en een publiek bereikbare testomgeving opzetten.
