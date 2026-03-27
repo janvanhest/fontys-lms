@@ -124,3 +124,15 @@ De student wil niet dat het systeem hem alles voorschrijft, maar hij wil wel wet
 | Werk koppelen aan competenties is onduidelijk | Suggesties op basis van ingediende producten |
 | Chatbot met persoonlijke context gewenst | Contextuele AI-assistent als aanvulling op Canvas |
 | Wekelijks overzicht boven modules | Tijdlijn- of weekweergave als alternatieve navigatie |
+
+---
+
+## Competentieverantwoording
+
+**Design (User Interaction) - Analyse - Niveau 1**
+
+In dit document analyseer ik de ervaringen van een HBO-ICT student met Canvas via een gestructureerd interview. Ik breng de pijnpunten in kaart - onduidelijke competenties, moeilijke navigatie voor nieuwe studenten, het ontbreken van een koppeling tussen werk en competenties - en vertaal deze naar concrete aanknopingspunten voor ons project. De bevindingen maken duidelijk welke behoeften de gebruiker heeft en waar het nieuwe systeem meerwaarde kan bieden ten opzichte van Canvas, zoals een contextuele AI-assistent met persoonlijke leerpadondersteuning. Hiermee leg ik de basis voor het interactieontwerp vanuit het perspectief van de eindgebruiker.
+
+**PS-2**
+
+Voor dit interview heb ik een gestructureerde aanpak gebruikt: eerst een enquête laten invullen als voorbereiding, daarna een gesprek om de antwoorden te verdiepen. De bevindingen zijn samengevat en vertaald naar concrete aanknopingspunten voor het project. Hiermee toon ik aan dat ik onderzoek professioneel aanpak: gestructureerd, met een eindgebruiker als stakeholder, en gericht op bruikbare output voor het team.

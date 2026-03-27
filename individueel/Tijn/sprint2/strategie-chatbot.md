@@ -23,35 +23,51 @@ Dit zijn persoonlijke deelvragen om een richting te vinden. Ze zijn niet afgeste
 
 ## Vraag 1: Hoe bouw je de chatbot?
 
-Er zijn grofweg drie manieren om dit te doen.
+Een chatbot bestaat uit een aantal vaste componenten. Per component zijn er keuzes te maken.
 
-### Optie A: Directe API-aanroep
+| Component | Wat het doet |
+|---|---|
+| Input | De vraag van de gebruiker |
+| Context | Welke data wordt meegegeven aan het model |
+| Orchestratie | Hoe wordt bepaald wat er nodig is en hoe de aanroep verloopt |
+| LLM | Het taalmodel dat het antwoord genereert |
+| Output | Het antwoord terug naar de gebruiker |
 
-Je roept een LLM rechtstreeks aan via een API, zonder tussenlaag. Je beheert zelf de prompt, de context en de response.
+De relevante keuzes zitten in de orchestratie en het LLM.
 
+### Orchestratie: direct API of via framework?
+
+**Direct API** - je roept het LLM rechtstreeks aan en beheert zelf de prompt, context en response.
 - Voorbeelden: Anthropic Claude API, OpenAI API
 - Voordelen: volledige controle, weinig afhankelijkheden, makkelijk te debuggen
 - Nadelen: je schrijft alles zelf, geen ingebouwde geheugen- of retrieval-logica
 
-### Optie B: Framework
-
-Een framework zoals LangChain of LlamaIndex zit als tussenlaag tussen jou en het LLM. Het regelt chains, geheugen, retrieval en tool-aanroepen voor je.
-
+**Via framework** - een framework zoals LangChain of LlamaIndex zit als tussenlaag. Het regelt chains, geheugen, retrieval en tool-aanroepen.
 - Voorbeelden: LangChain, LlamaIndex
 - Voordelen: veel kant-en-klare patronen, minder code om zelf te schrijven
 - Nadelen: extra afhankelijkheid, soms onduidelijk wat er precies onder de motorkap gebeurt
 
-### Optie C: Lokaal model
+### LLM: lokaal of cloud?
 
-In plaats van een externe API draai je het model lokaal via Ollama. De data verlaat de machine niet.
-
+**Lokaal** - het model draait op de eigen machine via bijvoorbeeld Ollama. De data verlaat de machine niet.
 - Voorbeelden: Ollama met Llama 3 (8B), Mistral 7B
-- Voordelen: gratis, volledig GDPR-proof, geen netwerklatency
+- Voordelen: gratis, volledig GDPR-proof, geen externe afhankelijkheid
 - Nadelen: minder sterk dan grote cloud-modellen, heeft goede hardware nodig
+
+**Cloud** - het model draait bij een externe aanbieder via een API.
+- Voorbeelden: Anthropic Claude, OpenAI GPT-4
+- Voordelen: sterker model, geen hardware-eisen
+- Nadelen: data verlaat de organisatie, kosten, GDPR-afwegingen nodig
 
 ## Vraag 2: Hoe voer je de data?
 
-Er zijn ook meerdere manieren om de chatbot van context te voorzien.
+Er zijn twee fundamenteel verschillende categorieen.
+
+**Context-strategieen** (methode 1 en 3): je voegt data toe aan het model zodat het zelf antwoord kan geven op basis van die informatie.
+
+**Orkestratie-strategie** (methode 2): het model stuurt externe systemen aan om data op te halen of acties uit te voeren. Het model geeft geen antwoord vanuit voorgegeven data, maar coordineert zelf wat er nodig is.
+
+Frameworks zoals LangChain combineren beide aanpakken. Hier zit een directe link met de architectuurkeuze uit vraag 1.
 
 ### Methode 1: System prompt injection
 
@@ -143,6 +159,8 @@ Per technische methode wordt een iteratie doorlopen. Elke iteratie dekt alle vij
 - Design: bepalen hoe de oplossing eruit moet zien voor de use cases
 - Realise: een klein prototype of test bouwen om de methode te proberen
 - Manage & Control: bewaken of het prototype stabiel werkt, of de antwoorden consistent zijn en of het gedrag voorspelbaar is bij verschillende vragen
+
+De eerste stap is een apart onderzoeksdocument. Daarin worden de opties langs de use cases gelegd en wordt een concrete richting gekozen. Vanuit die keuze start iteratie 1: een gericht experiment met die aanpak. Elke iteratie eindigt met een conclusie: werkt de aanpak niet, dan gaat de volgende iteratie een andere kant op. Werkt het wel, dan wordt de aanpak uitgebreid en verbeterd.
 
 Het uiteindelijke doel is een adviesdocument met een onderbouwde keuze voor de aanpak die het beste past bij dit project. Dit advies vormt de basis voor de verdere uitwerking richting het einde van het semester.
 
