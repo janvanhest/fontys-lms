@@ -42,9 +42,22 @@ Voorbeeld: `docs: add LTI 1.3 technical exploration`
 | Versie | Sprint | Datum | Inhoud |
 |--------|--------|-------|--------|
 | v0.1 | Sprint 1 | maart 2026 | Analysefase afgerond: technische verkenning (Canvas API + LTI 1.3), ecosysteemanalyse, RAG-verkenning, reflectie, feedback-log. Nog geen werkende code. |
-| v0.2 | Sprint 2 | april 2026 | *(wordt aangevuld)* |
+| v0.2 | Sprint 2 | april 2026 | Adviesfase + start realisatie: chatbot-strategie herzien, gebruikersinterview verwerkt, chatbot-scope uitgewerkt, iteratie 1 voltooid (onderzoeksdocument, prototype, conclusie). Eerste werkende prototype: Qwen 2.5 14B via Ollama, twee-laagse JSON-context, drie testscenarios. |
 
 ---
+
+## Model- en componentversies
+
+Naast code worden ook de gebruikte AI-modellen bijgehouden als infrastructuurcomponent.
+
+| Component | Versie | Vanaf | Reden wissel |
+|-----------|--------|-------|--------------|
+| Python | 3.10.6 | iteratie 1 | Runtime voor het prototype |
+| Ollama | 0.20.0 | iteratie 1 | Local model serving |
+| LLM | Llama 3.1 8B | iteratie 1 start | Initiële keuze op basis van context window (128k) |
+| LLM | Qwen 2.5 14B | iteratie 1 conclusie | Llama hallucineert structureel, Qwen beter in instructieopvolging en Nederlands |
+
+Hardware referentie: RTX 3080, ~9GB VRAM bij Q4 quantisatie. Package-dependencies worden bijgehouden in `requirements.txt` (volgt in iteratie 2).
 
 ## Afspraken
 

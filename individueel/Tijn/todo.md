@@ -32,8 +32,8 @@
 - [x] **Strategie chatbot herzien** - feedback Lennart verwerkt, structuur via componenten, context-architectuur toegevoegd *(sprint2/strategie-chatbot.md)*
 - [x] **Iteratie 1 onderzoeksdocument** - modelkeuze, prompt-opzet, twee lagen, databasekeuze, testscenario's *(sprint2/iteratie1-1-onderzoek.md)*
 - [x] **Chatbot scope document** - volledige beschrijving chatbot, gebruikers, architectuur *(Context/chatbot-scope.md)*
-- [ ] **Iteratie 1 prototype** - Python + Ollama (Llama 3.1 8B), mock JSON, drie use cases testen *(sprint2/iteratie1-2-prototype/)*
-- [ ] **Iteratie 1 conclusie** - na prototype invullen *(sprint2/iteratie1-3-conclusie.md)*
+- [x] **Iteratie 1 prototype** - Python + Ollama (Qwen 2.5 14B), mock JSON, drie use cases getest *(sprint2/iteratie1-2-prototype/)*
+- [x] **Iteratie 1 conclusie** - afgerond incl. modelwissel, scalability bottleneck, function calling vooruitblik *(sprint2/iteratie1-3-conclusie.md)*
 - [ ] **Chatbot architectuurdiagram** - visueel overzicht: system prompt, eager loading (student), function calling (docent)
 - [ ] **ERD database** - entiteiten: User, Course, Competency, StudentProgress, Activity, Project, Event. Database: PostgreSQL.
 - [ ] Architectuurontwerp (C4-diagrammen level 1-2)
