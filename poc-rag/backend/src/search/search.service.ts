@@ -30,6 +30,9 @@ export class SearchService {
         const vectorResults = await this.searchByVector(embeddedQuery, limit);
 
         if (vectorResults.length > 0) {
+          this.logger.log(
+            `retrieval mode=vector question="${message}" hits=${this.formatResultsForLog(vectorResults)}`,
+          );
           return vectorResults;
         }
       } catch (error) {
@@ -41,7 +44,13 @@ export class SearchService {
       }
     }
 
-    return this.searchByKeywords(message, limit);
+    const keywordResults = await this.searchByKeywords(message, limit);
+
+    this.logger.log(
+      `retrieval mode=keyword question="${message}" hits=${this.formatResultsForLog(keywordResults)}`,
+    );
+
+    return keywordResults;
   }
 
   private async searchByVector(embedding: number[], limit: number): Promise<SearchResult[]> {
@@ -97,5 +106,15 @@ export class SearchService {
     const haystack = [document.content, document.metadata.title, document.metadata.source].join(' ').toLowerCase();
 
     return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
+  }
+
+  private formatResultsForLog(results: SearchResult[]): string {
+    if (results.length === 0) {
+      return 'none';
+    }
+
+    return results
+      .map((result) => `${result.metadata.title} [${result.metadata.source}] (${result.score.toFixed(3)})`)
+      .join(', ');
   }
 }
