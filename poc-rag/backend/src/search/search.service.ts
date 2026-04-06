@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -14,6 +14,8 @@ export interface SearchResult {
 
 @Injectable()
 export class SearchService {
+  private readonly logger = new Logger(SearchService.name);
+
   constructor(
     @InjectRepository(DocumentEntity)
     private readonly documentRepository: Repository<DocumentEntity>,
@@ -24,10 +26,18 @@ export class SearchService {
     const embeddedQuery = await this.embeddingService.embedText(message);
 
     if (embeddedQuery) {
-      const vectorResults = await this.searchByVector(embeddedQuery, limit);
+      try {
+        const vectorResults = await this.searchByVector(embeddedQuery, limit);
 
-      if (vectorResults.length > 0) {
-        return vectorResults;
+        if (vectorResults.length > 0) {
+          return vectorResults;
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Vector search mislukt, keyword fallback wordt gebruikt: ${
+            error instanceof Error ? error.message : 'onbekende fout'
+          }`,
+        );
       }
     }
 
@@ -69,7 +79,7 @@ export class SearchService {
         id: document.id,
         content: document.content,
         metadata: document.metadata,
-        score: this.keywordScore(document.content, terms),
+        score: this.keywordScore(document, terms),
       }))
       .filter((item) => item.score > 0)
       .sort((a, b) => b.score - a.score)
@@ -83,10 +93,9 @@ export class SearchService {
       .filter((part) => part.length > 2);
   }
 
-  private keywordScore(content: string, terms: string[]): number {
-    const haystack = content.toLowerCase();
+  private keywordScore(document: DocumentEntity, terms: string[]): number {
+    const haystack = [document.content, document.metadata.title, document.metadata.source].join(' ').toLowerCase();
 
     return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
   }
 }
-
