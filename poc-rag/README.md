@@ -51,13 +51,14 @@ kan terugvallen op keyword search.
 ## Starten
 
 ```bash
+# Maak eerst je lokale env-bestand
+cp .env.example .env
+
 # Optioneel: alleen nodig voor vector embeddings
 ollama pull nomic-embed-text
 ollama serve  # als het nog niet draait
 
-# Optioneel: stel je Anthropic key in
-cp .env.example .env
-# vul ANTHROPIC_API_KEY in in .env
+# Optioneel: vul ANTHROPIC_API_KEY in in .env
 
 # Start de applicatie
 docker-compose up --build
@@ -65,6 +66,81 @@ docker-compose up --build
 
 - Frontend: http://localhost:3000
 - Backend: http://localhost:3001/api/chat
+
+## Configuratie via `.env`
+
+De stack verwacht een root `.env` bestand in [poc-rag](/Users/jhhest/school/fontys-lms/poc-rag).
+
+Gebruik:
+
+```bash
+cp .env.example .env
+```
+
+Belangrijk onderscheid:
+- `DATABASE_URL`: voor lokale backend commands buiten Docker, zoals `pnpm run eval:retrieval`
+- `DOCKER_DATABASE_URL`: voor de backend container binnen Docker Compose
+
+Waarom twee varianten:
+- buiten Docker draait Postgres meestal op `localhost`
+- binnen Docker heet de database-host `postgres`
+
+Docker Compose leest automatisch het root `.env` bestand in `poc-rag`.
+
+Voor losse backend scripts geldt:
+- draai ze met een geladen `DATABASE_URL`
+- of exporteer die variabele eerst in je shell
+
+## Retrieval eval runner
+
+De retrieval eval runner controleert of de backend voor vaste voorbeeldvragen
+de juiste chunks terugvindt.
+
+De runner:
+- gebruikt `SearchService`
+- draait tegen de database
+- gebruikt dus `DATABASE_URL` voor lokaal gebruik
+- gebruikt niet `DOCKER_DATABASE_URL`
+
+Voorwaarden:
+- je hebt een root `.env` in `poc-rag`
+- postgres draait lokaal via Docker Compose
+- de database is al geseed
+
+Aanbevolen volgorde:
+
+```bash
+cd poc-rag
+cp .env.example .env  # alleen nodig als .env nog niet bestaat
+docker compose up -d postgres
+```
+
+Daarna de runner starten met de env uit de root `.env` geladen:
+
+```bash
+cd poc-rag
+set -a
+source .env
+set +a
+pnpm --dir backend run eval:retrieval
+```
+
+Als je liever een one-liner gebruikt:
+
+```bash
+cd poc-rag && set -a && source .env && set +a && pnpm --dir backend run eval:retrieval
+```
+
+Wat je dan ziet:
+- per query de verwachte titels
+- de daadwerkelijk gevonden titels
+- `PASS` of `FAIL`
+- aan het einde een samenvatting zoals `summary: 6/8 passed`
+
+Als de runner faalt met een databasefout:
+- controleer of postgres draait
+- controleer of `DATABASE_URL` in `.env` naar `localhost:5432` wijst
+- gebruik lokaal `DATABASE_URL`, niet `DOCKER_DATABASE_URL`
 
 ## Architectuur
 
