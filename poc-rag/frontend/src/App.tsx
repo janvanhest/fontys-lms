@@ -18,9 +18,16 @@ import { useState } from "react";
 
 type ChatRole = "user" | "assistant";
 
+interface ChatSource {
+  title: string;
+  source: string;
+  score: number;
+}
+
 interface ChatMessage {
   role: ChatRole;
   content: string;
+  sources?: ChatSource[];
 }
 
 const welcomeMessage =
@@ -70,7 +77,10 @@ export default function App() {
         }),
       });
 
-      const payload = (await response.json()) as { answer?: string };
+      const payload = (await response.json()) as {
+        answer?: string;
+        sources?: ChatSource[];
+      };
 
       setMessages((current) => [
         ...current,
@@ -79,6 +89,7 @@ export default function App() {
           content:
             payload.answer ??
             "Er ging iets mis bij het ophalen van een antwoord.",
+          sources: payload.sources ?? [],
         },
       ]);
     } catch {
@@ -160,6 +171,23 @@ export default function App() {
                   }}
                 >
                   <Typography variant="body1">{message.content}</Typography>
+                  {message.role === "assistant" &&
+                    message.sources &&
+                    message.sources.length > 0 && (
+                      <Typography
+                        variant="caption"
+                        component="div"
+                        sx={{
+                          mt: 1,
+                          color: "text.secondary",
+                        }}
+                      >
+                        Bronnen:{" "}
+                        {message.sources
+                          .map((item) => `${item.title} (${item.source})`)
+                          .join(", ")}
+                      </Typography>
+                    )}
                 </Paper>
               </Stack>
             </Box>

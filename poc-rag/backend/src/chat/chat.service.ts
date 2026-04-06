@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 
 import { SearchResult, SearchService } from '../search/search.service';
+import { ChatResponseDto, ChatSourceDto } from './chat-response.dto';
 import { ChatMessageDto, HistoryItemDto } from './dto/chat-message.dto';
 
 @Injectable()
@@ -19,17 +20,19 @@ export class ChatService {
     this.anthropicKey = this.configService.get<string>('ANTHROPIC_API_KEY', '');
   }
 
-  async answer(body: ChatMessageDto): Promise<{ answer: string }> {
+  async answer(body: ChatMessageDto): Promise<ChatResponseDto> {
     const history = body.history ?? [];
     const chunks = await this.searchService.searchRelevantChunks(body.message, 3);
+    const sources = this.buildSources(chunks);
 
     if (chunks.length === 0) {
-      return { answer: this.noContextAnswer };
+      this.logger.log(`chat mode=no-context question="${body.message}"`);
+      return { answer: this.noContextAnswer, sources: [] };
     }
 
     if (!this.anthropicKey) {
-      this.logger.log('ANTHROPIC_API_KEY ontbreekt, lokale fallback-response wordt gebruikt.');
-      return { answer: this.buildFallbackAnswer(chunks) };
+      this.logger.log(`chat mode=fallback question="${body.message}" sources=${this.formatSourcesForLog(sources)}`);
+      return { answer: this.buildFallbackAnswer(chunks), sources };
     }
 
     try {
@@ -58,7 +61,8 @@ ${context}`,
         .trim();
 
       if (text.length > 0) {
-        return { answer: text };
+        this.logger.log(`chat mode=anthropic question="${body.message}" sources=${this.formatSourcesForLog(sources)}`);
+        return { answer: text, sources };
       }
 
       this.logger.warn('Anthropic gaf een leeg antwoord terug, lokale fallback-response wordt gebruikt.');
@@ -70,7 +74,8 @@ ${context}`,
       );
     }
 
-    return { answer: this.buildFallbackAnswer(chunks) };
+    this.logger.log(`chat mode=fallback question="${body.message}" sources=${this.formatSourcesForLog(sources)}`);
+    return { answer: this.buildFallbackAnswer(chunks), sources };
   }
 
   private toAnthropicMessages(history: HistoryItemDto[]): Anthropic.MessageParam[] {
@@ -81,23 +86,69 @@ ${context}`,
   }
 
   private buildFallbackAnswer(chunks: SearchResult[]): string {
-    const snippets = chunks
-      .slice(0, 3)
-      .map((chunk) => this.normalizeSnippet(chunk.content))
-      .filter((snippet, index, all) => snippet.length > 0 && all.indexOf(snippet) === index);
+    const primary = chunks[0];
 
-    if (snippets.length === 0) {
+    if (!primary) {
       return this.noContextAnswer;
     }
 
-    if (snippets.length === 1) {
-      return snippets[0];
+    const primarySummary = this.summarizeChunk(primary.content, 2);
+    const secondary = chunks[1];
+
+    if (!secondary) {
+      return primarySummary;
     }
 
-    return `Op basis van de cursusinhoud lijkt het antwoord hierop neer te komen:\n\n${snippets.join('\n\n')}`;
+    const secondarySummary = this.summarizeChunk(secondary.content, 1);
+
+    if (primarySummary.length >= 260 || secondarySummary.length === 0) {
+      return primarySummary;
+    }
+
+    return `${primarySummary} ${secondarySummary}`.trim();
   }
 
-  private normalizeSnippet(content: string): string {
-    return content.replace(/\s+/g, ' ').trim();
+  private buildSources(chunks: SearchResult[]): ChatSourceDto[] {
+    const seen = new Set<string>();
+
+    return chunks
+      .slice(0, 3)
+      .map((chunk) => ({
+        title: chunk.metadata.title,
+        source: chunk.metadata.source,
+        score: Number(chunk.score.toFixed(3)),
+      }))
+      .filter((chunk) => {
+        const key = `${chunk.source}::${chunk.title}`;
+
+        if (seen.has(key)) {
+          return false;
+        }
+
+        seen.add(key);
+        return true;
+      });
+  }
+
+  private formatSourcesForLog(sources: ChatSourceDto[]): string {
+    return sources.map((source) => `${source.title} (${source.score})`).join(', ');
+  }
+
+  private summarizeChunk(content: string, maxSentences: number): string {
+    const normalized = content
+      .replace(/\*\*/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const sentences = normalized
+      .split(/(?<=[.!?])\s+/)
+      .map((sentence) => sentence.trim())
+      .filter((sentence) => sentence.length > 0 && !sentence.startsWith('- '));
+
+    if (sentences.length > 0) {
+      return sentences.slice(0, maxSentences).join(' ').trim();
+    }
+
+    return normalized;
   }
 }
