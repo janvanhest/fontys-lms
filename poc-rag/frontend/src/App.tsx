@@ -1,5 +1,3 @@
-"use client";
-
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import SmartToyRoundedIcon from "@mui/icons-material/SmartToyRounded";
 import {
@@ -18,15 +16,19 @@ import {
 import type { FormEvent } from "react";
 import { useState } from "react";
 
+type ChatRole = "user" | "assistant";
+
 interface ChatMessage {
-  role: "user" | "assistant";
+  role: ChatRole;
   content: string;
 }
 
 const welcomeMessage =
   "Hallo! Ik ben je studieassistent. Stel me een vraag over het stappenplan, je semesterplan of hoe Pro Open Learning werkt.";
 
-export default function HomePage() {
+const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+
+export default function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", content: welcomeMessage },
   ]);
@@ -44,16 +46,16 @@ export default function HomePage() {
       return;
     }
 
-    const nextMessages = [
+    const nextMessages: ChatMessage[] = [
       ...messages,
-      { role: "user" as const, content: trimmed },
+      { role: "user", content: trimmed },
     ];
+
     setMessages(nextMessages);
     setInput("");
     setLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
       const response = await fetch(`${apiUrl}/api/chat`, {
         method: "POST",
         headers: {
