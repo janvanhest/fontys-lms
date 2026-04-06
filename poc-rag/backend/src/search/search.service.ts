@@ -436,6 +436,15 @@ export class SearchService {
       return haystack.includes('stap 1') || haystack.includes('stap 2') || haystack.includes('stap 3') || haystack.includes('stap 4');
     }
 
+    if (concept === 'portflow') {
+      return (
+        haystack.includes('portflow') ||
+        haystack.includes('portfolio tool') ||
+        haystack.includes('portfolio') ||
+        haystack.includes('canvas - portflow')
+      );
+    }
+
     return false;
   }
 
