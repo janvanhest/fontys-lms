@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { DocumentEntity } from '../database/document.entity';
 import { EmbeddingService } from '../embedding/embedding.service';
+import { expandDomainTerms } from './domain-vocabulary';
 
 export interface SearchResult {
   id: string;
@@ -20,6 +21,8 @@ export interface QueryAnalysis {
   normalized: string;
   tokens: string[];
   focusTerms: string[];
+  matchedConcepts: string[];
+  titleHints: string[];
 }
 
 export interface SearchOutcome {
@@ -103,7 +106,7 @@ export class SearchService {
 
         if (vectorResults.length > 0 && !this.shouldPreferKeywordFallback(vectorResults, analysis)) {
           this.logger.log(
-            `retrieval mode=vector intent=${analysis.intent} question="${message}" hits=${this.formatResultsForLog(vectorResults)}`,
+            `retrieval mode=vector intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|') || 'none'} question="${message}" hits=${this.formatResultsForLog(vectorResults)}`,
           );
           return { analysis, results: vectorResults };
         }
@@ -119,7 +122,7 @@ export class SearchService {
     const keywordResults = await this.searchByKeywords(analysis, effectiveLimit);
 
     this.logger.log(
-      `retrieval mode=keyword intent=${analysis.intent} question="${message}" hits=${this.formatResultsForLog(keywordResults)}`,
+      `retrieval mode=keyword intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|') || 'none'} question="${message}" hits=${this.formatResultsForLog(keywordResults)}`,
     );
 
     return { analysis, results: keywordResults };
@@ -172,15 +175,17 @@ export class SearchService {
       .split(/[^a-z0-9]+/i)
       .filter((part) => part.length > 1);
     const tokens = rawTokens.filter((part) => part.length > 2 && !this.stopWords.has(part));
+    const expansion = expandDomainTerms(normalized, tokens);
     const intent = this.detectIntent(normalized);
-    const focusTerms = this.extractFocusTerms(normalized, tokens);
 
     return {
       intent,
       raw: input,
       normalized,
       tokens,
-      focusTerms,
+      focusTerms: expansion.expandedTerms,
+      matchedConcepts: expansion.matchedConcepts,
+      titleHints: expansion.titleHints,
     };
   }
 
@@ -204,34 +209,8 @@ export class SearchService {
     return 'unknown';
   }
 
-  private extractFocusTerms(normalized: string, tokens: string[]): string[] {
-    const focusTerms = new Set(tokens);
-
-    if (normalized.includes('stappenplan')) {
-      focusTerms.add('stappenplan');
-    }
-
-    if (normalized.includes('semesterplan')) {
-      focusTerms.add('semesterplan');
-    }
-
-    if (normalized.includes('portflow')) {
-      focusTerms.add('portflow');
-    }
-
-    if (normalized.includes('groepschallenge')) {
-      focusTerms.add('groepschallenge');
-    }
-
-    if (/\bpo\b/.test(normalized)) {
-      focusTerms.add('po');
-    }
-
-    return [...focusTerms];
-  }
-
   private getEffectiveLimit(analysis: QueryAnalysis, limit: number): number {
-    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
+    if (analysis.intent === 'summary' && analysis.matchedConcepts.includes('stappenplan')) {
       return 4;
     }
 
@@ -239,7 +218,7 @@ export class SearchService {
   }
 
   private shouldPreferKeywordFallback(results: SearchResult[], analysis: QueryAnalysis): boolean {
-    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
+    if (analysis.intent === 'summary' && analysis.matchedConcepts.includes('stappenplan')) {
       const matchedSteps = results.filter((result) => /Stap [1-4]:/i.test(result.metadata.title));
       return matchedSteps.length < 3;
     }
@@ -252,6 +231,14 @@ export class SearchService {
     const source = document.metadata.source.toLowerCase();
     const content = document.content.toLowerCase();
     let score = 0;
+
+    for (const hint of analysis.titleHints) {
+      if (document.metadata.title === hint) {
+        score += 10;
+      } else if (title.includes(hint.toLowerCase())) {
+        score += 6;
+      }
+    }
 
     for (const term of analysis.focusTerms) {
       if (title === term || title.includes(term)) {
@@ -291,7 +278,7 @@ export class SearchService {
     const source = document.metadata.source.toLowerCase();
     let bonus = 0;
 
-    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
+    if (analysis.intent === 'summary' && analysis.matchedConcepts.includes('stappenplan')) {
       if (/stap [1-4]:/i.test(document.metadata.title)) {
         bonus += 8;
       }
@@ -323,7 +310,11 @@ export class SearchService {
     }
 
     if (analysis.intent === 'comparison') {
-      if (title.includes('groepschallenge') || title.includes('individueel project')) {
+      if (analysis.matchedConcepts.includes('groepschallenge') && title.includes('groepschallenge')) {
+        bonus += 4;
+      }
+
+      if (analysis.matchedConcepts.includes('individueel project') && title.includes('individueel project')) {
         bonus += 4;
       }
     }
