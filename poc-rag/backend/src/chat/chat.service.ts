@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 
-import { SearchResult, SearchService } from '../search/search.service';
+import { QueryAnalysis, SearchResult, SearchService } from '../search/search.service';
 import { ChatResponseDto, ChatSourceDto } from './chat-response.dto';
 import { ChatMessageDto, HistoryItemDto } from './dto/chat-message.dto';
 
@@ -11,7 +11,7 @@ export class ChatService {
   private readonly logger = new Logger(ChatService.name);
   private readonly anthropicKey: string;
   private readonly noContextAnswer =
-    'Ik kon geen passend antwoord vinden in de meegeleverde cursusinhoud. Stel je vraag specifieker over het stappenplan, het semesterplan of Pro Open Learning.';
+    'Ik kon geen passend antwoord vinden in de meegeleverde cursusinhoud. Stel je vraag specifieker over het stappenplan, het semesterplan of hoe Pro Open Learning werkt.';
 
   constructor(
     private readonly searchService: SearchService,
@@ -22,17 +22,20 @@ export class ChatService {
 
   async answer(body: ChatMessageDto): Promise<ChatResponseDto> {
     const history = body.history ?? [];
-    const chunks = await this.searchService.searchRelevantChunks(body.message, 3);
+    const outcome = await this.searchService.searchRelevantChunks(body.message, 3);
+    const { analysis, results: chunks } = outcome;
     const sources = this.buildSources(chunks);
 
     if (chunks.length === 0) {
-      this.logger.log(`chat mode=no-context question="${body.message}"`);
+      this.logger.log(`chat mode=no-context intent=${analysis.intent} question="${body.message}"`);
       return { answer: this.noContextAnswer, sources: [] };
     }
 
     if (!this.anthropicKey) {
-      this.logger.log(`chat mode=fallback question="${body.message}" sources=${this.formatSourcesForLog(sources)}`);
-      return { answer: this.buildFallbackAnswer(chunks), sources };
+      this.logger.log(
+        `chat mode=fallback intent=${analysis.intent} question="${body.message}" sources=${this.formatSourcesForLog(sources)}`,
+      );
+      return { answer: this.buildFallbackAnswer(chunks, analysis), sources };
     }
 
     try {
@@ -61,7 +64,9 @@ ${context}`,
         .trim();
 
       if (text.length > 0) {
-        this.logger.log(`chat mode=anthropic question="${body.message}" sources=${this.formatSourcesForLog(sources)}`);
+        this.logger.log(
+          `chat mode=anthropic intent=${analysis.intent} question="${body.message}" sources=${this.formatSourcesForLog(sources)}`,
+        );
         return { answer: text, sources };
       }
 
@@ -74,8 +79,10 @@ ${context}`,
       );
     }
 
-    this.logger.log(`chat mode=fallback question="${body.message}" sources=${this.formatSourcesForLog(sources)}`);
-    return { answer: this.buildFallbackAnswer(chunks), sources };
+    this.logger.log(
+      `chat mode=fallback intent=${analysis.intent} question="${body.message}" sources=${this.formatSourcesForLog(sources)}`,
+    );
+    return { answer: this.buildFallbackAnswer(chunks, analysis), sources };
   }
 
   private toAnthropicMessages(history: HistoryItemDto[]): Anthropic.MessageParam[] {
@@ -85,7 +92,57 @@ ${context}`,
     }));
   }
 
-  private buildFallbackAnswer(chunks: SearchResult[]): string {
+  private buildFallbackAnswer(chunks: SearchResult[], analysis: QueryAnalysis): string {
+    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
+      return this.buildStepSummary(chunks);
+    }
+
+    if (analysis.intent === 'comparison') {
+      return this.buildComparisonAnswer(chunks);
+    }
+
+    if (analysis.intent === 'definition') {
+      return this.buildDefinitionAnswer(chunks);
+    }
+
+    if (analysis.intent === 'specific') {
+      return this.buildSpecificAnswer(chunks);
+    }
+
+    return this.buildSpecificAnswer(chunks);
+  }
+
+  private buildStepSummary(chunks: SearchResult[]): string {
+    const orderedSteps = chunks
+      .filter((chunk) => /Stap [1-4]:/i.test(chunk.metadata.title))
+      .sort((a, b) => this.extractStepNumber(a.metadata.title) - this.extractStepNumber(b.metadata.title));
+
+    if (orderedSteps.length === 0) {
+      return this.buildSpecificAnswer(chunks);
+    }
+
+    return orderedSteps
+      .map((chunk) => `${this.extractStepNumber(chunk.metadata.title)}. ${this.summarizeChunk(chunk.content, 1)}`)
+      .join('\n');
+  }
+
+  private buildDefinitionAnswer(chunks: SearchResult[]): string {
+    const primary = chunks[0];
+
+    if (!primary) {
+      return this.noContextAnswer;
+    }
+
+    const primarySummary = this.summarizeChunk(primary.content, 2);
+    const supporting = chunks
+      .slice(1)
+      .map((chunk) => this.summarizeChunk(chunk.content, 1))
+      .find((summary) => summary.length > 0 && !primarySummary.includes(summary));
+
+    return supporting ? `${primarySummary} ${supporting}`.trim() : primarySummary;
+  }
+
+  private buildSpecificAnswer(chunks: SearchResult[]): string {
     const primary = chunks[0];
 
     if (!primary) {
@@ -106,6 +163,21 @@ ${context}`,
     }
 
     return `${primarySummary} ${secondarySummary}`.trim();
+  }
+
+  private buildComparisonAnswer(chunks: SearchResult[]): string {
+    const first = chunks[0];
+    const second = chunks[1];
+
+    if (!first) {
+      return this.noContextAnswer;
+    }
+
+    if (!second) {
+      return this.summarizeChunk(first.content, 2);
+    }
+
+    return `${first.metadata.title}: ${this.summarizeChunk(first.content, 1)}\n${second.metadata.title}: ${this.summarizeChunk(second.content, 1)}`;
   }
 
   private buildSources(chunks: SearchResult[]): ChatSourceDto[] {
@@ -143,12 +215,17 @@ ${context}`,
     const sentences = normalized
       .split(/(?<=[.!?])\s+/)
       .map((sentence) => sentence.trim())
-      .filter((sentence) => sentence.length > 0 && !sentence.startsWith('- '));
+      .filter((sentence) => sentence.length > 0);
 
     if (sentences.length > 0) {
       return sentences.slice(0, maxSentences).join(' ').trim();
     }
 
     return normalized;
+  }
+
+  private extractStepNumber(title: string): number {
+    const match = title.match(/Stap (\d+)/i);
+    return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
   }
 }

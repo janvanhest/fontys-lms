@@ -12,9 +12,79 @@ export interface SearchResult {
   score: number;
 }
 
+export type QueryIntent = 'summary' | 'specific' | 'definition' | 'comparison' | 'unknown';
+
+export interface QueryAnalysis {
+  intent: QueryIntent;
+  raw: string;
+  normalized: string;
+  tokens: string[];
+  focusTerms: string[];
+}
+
+export interface SearchOutcome {
+  analysis: QueryAnalysis;
+  results: SearchResult[];
+}
+
 @Injectable()
 export class SearchService {
   private readonly logger = new Logger(SearchService.name);
+  private readonly stopWords = new Set([
+    'aan',
+    'about',
+    'als',
+    'and',
+    'at',
+    'bij',
+    'dan',
+    'dat',
+    'de',
+    'den',
+    'der',
+    'dit',
+    'een',
+    'en',
+    'for',
+    'ga',
+    'gaat',
+    'het',
+    'hoe',
+    'hun',
+    'ik',
+    'in',
+    'is',
+    'je',
+    'kan',
+    'kort',
+    'maar',
+    'met',
+    'mij',
+    'of',
+    'om',
+    'ons',
+    'ook',
+    'op',
+    'over',
+    'samenvatting',
+    'te',
+    'that',
+    'the',
+    'this',
+    'to',
+    'tot',
+    'van',
+    'vat',
+    'wat',
+    'welke',
+    'wie',
+    'why',
+    'wordt',
+    'you',
+    'your',
+    'zich',
+    'zo',
+  ]);
 
   constructor(
     @InjectRepository(DocumentEntity)
@@ -22,18 +92,20 @@ export class SearchService {
     private readonly embeddingService: EmbeddingService,
   ) {}
 
-  async searchRelevantChunks(message: string, limit = 3): Promise<SearchResult[]> {
+  async searchRelevantChunks(message: string, limit = 3): Promise<SearchOutcome> {
+    const analysis = this.analyzeQuery(message);
+    const effectiveLimit = this.getEffectiveLimit(analysis, limit);
     const embeddedQuery = await this.embeddingService.embedText(message);
 
     if (embeddedQuery) {
       try {
-        const vectorResults = await this.searchByVector(embeddedQuery, limit);
+        const vectorResults = await this.searchByVector(embeddedQuery, effectiveLimit);
 
-        if (vectorResults.length > 0) {
+        if (vectorResults.length > 0 && !this.shouldPreferKeywordFallback(vectorResults, analysis)) {
           this.logger.log(
-            `retrieval mode=vector question="${message}" hits=${this.formatResultsForLog(vectorResults)}`,
+            `retrieval mode=vector intent=${analysis.intent} question="${message}" hits=${this.formatResultsForLog(vectorResults)}`,
           );
-          return vectorResults;
+          return { analysis, results: vectorResults };
         }
       } catch (error) {
         this.logger.warn(
@@ -44,13 +116,13 @@ export class SearchService {
       }
     }
 
-    const keywordResults = await this.searchByKeywords(message, limit);
+    const keywordResults = await this.searchByKeywords(analysis, effectiveLimit);
 
     this.logger.log(
-      `retrieval mode=keyword question="${message}" hits=${this.formatResultsForLog(keywordResults)}`,
+      `retrieval mode=keyword intent=${analysis.intent} question="${message}" hits=${this.formatResultsForLog(keywordResults)}`,
     );
 
-    return keywordResults;
+    return { analysis, results: keywordResults };
   }
 
   private async searchByVector(embedding: number[], limit: number): Promise<SearchResult[]> {
@@ -79,8 +151,7 @@ export class SearchService {
     }));
   }
 
-  private async searchByKeywords(message: string, limit: number): Promise<SearchResult[]> {
-    const terms = this.tokenize(message);
+  private async searchByKeywords(analysis: QueryAnalysis, limit: number): Promise<SearchResult[]> {
     const documents = await this.documentRepository.find();
 
     return documents
@@ -88,24 +159,176 @@ export class SearchService {
         id: document.id,
         content: document.content,
         metadata: document.metadata,
-        score: this.keywordScore(document, terms),
+        score: this.keywordScore(document, analysis),
       }))
       .filter((item) => item.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
   }
 
-  private tokenize(input: string): string[] {
-    return input
-      .toLowerCase()
+  private analyzeQuery(input: string): QueryAnalysis {
+    const normalized = input.toLowerCase().trim();
+    const rawTokens = normalized
       .split(/[^a-z0-9]+/i)
-      .filter((part) => part.length > 2);
+      .filter((part) => part.length > 1);
+    const tokens = rawTokens.filter((part) => part.length > 2 && !this.stopWords.has(part));
+    const intent = this.detectIntent(normalized);
+    const focusTerms = this.extractFocusTerms(normalized, tokens);
+
+    return {
+      intent,
+      raw: input,
+      normalized,
+      tokens,
+      focusTerms,
+    };
   }
 
-  private keywordScore(document: DocumentEntity, terms: string[]): number {
-    const haystack = [document.content, document.metadata.title, document.metadata.source].join(' ').toLowerCase();
+  private detectIntent(normalized: string): QueryIntent {
+    if (/(vat|samenvat|samenvatten|overzicht|korte stappen|kort samengevat|kort uit)/.test(normalized)) {
+      return 'summary';
+    }
 
-    return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
+    if (/(verschil|vergelijk|versus|vergeleken)/.test(normalized)) {
+      return 'comparison';
+    }
+
+    if (/^(wat is|wat zijn|wie is|definieer|leg uit wat)/.test(normalized)) {
+      return 'definition';
+    }
+
+    if (/(wanneer|moet|hoeveel|hoe vaak|welke|wat moet)/.test(normalized)) {
+      return 'specific';
+    }
+
+    return 'unknown';
+  }
+
+  private extractFocusTerms(normalized: string, tokens: string[]): string[] {
+    const focusTerms = new Set(tokens);
+
+    if (normalized.includes('stappenplan')) {
+      focusTerms.add('stappenplan');
+    }
+
+    if (normalized.includes('semesterplan')) {
+      focusTerms.add('semesterplan');
+    }
+
+    if (normalized.includes('portflow')) {
+      focusTerms.add('portflow');
+    }
+
+    if (normalized.includes('groepschallenge')) {
+      focusTerms.add('groepschallenge');
+    }
+
+    if (/\bpo\b/.test(normalized)) {
+      focusTerms.add('po');
+    }
+
+    return [...focusTerms];
+  }
+
+  private getEffectiveLimit(analysis: QueryAnalysis, limit: number): number {
+    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
+      return 4;
+    }
+
+    return limit;
+  }
+
+  private shouldPreferKeywordFallback(results: SearchResult[], analysis: QueryAnalysis): boolean {
+    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
+      const matchedSteps = results.filter((result) => /Stap [1-4]:/i.test(result.metadata.title));
+      return matchedSteps.length < 3;
+    }
+
+    return false;
+  }
+
+  private keywordScore(document: DocumentEntity, analysis: QueryAnalysis): number {
+    const title = document.metadata.title.toLowerCase();
+    const source = document.metadata.source.toLowerCase();
+    const content = document.content.toLowerCase();
+    let score = 0;
+
+    for (const term of analysis.focusTerms) {
+      if (title === term || title.includes(term)) {
+        score += 6;
+      }
+
+      if (source.includes(term)) {
+        score += 3;
+      }
+
+      if (content.includes(term)) {
+        score += 2;
+      }
+    }
+
+    for (const term of analysis.tokens) {
+      if (title.includes(term)) {
+        score += 4;
+      }
+
+      if (source.includes(term)) {
+        score += 2;
+      }
+
+      if (content.includes(term)) {
+        score += 1;
+      }
+    }
+
+    score += this.intentBonus(document, analysis);
+
+    return score;
+  }
+
+  private intentBonus(document: DocumentEntity, analysis: QueryAnalysis): number {
+    const title = document.metadata.title.toLowerCase();
+    const source = document.metadata.source.toLowerCase();
+    let bonus = 0;
+
+    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
+      if (/stap [1-4]:/i.test(document.metadata.title)) {
+        bonus += 8;
+      }
+
+      if (title.includes('introductie stappenplan')) {
+        bonus += 3;
+      }
+
+      if (source.includes('stappenplan')) {
+        bonus += 2;
+      }
+    }
+
+    if (analysis.intent === 'definition') {
+      if (title.includes('introductie') || /^wat is/i.test(document.metadata.title)) {
+        bonus += 5;
+      }
+    }
+
+    if (analysis.intent === 'specific') {
+      if (
+        title.includes('wanneer') ||
+        title.includes('verplicht') ||
+        title.includes('richtlijnen') ||
+        title.includes('eisen')
+      ) {
+        bonus += 5;
+      }
+    }
+
+    if (analysis.intent === 'comparison') {
+      if (title.includes('groepschallenge') || title.includes('individueel project')) {
+        bonus += 4;
+      }
+    }
+
+    return bonus;
   }
 
   private formatResultsForLog(results: SearchResult[]): string {
