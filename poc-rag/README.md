@@ -99,12 +99,12 @@ de juiste chunks terugvindt.
 De runner:
 - gebruikt `SearchService`
 - draait tegen de database
-- gebruikt dus `DATABASE_URL` voor lokaal gebruik
-- gebruikt niet `DOCKER_DATABASE_URL`
+- draait het makkelijkst vanuit de backend container
+- gebruikt daar automatisch de Docker-config en `DOCKER_DATABASE_URL`
 
 Voorwaarden:
 - je hebt een root `.env` in `poc-rag`
-- postgres draait lokaal via Docker Compose
+- postgres en backend draaien via Docker Compose
 - de database is al geseed
 
 Aanbevolen volgorde:
@@ -112,23 +112,13 @@ Aanbevolen volgorde:
 ```bash
 cd poc-rag
 cp .env.example .env  # alleen nodig als .env nog niet bestaat
-docker compose up -d postgres
+docker compose up -d postgres backend
 ```
 
-Daarna de runner starten met de env uit de root `.env` geladen:
+Daarna de runner starten vanuit de backend container:
 
 ```bash
-cd poc-rag
-set -a
-source .env
-set +a
-pnpm --dir backend run eval:retrieval
-```
-
-Als je liever een one-liner gebruikt:
-
-```bash
-cd poc-rag && set -a && source .env && set +a && pnpm --dir backend run eval:retrieval
+docker compose exec backend npm run eval:retrieval
 ```
 
 Wat je dan ziet:
@@ -138,9 +128,14 @@ Wat je dan ziet:
 - aan het einde een samenvatting zoals `summary: 6/8 passed`
 
 Als de runner faalt met een databasefout:
-- controleer of postgres draait
-- controleer of `DATABASE_URL` in `.env` naar `localhost:5432` wijst
-- gebruik lokaal `DATABASE_URL`, niet `DOCKER_DATABASE_URL`
+- controleer of `postgres` en `backend` draaien
+- controleer of `.env` bestaat in `poc-rag`
+- controleer of `DOCKER_DATABASE_URL` in `.env` naar host `postgres` wijst
+
+Alleen als je de runner bewust buiten Docker wilt draaien:
+- gebruik dan `DATABASE_URL`
+- zorg dat die naar `localhost:5432` wijst
+- laad die variabele eerst in je shell
 
 ## Architectuur
 
