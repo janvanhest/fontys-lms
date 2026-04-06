@@ -19,7 +19,7 @@ Concreet:
 - zonder Ollama werkt de app nog steeds via keyword search
 - met Ollama kan de backend embeddings maken en vector search gebruiken
 - zonder Anthropic geeft de backend een lokale fallback-response terug op basis van de gevonden chunks
-- met Anthropic worden antwoorden natuurlijker geformuleerd
+- met Anthropic worden antwoorden natuurlijker geformuleerd en intent-aware opgebouwd
 - de backend stuurt bij antwoorden ook broninformatie mee, zodat zichtbaar is waar een antwoord vandaan komt
 
 ## Waarom `ollama pull nomic-embed-text`?
@@ -66,6 +66,32 @@ docker-compose up --build
 
 - Frontend: http://localhost:3000
 - Backend: http://localhost:3001/api/chat
+
+## Anthropic generatie
+
+Als `ANTHROPIC_API_KEY` is ingevuld, gebruikt de backend Claude om op basis van de gevonden chunks een netter antwoord te formuleren.
+
+De backend doet dan nog steeds eerst retrieval, maar Claude krijgt:
+- alleen de geselecteerde contextchunks
+- titel en bron per chunk
+- extra instructies op basis van de vraagintentie
+
+Dat betekent concreet:
+- samenvattingsvragen krijgen een korter overzicht
+- definitievragen krijgen eerst een direct antwoord en daarna pas toelichting
+- specifieke vragen blijven compacter dan de ruwe fallback
+
+Zo test je of Anthropic actief is:
+
+```bash
+cd poc-rag
+docker compose up -d --build
+docker compose logs -f backend
+```
+
+Stel daarna een vraag in de UI of via de API en controleer in de backend logs:
+- `chat mode=anthropic` betekent dat Claude is gebruikt
+- `chat mode=fallback` betekent dat de lokale fallback is gebruikt
 
 ## Configuratie via `.env`
 
