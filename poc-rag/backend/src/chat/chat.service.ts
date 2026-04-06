@@ -39,18 +39,12 @@ export class ChatService {
     }
 
     try {
-      const context = chunks.map((c) => c.content).join('\n\n---\n\n');
+      const context = this.buildAnthropicContext(chunks);
       const client = new Anthropic({ apiKey: this.anthropicKey });
       const response = await client.messages.create({
         model: 'claude-sonnet-4-5',
         max_tokens: 1024,
-        system: `Je bent een behulpzame studieassistent voor Fontys Pro Open Learning.
-Beantwoord vragen uitsluitend op basis van de aangeleverde cursusinhoud.
-Als het antwoord niet in de context staat, zeg dat dan eerlijk.
-Antwoord altijd in het Nederlands.
-
-Cursusinhoud:
-${context}`,
+        system: this.buildAnthropicSystemPrompt(analysis, context),
         messages: [
           ...this.toAnthropicMessages(history),
           { role: 'user', content: body.message },
@@ -90,6 +84,76 @@ ${context}`,
       role: item.role,
       content: item.content,
     }));
+  }
+
+  private buildAnthropicSystemPrompt(analysis: QueryAnalysis, context: string): string {
+    const responseShape = this.getAnthropicResponseShape(analysis);
+
+    return `Je bent een behulpzame studieassistent voor Fontys Pro Open Learning.
+
+Gebruik uitsluitend de aangeleverde context. Verzin geen beleid, deadlines of definities die niet in de context staan.
+Als de context onvoldoende is, zeg dat expliciet en blijf eerlijk.
+Antwoord altijd in het Nederlands.
+Geef eerst direct antwoord op de vraag en blijf compact.
+Noem geen bronlabels zoals "Bron 1" in de hoofdtekst.
+Neem geen irrelevante details over uit andere chunks.
+Schrijf afkortingen alleen uit als de context die afkorting expliciet uitlegt of als de gebruiker daar expliciet om vraagt.
+Als een afkorting in de context bekend gebruikt wordt maar niet letterlijk wordt uitgeschreven, behoud dan de afkorting in je antwoord.
+
+Gewenste antwoordsvorm:
+${responseShape}
+
+Context:
+${context}`;
+  }
+
+  private getAnthropicResponseShape(analysis: QueryAnalysis): string {
+    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
+      return [
+        '- Geef precies 4 korte genummerde stappen als de context stap 1 t/m 4 ondersteunt.',
+        '- Houd elke stap bij 1 korte zin.',
+        '- Als niet alle stappen voldoende onderbouwd zijn, geef dan een korte algemene samenvatting in maximaal 3 zinnen.',
+      ].join('\n');
+    }
+
+    if (analysis.intent === 'summary') {
+      return [
+        '- Geef een korte samenvatting in maximaal 3 zinnen.',
+        '- Benoem alleen de kernpunten die direct relevant zijn voor de vraag.',
+      ].join('\n');
+    }
+
+    if (analysis.intent === 'definition') {
+      return [
+        '- Geef eerst een directe definitie in 1 zin.',
+        '- Voeg daarna hoogstens 1 of 2 korte zinnen toe met relevante toelichting.',
+      ].join('\n');
+    }
+
+    if (analysis.intent === 'comparison') {
+      return [
+        '- Vergelijk de twee onderwerpen kort en duidelijk.',
+        '- Gebruik maximaal 2 korte alinea’s of 2 korte bullets.',
+      ].join('\n');
+    }
+
+    return [
+      '- Geef een direct antwoord in 2 tot 4 zinnen.',
+      '- Begin met het kernantwoord en voeg daarna alleen de relevantste details toe.',
+    ].join('\n');
+  }
+
+  private buildAnthropicContext(chunks: SearchResult[]): string {
+    return chunks
+      .map(
+        (chunk, index) =>
+          `[Bron ${index + 1}]
+Titel: ${chunk.metadata.title}
+Bron: ${chunk.metadata.source}
+Inhoud:
+${chunk.content}`,
+      )
+      .join('\n\n---\n\n');
   }
 
   private buildFallbackAnswer(chunks: SearchResult[], analysis: QueryAnalysis): string {
