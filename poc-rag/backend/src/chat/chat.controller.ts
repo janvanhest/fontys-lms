@@ -8,8 +8,7 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post()
-  async chat(@Body() body: ChatMessageDto): Promise<{ answer: string; context: unknown[] }> {
+  async chat(@Body() body: ChatMessageDto): Promise<{ answer: string }> {
     return this.chatService.answer(body);
   }
 }
-
