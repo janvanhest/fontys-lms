@@ -20,6 +20,7 @@ Concreet:
 - met Ollama kan de backend embeddings maken en vector search gebruiken
 - zonder Anthropic geeft de backend een lokale fallback-response terug op basis van de gevonden chunks
 - met Anthropic worden antwoorden natuurlijker geformuleerd
+- de backend stuurt bij antwoorden ook broninformatie mee, zodat zichtbaar is waar een antwoord vandaan komt
 
 ## Waarom `ollama pull nomic-embed-text`?
 
@@ -68,8 +69,8 @@ docker-compose up --build
 ## Architectuur
 
 - `postgres/`: PostgreSQL 16 met pgvector-extensie (via `pgvector/pgvector:pg16` image)
-- `backend/`: NestJS — seeding, keyword search fallback, optionele Ollama-embeddings en optionele Anthropic-generatie
-- `frontend/`: Vite + React + MUI chatinterface
+- `backend/`: NestJS — seeding, sectie-gebaseerde content chunks, keyword search fallback, optionele Ollama-embeddings en optionele Anthropic-generatie
+- `frontend/`: Vite + React + MUI chatinterface met compacte bronweergave onder assistentantwoorden
 - Embeddings draaien lokaal via Ollama (`nomic-embed-text`, 768 dimensies) wanneer beschikbaar
 
 ## Verticale slice fase 1
@@ -88,8 +89,24 @@ Gedrag in fase 1:
 - anders valt de backend terug op keyword search
 - als Anthropic beschikbaar is, wordt een natuurlijk antwoord gegenereerd
 - anders geeft de backend een compacte response terug op basis van de best passende cursuschunks
+- de backend levert ook `sources` terug met titel, bron en score van de gebruikte chunks
+- de backend logt tijdelijk retrieval hits voor debugdoeleinden
+
+## Seed en retrieval
+
+De seed-content komt uit de Canvas-bronnen, maar wordt niet meer als volledige pagina's opgeslagen.
+
+In plaats daarvan:
+- wordt de content opgesplitst in kleinere secties
+- krijgt elke sectie een eigen chunk in de `documents` tabel
+- gebruikt retrieval die kleinere chunks voor gerichtere antwoorden
+
+Daardoor:
+- worden antwoorden compacter
+- worden bronnen beter uitlegbaar
+- is de kans kleiner dat complete pagina's worden teruggegeven als antwoord
 
 ## Endpoints
 
-- `POST /api/chat` — `{ message, history }` → `{ answer }`
+- `POST /api/chat` — `{ message, history }` → `{ answer, sources }`
 - `GET /api/health`
