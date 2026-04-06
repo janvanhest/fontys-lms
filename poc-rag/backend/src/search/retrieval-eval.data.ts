@@ -56,4 +56,9 @@ export const retrievalEvalCases: RetrievalEvalCase[] = [
     expectedTopTitles: [],
     expectedIntent: 'unknown',
   },
+  {
+    query: 'Welke stappen zijn er?',
+    expectedTopTitles: [],
+    expectedIntent: 'specific',
+  },
 ];

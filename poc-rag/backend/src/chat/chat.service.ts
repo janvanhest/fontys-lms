@@ -117,7 +117,7 @@ ${context}`,
       .filter((chunk) => /Stap [1-4]:/i.test(chunk.metadata.title))
       .sort((a, b) => this.extractStepNumber(a.metadata.title) - this.extractStepNumber(b.metadata.title));
 
-    if (orderedSteps.length === 0) {
+    if (orderedSteps.length < 3) {
       return this.buildSpecificAnswer(chunks);
     }
 

@@ -20,6 +20,7 @@ export interface QueryAnalysis {
   raw: string;
   normalized: string;
   tokens: string[];
+  distinctiveTokens: string[];
   focusTerms: string[];
   matchedConcepts: string[];
   titleHints: string[];
@@ -83,11 +84,27 @@ export class SearchService {
     'wie',
     'why',
     'wordt',
+    'werk',
+    'werken',
+    'werkt',
     'you',
     'your',
     'zich',
     'zo',
   ]);
+  private readonly genericTokens = new Set([
+    'doen',
+    'gaat',
+    'moet',
+    'stap',
+    'stappen',
+    'vraag',
+    'werken',
+    'werkt',
+    'werk',
+  ]);
+  private readonly minTopScore = 6;
+  private readonly minCompetitiveSecondScore = 3;
 
   constructor(
     @InjectRepository(DocumentEntity)
@@ -103,12 +120,19 @@ export class SearchService {
     if (embeddedQuery) {
       try {
         const vectorResults = await this.searchByVector(embeddedQuery, effectiveLimit);
+        const vectorDecision = this.evaluateConfidence(vectorResults, analysis);
 
-        if (vectorResults.length > 0 && !this.shouldPreferKeywordFallback(vectorResults, analysis)) {
+        if (vectorDecision.accepted && !this.shouldPreferKeywordFallback(vectorResults, analysis)) {
           this.logger.log(
             `retrieval mode=vector intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|') || 'none'} question="${message}" hits=${this.formatResultsForLog(vectorResults)}`,
           );
           return { analysis, results: vectorResults };
+        }
+
+        if (!vectorDecision.accepted) {
+          this.logger.log(
+            `retrieval mode=vector no-match reason=${vectorDecision.reason} intent=${analysis.intent} question="${message}"`,
+          );
         }
       } catch (error) {
         this.logger.warn(
@@ -120,6 +144,31 @@ export class SearchService {
     }
 
     const keywordResults = await this.searchByKeywords(analysis, effectiveLimit);
+
+    if (analysis.intent === 'summary' && analysis.matchedConcepts.includes('stappenplan')) {
+      const bundledSteps = this.bundleStepSummary(keywordResults);
+
+      if (bundledSteps.length >= 3) {
+        this.logger.log(
+          `retrieval mode=keyword intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|') || 'none'} question="${message}" hits=${this.formatResultsForLog(bundledSteps)}`,
+        );
+        return { analysis, results: bundledSteps };
+      }
+
+      this.logger.log(
+        `retrieval mode=keyword no-match reason=missing-step-coverage intent=${analysis.intent} question="${message}"`,
+      );
+      return { analysis, results: [] };
+    }
+
+    const keywordDecision = this.evaluateConfidence(keywordResults, analysis);
+
+    if (!keywordDecision.accepted) {
+      this.logger.log(
+        `retrieval mode=keyword no-match reason=${keywordDecision.reason} intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|') || 'none'} question="${message}"`,
+      );
+      return { analysis, results: [] };
+    }
 
     this.logger.log(
       `retrieval mode=keyword intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|') || 'none'} question="${message}" hits=${this.formatResultsForLog(keywordResults)}`,
@@ -183,6 +232,7 @@ export class SearchService {
       raw: input,
       normalized,
       tokens,
+      distinctiveTokens: tokens.filter((token) => token.length >= 5 && !this.genericTokens.has(token)),
       focusTerms: expansion.expandedTerms,
       matchedConcepts: expansion.matchedConcepts,
       titleHints: expansion.titleHints,
@@ -211,7 +261,7 @@ export class SearchService {
 
   private getEffectiveLimit(analysis: QueryAnalysis, limit: number): number {
     if (analysis.intent === 'summary' && analysis.matchedConcepts.includes('stappenplan')) {
-      return 4;
+      return 6;
     }
 
     return limit;
@@ -219,7 +269,7 @@ export class SearchService {
 
   private shouldPreferKeywordFallback(results: SearchResult[], analysis: QueryAnalysis): boolean {
     if (analysis.intent === 'summary' && analysis.matchedConcepts.includes('stappenplan')) {
-      const matchedSteps = results.filter((result) => /Stap [1-4]:/i.test(result.metadata.title));
+      const matchedSteps = this.bundleStepSummary(results);
       return matchedSteps.length < 3;
     }
 
@@ -320,6 +370,96 @@ export class SearchService {
     }
 
     return bonus;
+  }
+
+  private evaluateConfidence(
+    results: SearchResult[],
+    analysis: QueryAnalysis,
+  ): { accepted: boolean; reason?: 'low-score' | 'concept-mismatch' | 'missing-step-coverage' } {
+    const top = results[0];
+
+    if (!top || top.score < this.minTopScore) {
+      return { accepted: false, reason: 'low-score' };
+    }
+
+    const second = results[1];
+    const hasSupportingHit = !second || second.score >= this.minCompetitiveSecondScore;
+
+    if (!hasSupportingHit && analysis.intent !== 'definition') {
+      return { accepted: false, reason: 'low-score' };
+    }
+
+    if (analysis.matchedConcepts.length > 0 && !this.hasConceptMatch(results, analysis)) {
+      return { accepted: false, reason: 'concept-mismatch' };
+    }
+
+    if (analysis.matchedConcepts.length === 0 && !this.hasDistinctiveTokenCoverage(results, analysis)) {
+      return { accepted: false, reason: 'low-score' };
+    }
+
+    return { accepted: true };
+  }
+
+  private hasDistinctiveTokenCoverage(results: SearchResult[], analysis: QueryAnalysis): boolean {
+    if (analysis.distinctiveTokens.length === 0) {
+      return true;
+    }
+
+    return analysis.distinctiveTokens.some((token) =>
+      results.some((result) => {
+        const haystack = `${result.metadata.title} ${result.metadata.source} ${result.content}`.toLowerCase();
+        return haystack.includes(token);
+      }),
+    );
+  }
+
+  private hasConceptMatch(results: SearchResult[], analysis: QueryAnalysis): boolean {
+    const haystacks = results.map((result) =>
+      `${result.metadata.title} ${result.metadata.source} ${result.content}`.toLowerCase(),
+    );
+
+    return analysis.matchedConcepts.every((concept) =>
+      haystacks.some((haystack) => haystack.includes(concept.toLowerCase()) || this.matchesConceptAlias(haystack, concept)),
+    );
+  }
+
+  private matchesConceptAlias(haystack: string, concept: string): boolean {
+    if (concept === 'persoonlijke ontwikkeling') {
+      return haystack.includes('inhoud en po') || haystack.includes('wanneer is po verplicht');
+    }
+
+    if (concept === 'persoonlijk semesterplan') {
+      return haystack.includes('semesterplan');
+    }
+
+    if (concept === 'stappenplan') {
+      return haystack.includes('stap 1') || haystack.includes('stap 2') || haystack.includes('stap 3') || haystack.includes('stap 4');
+    }
+
+    return false;
+  }
+
+  private bundleStepSummary(results: SearchResult[]): SearchResult[] {
+    const stepMap = new Map<number, SearchResult>();
+
+    for (const result of results) {
+      const match = result.metadata.title.match(/Stap (\d+)/i);
+
+      if (!match) {
+        continue;
+      }
+
+      const step = Number(match[1]);
+      const current = stepMap.get(step);
+
+      if (!current || result.score > current.score) {
+        stepMap.set(step, result);
+      }
+    }
+
+    return [1, 2, 3, 4]
+      .map((step) => stepMap.get(step))
+      .filter((result): result is SearchResult => Boolean(result));
   }
 
   private formatResultsForLog(results: SearchResult[]): string {
