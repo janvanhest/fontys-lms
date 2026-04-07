@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import type { FormEvent } from "react";
 import { useState } from "react";
+import { ChatMarkdown } from "./components/ChatMarkdown";
 
 type ChatRole = "user" | "assistant";
 
@@ -167,10 +168,15 @@ export default function App() {
                       message.role === "user"
                         ? "primary.contrastText"
                         : "text.primary",
-                    whiteSpace: "pre-wrap",
                   }}
                 >
-                  <Typography variant="body1">{message.content}</Typography>
+                  {message.role === "assistant" ? (
+                    <ChatMarkdown content={message.content} />
+                  ) : (
+                    <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+                      {message.content}
+                    </Typography>
+                  )}
                   {message.role === "assistant" &&
                     message.sources &&
                     message.sources.length > 0 && (

@@ -16,6 +16,12 @@ export const retrievalEvalCases: RetrievalEvalCase[] = [
     expectedIntent: 'definition',
   },
   {
+    query: 'Waar staat PO voor?',
+    expectedTopTitles: ['Wanneer is PO verplicht?', 'Inhoud en PO: twee kanten van hetzelfde verhaal'],
+    disallowedTitles: ['Introductie Portflow'],
+    expectedIntent: 'definition',
+  },
+  {
     query: 'Wanneer is PO verplicht?',
     expectedTopTitles: ['Wanneer is PO verplicht?'],
     expectedIntent: 'specific',
@@ -41,6 +47,16 @@ export const retrievalEvalCases: RetrievalEvalCase[] = [
     expectedIntent: 'summary',
   },
   {
+    query: 'Leg de stappen van het stappenplan kort uit.',
+    expectedTopTitles: [
+      'Stap 1: Wat zijn je doelen dit semester?',
+      'Stap 2: Wat heb je daarvoor nodig?',
+      'Stap 3: Hoe ga je dat dan doen?',
+      'Stap 4: Hoe maak je alles inzichtelijk voor het semester?',
+    ],
+    expectedIntent: 'summary',
+  },
+  {
     query: 'Wat is Portflow?',
     expectedTopTitles: ['Introductie Portflow'],
     disallowedTitles: ['Introductie Stappenplan'],
@@ -50,6 +66,11 @@ export const retrievalEvalCases: RetrievalEvalCase[] = [
     query: 'Wat is een groepschallenge?',
     expectedTopTitles: ['Wat is een challenge?', 'Introductie Groepschallenge'],
     expectedIntent: 'definition',
+  },
+  {
+    query: 'Wat is het verschil tussen een groepschallenge en een individueel project?',
+    expectedTopTitles: ['Introductie Groepschallenge', 'Introductie Individueel project'],
+    expectedIntent: 'comparison',
   },
   {
     query: 'Hoe werkt studiefinanciering?',

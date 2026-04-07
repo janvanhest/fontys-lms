@@ -161,6 +161,39 @@ export class SearchService {
       return { analysis, results: [] };
     }
 
+    if (analysis.intent === 'comparison' && analysis.matchedConcepts.length >= 2) {
+      const bundledComparison = this.bundleComparisonResults(keywordResults, analysis);
+      const comparisonDecision = this.evaluateConfidence(bundledComparison, analysis);
+
+      if (bundledComparison.length >= 2 && comparisonDecision.accepted) {
+        this.logger.log(
+          `retrieval mode=keyword intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|')} question="${message}" hits=${this.formatResultsForLog(bundledComparison)}`,
+        );
+        return { analysis, results: bundledComparison };
+      }
+
+      this.logger.log(
+        `retrieval mode=keyword no-match reason=${comparisonDecision.reason ?? 'concept-mismatch'} intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|')} question="${message}"`,
+      );
+      return { analysis, results: [] };
+    }
+
+    if (analysis.intent === 'definition' && analysis.matchedConcepts.includes('portflow')) {
+      const portflowResults = keywordResults.filter((result) => this.resultMatchesConcept(result, 'portflow'));
+
+      if (portflowResults.length > 0) {
+        this.logger.log(
+          `retrieval mode=keyword intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|')} question="${message}" hits=${this.formatResultsForLog(portflowResults.slice(0, effectiveLimit))}`,
+        );
+        return { analysis, results: portflowResults.slice(0, effectiveLimit) };
+      }
+
+      this.logger.log(
+        `retrieval mode=keyword no-match reason=portflow-no-hit intent=${analysis.intent} concepts=${analysis.matchedConcepts.join('|')} question="${message}" topHits=${this.formatResultsForLog(keywordResults)}`,
+      );
+      return { analysis, results: [] };
+    }
+
     const keywordDecision = this.evaluateConfidence(keywordResults, analysis);
 
     if (!keywordDecision.accepted) {
@@ -248,7 +281,7 @@ export class SearchService {
       return 'comparison';
     }
 
-    if (/^(wat is|wat zijn|wie is|definieer|leg uit wat)/.test(normalized)) {
+    if (/^(wat is|wat zijn|wie is|definieer|leg uit wat|waar staat)/.test(normalized)) {
       return 'definition';
     }
 
@@ -262,6 +295,14 @@ export class SearchService {
   private getEffectiveLimit(analysis: QueryAnalysis, limit: number): number {
     if (analysis.intent === 'summary' && analysis.matchedConcepts.includes('stappenplan')) {
       return 6;
+    }
+
+    if (analysis.intent === 'definition' && analysis.matchedConcepts.includes('portflow')) {
+      return Math.max(limit, 6);
+    }
+
+    if (analysis.intent === 'comparison' && analysis.matchedConcepts.length >= 2) {
+      return Math.max(limit, 6);
     }
 
     return limit;
@@ -346,6 +387,10 @@ export class SearchService {
       if (title.includes('introductie') || /^wat is/i.test(document.metadata.title)) {
         bonus += 5;
       }
+
+      if (analysis.matchedConcepts.includes('portflow') && (title.includes('portflow') || source.includes('portflow'))) {
+        bonus += 8;
+      }
     }
 
     if (analysis.intent === 'specific') {
@@ -367,6 +412,14 @@ export class SearchService {
       if (analysis.matchedConcepts.includes('individueel project') && title.includes('individueel project')) {
         bonus += 4;
       }
+
+      if (analysis.matchedConcepts.includes('groepschallenge') && (title.includes('challenge') || source.includes('groepschallenge'))) {
+        bonus += 3;
+      }
+
+      if (analysis.matchedConcepts.includes('individueel project') && source.includes('individueel project')) {
+        bonus += 3;
+      }
     }
 
     return bonus;
@@ -385,7 +438,7 @@ export class SearchService {
     const second = results[1];
     const hasSupportingHit = !second || second.score >= this.minCompetitiveSecondScore;
 
-    if (!hasSupportingHit && analysis.intent !== 'definition') {
+    if (!hasSupportingHit && analysis.intent !== 'definition' && analysis.intent !== 'comparison') {
       return { accepted: false, reason: 'low-score' };
     }
 
@@ -414,6 +467,12 @@ export class SearchService {
   }
 
   private hasConceptMatch(results: SearchResult[], analysis: QueryAnalysis): boolean {
+    if (analysis.intent === 'comparison' && analysis.matchedConcepts.length >= 2) {
+      return analysis.matchedConcepts.every((concept) =>
+        results.some((result) => this.resultMatchesConcept(result, concept)),
+      );
+    }
+
     const haystacks = results.map((result) =>
       `${result.metadata.title} ${result.metadata.source} ${result.content}`.toLowerCase(),
     );
@@ -446,6 +505,25 @@ export class SearchService {
     }
 
     return false;
+  }
+
+  private resultMatchesConcept(result: SearchResult, concept: string): boolean {
+    const haystack = `${result.metadata.title} ${result.metadata.source} ${result.content}`.toLowerCase();
+    return haystack.includes(concept.toLowerCase()) || this.matchesConceptAlias(haystack, concept);
+  }
+
+  private bundleComparisonResults(results: SearchResult[], analysis: QueryAnalysis): SearchResult[] {
+    const bundled: SearchResult[] = [];
+
+    for (const concept of analysis.matchedConcepts) {
+      const match = results.find((result) => this.resultMatchesConcept(result, concept));
+
+      if (match && !bundled.some((item) => item.id === match.id)) {
+        bundled.push(match);
+      }
+    }
+
+    return bundled.sort((a, b) => b.score - a.score);
   }
 
   private bundleStepSummary(results: SearchResult[]): SearchResult[] {
