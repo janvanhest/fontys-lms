@@ -1,4 +1,5 @@
 import { QueryAnalysis, SearchResult } from '../search/search.service';
+import { ConversationContext } from './conversation-context.service';
 
 const globalGenerationRules = [
   'Gebruik uitsluitend de aangeleverde context. Verzin geen beleid, deadlines of definities die niet in de context staan.',
@@ -12,10 +13,22 @@ const globalGenerationRules = [
   'Als de gebruiker vraagt wat een afkorting betekent, maar de context geeft geen letterlijke uitgeschreven vorm, beschrijf dan alleen de betekenis in context en schrijf de afkorting niet uit als vaste term.',
 ];
 
-export function buildGenerationPrompt(analysis: QueryAnalysis, context: string): string {
+export function buildGenerationPrompt(
+  analysis: QueryAnalysis,
+  context: string,
+  conversationContext: ConversationContext,
+): string {
   return `Je bent een behulpzame studieassistent voor Fontys Pro Open Learning.
 
 ${globalGenerationRules.join('\n')}
+
+Gesprekscontext:
+- Oorspronkelijke vraag: ${conversationContext.originalQuestion}
+- Geherformuleerde vraag voor retrieval: ${conversationContext.resolvedQuestion}
+- Actief onderwerp: ${conversationContext.activeTopic}
+- Actief subonderwerp: ${conversationContext.activeSubtopic ?? 'geen'}
+- Toonhint: ${conversationContext.toneHint ?? 'geen'}
+- Follow-up vraag: ${conversationContext.isFollowUp ? 'ja' : 'nee'}
 
 Gewenste antwoordsvorm:
 ${getResponseShapeInstructions(analysis)}

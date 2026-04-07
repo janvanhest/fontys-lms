@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 
 import { QueryAnalysis, SearchResult } from '../search/search.service';
+import { ConversationContext } from './conversation-context.service';
 import { buildGenerationContext, buildGenerationPrompt } from './answer-generation.prompt';
 import { HistoryItemDto } from './dto/chat-message.dto';
 
@@ -13,6 +14,7 @@ interface GenerateAnswerInput {
   history: HistoryItemDto[];
   analysis: QueryAnalysis;
   chunks: SearchResult[];
+  conversationContext: ConversationContext;
 }
 
 interface GenerateAnswerResult {
@@ -64,7 +66,11 @@ export class AnswerGenerationService {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 1024,
-      system: buildGenerationPrompt(input.analysis, buildGenerationContext(input.chunks)),
+      system: buildGenerationPrompt(
+        input.analysis,
+        buildGenerationContext(input.chunks),
+        input.conversationContext,
+      ),
       messages: [
         ...this.toAnthropicMessages(input.history),
         { role: 'user', content: input.question },

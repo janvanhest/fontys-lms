@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { QueryAnalysis, SearchResult, SearchService } from '../search/search.service';
 import { AnswerGenerationService } from './answer-generation.service';
+import { ConversationContextService } from './conversation-context.service';
 import { ChatResponseDto, ChatSourceDto } from './chat-response.dto';
 import { ChatMessageDto } from './dto/chat-message.dto';
 
@@ -14,16 +15,20 @@ export class ChatService {
   constructor(
     private readonly searchService: SearchService,
     private readonly answerGenerationService: AnswerGenerationService,
+    private readonly conversationContextService: ConversationContextService,
   ) {}
 
   async answer(body: ChatMessageDto): Promise<ChatResponseDto> {
     const history = body.history ?? [];
-    const outcome = await this.searchService.searchRelevantChunks(body.message, 3);
+    const conversationContext = this.conversationContextService.resolve(body.message, history);
+    const outcome = await this.searchService.searchRelevantChunks(conversationContext.resolvedQuestion, 3);
     const { analysis, results: chunks } = outcome;
     const sources = this.buildSources(chunks, analysis);
 
     if (chunks.length === 0) {
-      this.logger.log(`chat mode=no-context intent=${analysis.intent} question="${body.message}"`);
+      this.logger.log(
+        `chat mode=no-context intent=${analysis.intent} topic=${conversationContext.activeTopic} followUp=${conversationContext.isFollowUp} question="${body.message}" resolvedQuestion="${conversationContext.resolvedQuestion}"`,
+      );
       return { answer: this.noContextAnswer, sources: [] };
     }
 
@@ -32,10 +37,11 @@ export class ChatService {
       history,
       analysis,
       chunks,
+      conversationContext,
     });
 
     this.logger.log(
-      `chat mode=${generation.mode} intent=${analysis.intent} question="${body.message}" sources=${this.formatSourcesForLog(sources)}`,
+      `chat mode=${generation.mode} intent=${analysis.intent} topic=${conversationContext.activeTopic} followUp=${conversationContext.isFollowUp} question="${body.message}" resolvedQuestion="${conversationContext.resolvedQuestion}" sources=${this.formatSourcesForLog(sources)}`,
     );
 
     return { answer: generation.answer, sources };
