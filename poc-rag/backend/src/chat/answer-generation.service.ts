@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 
 import { QueryAnalysis, SearchResult } from '../search/search.service';
+import { buildGenerationContext, buildGenerationPrompt } from './answer-generation.prompt';
 import { HistoryItemDto } from './dto/chat-message.dto';
 
 type GenerationMode = 'anthropic' | 'fallback';
@@ -31,13 +32,13 @@ export class AnswerGenerationService {
   async generate(input: GenerateAnswerInput): Promise<GenerateAnswerResult> {
     if (!this.anthropicKey) {
       return {
-        answer: this.generateFallback(input.chunks, input.analysis),
+        answer: this.finalizeAnswer(this.generateFallback(input.chunks, input.analysis), input),
         mode: 'fallback',
       };
     }
 
     try {
-      const answer = await this.generateWithAnthropic(input);
+      const answer = this.finalizeAnswer(await this.generateWithAnthropic(input), input);
 
       if (answer.length > 0) {
         return { answer, mode: 'anthropic' };
@@ -53,7 +54,7 @@ export class AnswerGenerationService {
     }
 
     return {
-      answer: this.generateFallback(input.chunks, input.analysis),
+      answer: this.finalizeAnswer(this.generateFallback(input.chunks, input.analysis), input),
       mode: 'fallback',
     };
   }
@@ -63,7 +64,7 @@ export class AnswerGenerationService {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 1024,
-      system: this.buildSystemPrompt(input.analysis, this.buildContext(input.chunks)),
+      system: buildGenerationPrompt(input.analysis, buildGenerationContext(input.chunks)),
       messages: [
         ...this.toAnthropicMessages(input.history),
         { role: 'user', content: input.question },
@@ -82,74 +83,6 @@ export class AnswerGenerationService {
       role: item.role,
       content: item.content,
     }));
-  }
-
-  private buildSystemPrompt(analysis: QueryAnalysis, context: string): string {
-    return `Je bent een behulpzame studieassistent voor Fontys Pro Open Learning.
-
-Gebruik uitsluitend de aangeleverde context. Verzin geen beleid, deadlines of definities die niet in de context staan.
-Als de context onvoldoende is, zeg dat expliciet en blijf eerlijk.
-Antwoord altijd in het Nederlands.
-Geef eerst direct antwoord op de vraag en blijf compact.
-Noem geen bronlabels zoals "Bron 1" in de hoofdtekst.
-Neem geen irrelevante details over uit andere chunks.
-Schrijf afkortingen alleen uit als de context die afkorting expliciet uitlegt of als de gebruiker daar expliciet om vraagt.
-Als een afkorting in de context bekend gebruikt wordt maar niet letterlijk wordt uitgeschreven, behoud dan de afkorting in je antwoord.
-
-Gewenste antwoordsvorm:
-${this.getResponseShape(analysis)}
-
-Context:
-${context}`;
-  }
-
-  private getResponseShape(analysis: QueryAnalysis): string {
-    if (analysis.intent === 'summary' && analysis.focusTerms.includes('stappenplan')) {
-      return [
-        '- Geef precies 4 korte genummerde stappen als de context stap 1 t/m 4 ondersteunt.',
-        '- Houd elke stap bij 1 korte zin.',
-        '- Als niet alle stappen voldoende onderbouwd zijn, geef dan een korte algemene samenvatting in maximaal 3 zinnen.',
-      ].join('\n');
-    }
-
-    if (analysis.intent === 'summary') {
-      return [
-        '- Geef een korte samenvatting in maximaal 3 zinnen.',
-        '- Benoem alleen de kernpunten die direct relevant zijn voor de vraag.',
-      ].join('\n');
-    }
-
-    if (analysis.intent === 'definition') {
-      return [
-        '- Geef eerst een directe definitie in 1 zin.',
-        '- Voeg daarna hoogstens 1 of 2 korte zinnen toe met relevante toelichting.',
-      ].join('\n');
-    }
-
-    if (analysis.intent === 'comparison') {
-      return [
-        '- Vergelijk de twee onderwerpen kort en duidelijk.',
-        '- Gebruik maximaal 2 korte alinea’s of 2 korte bullets.',
-      ].join('\n');
-    }
-
-    return [
-      '- Geef een direct antwoord in 2 tot 4 zinnen.',
-      '- Begin met het kernantwoord en voeg daarna alleen de relevantste details toe.',
-    ].join('\n');
-  }
-
-  private buildContext(chunks: SearchResult[]): string {
-    return chunks
-      .map(
-        (chunk, index) =>
-          `[Bron ${index + 1}]
-Titel: ${chunk.metadata.title}
-Bron: ${chunk.metadata.source}
-Inhoud:
-${chunk.content}`,
-      )
-      .join('\n\n---\n\n');
   }
 
   private generateFallback(chunks: SearchResult[], analysis: QueryAnalysis): string {
@@ -178,7 +111,7 @@ ${chunk.content}`,
     }
 
     return orderedSteps
-      .map((chunk) => `${this.extractStepNumber(chunk.metadata.title)}. ${this.summarizeChunk(chunk.content, 1)}`)
+      .map((chunk) => `Stap ${this.extractStepNumber(chunk.metadata.title)}: ${this.summarizeChunk(chunk.content, 1)}`)
       .join('\n');
   }
 
@@ -257,5 +190,91 @@ ${chunk.content}`,
   private extractStepNumber(title: string): number {
     const match = title.match(/Stap (\d+)/i);
     return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+  }
+
+  private finalizeAnswer(answer: string, input: GenerateAnswerInput): string {
+    let finalAnswer = answer.trim();
+
+    if (finalAnswer.length === 0) {
+      return finalAnswer;
+    }
+
+    finalAnswer = this.repairStepSummaryIfNeeded(finalAnswer, input);
+    finalAnswer = this.repairAbbreviationExpansionIfNeeded(finalAnswer, input);
+
+    return finalAnswer.trim();
+  }
+
+  private repairStepSummaryIfNeeded(answer: string, input: GenerateAnswerInput): string {
+    if (!(input.analysis.intent === 'summary' && input.analysis.focusTerms.includes('stappenplan'))) {
+      return answer;
+    }
+
+    const stepChunks = input.chunks
+      .filter((chunk) => /Stap [1-4]:/i.test(chunk.metadata.title))
+      .sort((a, b) => this.extractStepNumber(a.metadata.title) - this.extractStepNumber(b.metadata.title));
+
+    if (stepChunks.length < 4) {
+      return answer;
+    }
+
+    const hasAllStepLabels = [1, 2, 3, 4].every((step) =>
+      new RegExp(`(^|\\n)\\s*Stap ${step}:`, 'i').test(answer),
+    );
+
+    if (hasAllStepLabels) {
+      return answer;
+    }
+
+    return this.buildStepSummary(stepChunks);
+  }
+
+  private repairAbbreviationExpansionIfNeeded(answer: string, input: GenerateAnswerInput): string {
+    const normalizedQuestion = input.question.toLowerCase();
+    const asksAboutPo = /\bpo\b/i.test(input.question);
+
+    if (!asksAboutPo) {
+      return answer;
+    }
+
+    const explicitPoExpansion = this.findExplicitPoExpansion(input.chunks);
+
+    if (explicitPoExpansion) {
+      return answer;
+    }
+
+    if (/^waar staat po voor/i.test(normalizedQuestion)) {
+      return this.buildPoNoExpansionAnswer(input.chunks, true);
+    }
+
+    if (/po staat voor/i.test(answer)) {
+      return this.buildPoNoExpansionAnswer(input.chunks, false);
+    }
+
+    return answer;
+  }
+
+  private findExplicitPoExpansion(chunks: SearchResult[]): string | null {
+    for (const chunk of chunks) {
+      const match = chunk.content.match(/\bPO staat voor\s+([^.\n]+)/i);
+
+      if (match) {
+        return match[1].trim();
+      }
+    }
+
+    return null;
+  }
+
+  private buildPoNoExpansionAnswer(chunks: SearchResult[], explicitQuestion: boolean): string {
+    const meaning = this.buildDefinitionAnswer(chunks)
+      .replace(/^PO staat voor\s+[^.]+\.\s*/i, '')
+      .trim();
+
+    if (explicitQuestion) {
+      return `De meegeleverde cursusinhoud legt niet letterlijk uit waar de afkorting PO voor staat. Wel blijkt dat PO hier gaat over hoe je werkt, zoals communicatie, samenwerking, feedback verwerken en verantwoordelijkheid nemen.${meaning.length > 0 ? ` ${meaning}` : ''}`.trim();
+    }
+
+    return `PO gaat hier over hoe je werkt, zoals communicatie, samenwerking, feedback verwerken en verantwoordelijkheid nemen.${meaning.length > 0 ? ` ${meaning}` : ''}`.trim();
   }
 }

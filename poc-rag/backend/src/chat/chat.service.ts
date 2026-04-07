@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { SearchResult, SearchService } from '../search/search.service';
+import { QueryAnalysis, SearchResult, SearchService } from '../search/search.service';
 import { AnswerGenerationService } from './answer-generation.service';
 import { ChatResponseDto, ChatSourceDto } from './chat-response.dto';
 import { ChatMessageDto } from './dto/chat-message.dto';
@@ -20,7 +20,7 @@ export class ChatService {
     const history = body.history ?? [];
     const outcome = await this.searchService.searchRelevantChunks(body.message, 3);
     const { analysis, results: chunks } = outcome;
-    const sources = this.buildSources(chunks);
+    const sources = this.buildSources(chunks, analysis);
 
     if (chunks.length === 0) {
       this.logger.log(`chat mode=no-context intent=${analysis.intent} question="${body.message}"`);
@@ -41,11 +41,11 @@ export class ChatService {
     return { answer: generation.answer, sources };
   }
 
-  private buildSources(chunks: SearchResult[]): ChatSourceDto[] {
+  private buildSources(chunks: SearchResult[], analysis: QueryAnalysis): ChatSourceDto[] {
+    const selectedChunks = this.selectSourceChunks(chunks, analysis);
     const seen = new Set<string>();
 
-    return chunks
-      .slice(0, 3)
+    return selectedChunks
       .map((chunk) => ({
         title: chunk.metadata.title,
         source: chunk.metadata.source,
@@ -63,7 +63,66 @@ export class ChatService {
       });
   }
 
+  private selectSourceChunks(chunks: SearchResult[], analysis: QueryAnalysis): SearchResult[] {
+    if (analysis.intent === 'summary' && analysis.matchedConcepts.includes('stappenplan')) {
+      return chunks
+        .filter((chunk) => /Stap [1-4]:/i.test(chunk.metadata.title))
+        .sort((a, b) => this.extractStepNumber(a.metadata.title) - this.extractStepNumber(b.metadata.title))
+        .slice(0, 4);
+    }
+
+    if (analysis.intent === 'comparison' && analysis.matchedConcepts.length >= 2) {
+      const selected: SearchResult[] = [];
+
+      for (const concept of analysis.matchedConcepts) {
+        const match = chunks.find((chunk) => this.chunkMatchesConcept(chunk, concept));
+
+        if (match && !selected.some((item) => item.id === match.id)) {
+          selected.push(match);
+        }
+      }
+
+      return selected.slice(0, 3);
+    }
+
+    if (analysis.intent === 'definition') {
+      const topScore = chunks[0]?.score ?? 0;
+      return chunks
+        .filter((chunk, index) => index < 2 || chunk.score >= Math.max(topScore - 6, 0))
+        .slice(0, 2);
+    }
+
+    return chunks.slice(0, 3);
+  }
+
+  private chunkMatchesConcept(chunk: SearchResult, concept: string): boolean {
+    const haystack = `${chunk.metadata.title} ${chunk.metadata.source} ${chunk.content}`.toLowerCase();
+
+    if (concept === 'groepschallenge') {
+      return haystack.includes('groepschallenge') || haystack.includes('challenge');
+    }
+
+    if (concept === 'individueel project') {
+      return haystack.includes('individueel project');
+    }
+
+    if (concept === 'portflow') {
+      return haystack.includes('portflow') || haystack.includes('portfolio');
+    }
+
+    if (concept === 'stappenplan') {
+      return /stap [1-4]/i.test(chunk.metadata.title);
+    }
+
+    return haystack.includes(concept.toLowerCase());
+  }
+
   private formatSourcesForLog(sources: ChatSourceDto[]): string {
     return sources.map((source) => `${source.title} (${source.score})`).join(', ');
+  }
+
+  private extractStepNumber(title: string): number {
+    const match = title.match(/Stap (\d+)/i);
+    return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
   }
 }
