@@ -1,0 +1,2156 @@
+[index.html](https://github.com/user-attachments/files/26659151/index.html)[Upload<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fontys ICT Study Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       DESIGN TOKENS
+       ======================================== */
+    :root {
+      --font-body: 'DM Sans', system-ui, sans-serif;
+      --font-display: 'Fraunces', Georgia, serif;
+
+      --bg: #f6f4fa;
+      --surface: rgba(255,255,255,0.92);
+      --surface-elevated: rgba(255,255,255,0.96);
+      --line: rgba(55,30,85,0.09);
+      --line-strong: rgba(55,30,85,0.16);
+
+      --text: #1a1730;
+      --text-secondary: #6b6588;
+      --text-tertiary: #9891a8;
+
+      --purple-900: #2d1650;
+      --purple-800: #3f1d6e;
+      --purple-700: #55278c;
+      --purple-600: #6b34a6;
+      --purple-500: #7c3aed;
+      --purple-100: #ede5ff;
+      --purple-50: #f5f0ff;
+
+      --magenta-600: #d6006e;
+      --magenta-500: #e5007d;
+      --magenta-100: #ffe0f0;
+      --magenta-50: #fff0f7;
+
+      --blue-600: #0068cc;
+      --blue-500: #0076e0;
+      --blue-100: #d8ecff;
+      --blue-50: #eef6ff;
+
+      --green-600: #167a5b;
+      --green-500: #1d8f6a;
+      --green-100: #d4f5e8;
+      --green-50: #eefbf5;
+
+      --amber-600: #a06000;
+      --amber-500: #c77800;
+      --amber-100: #fff1d0;
+      --amber-50: #fff9eb;
+
+      --red-600: #c43025;
+      --red-500: #e04035;
+      --red-100: #ffe0db;
+      --red-50: #fff5f3;
+
+      --shadow-sm: 0 1px 3px rgba(30,15,60,0.06);
+      --shadow-md: 0 4px 16px rgba(30,15,60,0.08);
+      --shadow-lg: 0 12px 40px rgba(30,15,60,0.1);
+      --shadow-xl: 0 20px 60px rgba(30,15,60,0.14);
+
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 24px;
+
+      --ease: cubic-bezier(0.22, 0.68, 0, 1);
+    }
+
+    /* ========================================
+       RESET & BASE
+       ======================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body.coach-open { overflow: hidden; }
+
+    h1, h2, h3, h4, h5 { line-height: 1.2; }
+    h2, h3 { font-family: var(--font-display); }
+
+    a { color: var(--purple-600); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    img { display: block; max-width: 100%; }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    /* ========================================
+       LAYOUT SHELL
+       ======================================== */
+    .app {
+      display: grid;
+      grid-template-columns: 72px 260px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ---- Canvas Rail ---- */
+    .rail {
+      background: var(--purple-900);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0 20px;
+      gap: 6px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .rail-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--magenta-500), var(--purple-500));
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+    }
+
+    .rail-logo svg { width: 24px; height: 24px; }
+
+    .rail-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.55);
+      transition: all 180ms var(--ease);
+      position: relative;
+    }
+
+    .rail-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+    .rail-btn.active {
+      color: var(--purple-900);
+      background: #fff;
+    }
+
+    .rail-btn svg { width: 20px; height: 20px; }
+
+    .rail-btn[data-badge]::after {
+      content: attr(data-badge);
+      position: absolute;
+      top: 4px; right: 4px;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 99px;
+      background: var(--magenta-500);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      padding: 0 4px;
+    }
+
+    .rail-spacer { flex: 1; }
+
+    .rail-coach {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(229,0,125,0.25), rgba(124,58,237,0.25));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      transition: all 180ms var(--ease);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .rail-coach:hover {
+      background: linear-gradient(135deg, rgba(229,0,125,0.4), rgba(124,58,237,0.4));
+      transform: scale(1.06);
+    }
+
+    .rail-coach svg { width: 22px; height: 22px; }
+
+    /* ---- Sidebar ---- */
+    .sidebar {
+      background: linear-gradient(180deg, var(--purple-800) 0%, var(--purple-900) 100%);
+      color: #fff;
+      padding: 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 20px;
+    }
+
+    .sidebar-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--magenta-500), var(--blue-500));
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .sidebar-user-info { min-width: 0; }
+    .sidebar-user-info strong { display: block; font-size: 0.92rem; }
+    .sidebar-user-info span { display: block; font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 1px; }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+      padding: 0 4px;
+    }
+
+    .sidebar-brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--magenta-500), var(--purple-500));
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand-text { min-width: 0; }
+    .sidebar-brand-text .label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.5);
+      display: block;
+    }
+    .sidebar-brand-text h1 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
+    .sidebar-section {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 12px;
+    }
+
+    .sidebar-section-title {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .sidebar-section p {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    .sidebar-section strong {
+      font-size: 0.92rem;
+    }
+
+    .sidebar-nav { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 150ms var(--ease);
+      text-align: left;
+      width: 100%;
+    }
+
+    .nav-btn svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.7; }
+
+    .nav-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-btn.active {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: inset 3px 0 0 var(--magenta-500);
+    }
+
+    .nav-btn.active svg { opacity: 1; }
+
+    .tool-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tool-pill {
+      padding: 5px 10px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.08);
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.75);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 12px;
+    }
+
+    /* ========================================
+       MAIN CONTENT
+       ======================================== */
+    .main {
+      padding: 24px 28px 48px;
+      min-width: 0;
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(124,58,237,0.04), transparent 50%),
+        radial-gradient(ellipse at 90% 100%, rgba(229,0,125,0.03), transparent 50%),
+        var(--bg);
+    }
+
+    /* ---- Topbar ---- */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px 10px 18px;
+      border-radius: var(--radius-lg);
+      background: var(--surface-elevated);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      background: var(--purple-50);
+      border: 1px solid transparent;
+      transition: all 180ms var(--ease);
+    }
+
+    .search-bar:focus-within {
+      background: #fff;
+      border-color: var(--purple-500);
+      box-shadow: 0 0 0 3px var(--purple-100);
+    }
+
+    .search-bar svg { width: 16px; height: 16px; color: var(--purple-600); flex-shrink: 0; }
+
+    .search-bar input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      width: 100%;
+      font: inherit;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .search-bar input::placeholder { color: var(--text-tertiary); }
+
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+    .chip {
+      padding: 7px 14px;
+      border-radius: 99px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      transition: all 150ms var(--ease);
+      white-space: nowrap;
+    }
+
+    .chip:hover { border-color: var(--line-strong); }
+    .chip.active { background: var(--purple-100); color: var(--purple-600); border-color: transparent; }
+    .chip.toggle { background: var(--green-100); color: var(--green-600); border-color: transparent; }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      transition: all 150ms var(--ease);
+      position: relative;
+    }
+
+    .icon-btn:hover { border-color: var(--line-strong); background: #fff; }
+    .icon-btn svg { width: 18px; height: 18px; color: var(--text-secondary); }
+
+    .icon-btn[data-badge]::after {
+      content: attr(data-badge);
+      position: absolute;
+      top: -4px; right: -4px;
+      min-width: 18px; height: 18px;
+      border-radius: 99px;
+      background: var(--magenta-500);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      padding: 0 4px;
+    }
+
+    .topbar-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    /* ---- Screen scaffolding ---- */
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeUp 350ms var(--ease); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .screen-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .screen-header h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+
+    .screen-header .eyebrow {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-family: var(--font-body);
+    }
+
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* ---- Buttons ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 180ms var(--ease);
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .btn svg { width: 16px; height: 16px; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(124,58,237,0.25);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(124,58,237,0.3); }
+
+    .btn-accent {
+      background: linear-gradient(135deg, var(--magenta-500), var(--purple-600));
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(229,0,125,0.2);
+    }
+    .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(229,0,125,0.28); }
+
+    .btn-secondary {
+      background: #fff;
+      border-color: var(--line);
+      color: var(--text);
+    }
+    .btn-secondary:hover { border-color: var(--line-strong); }
+
+    .btn-ghost {
+      color: var(--purple-600);
+      padding: 9px 10px;
+    }
+    .btn-ghost:hover { background: var(--purple-50); }
+
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+    /* ---- Panels / Cards ---- */
+    .card {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 250ms var(--ease);
+    }
+
+    .card:hover { box-shadow: var(--shadow-md); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card-header h3 { font-size: 1.05rem; font-weight: 600; }
+
+    .card-header .eyebrow {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      font-weight: 600;
+      margin-bottom: 3px;
+      font-family: var(--font-body);
+    }
+
+    /* ---- Status Badges ---- */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-neutral { background: #edeaf3; color: #4a4565; }
+    .badge-ok { background: var(--green-100); color: var(--green-600); }
+    .badge-warn { background: var(--amber-100); color: var(--amber-600); }
+    .badge-alert { background: var(--red-100); color: var(--red-600); }
+    .badge-info { background: var(--blue-100); color: var(--blue-600); }
+    .badge-purple { background: var(--purple-100); color: var(--purple-600); }
+
+    /* ========================================
+       DASHBOARD SCREEN
+       ======================================== */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 340px;
+      grid-template-rows: auto auto;
+      gap: 18px;
+    }
+
+    /* -- Focus card (spans 2 cols) -- */
+    .focus-card {
+      grid-column: 1 / 3;
+      background: linear-gradient(135deg, var(--purple-50) 0%, #fff 40%, var(--magenta-50) 100%);
+      border-color: rgba(124,58,237,0.1);
+    }
+
+    .focus-list { display: grid; gap: 10px; }
+
+    .focus-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.85);
+      border: 1px solid var(--line);
+      transition: all 180ms var(--ease);
+    }
+
+    .focus-item:hover { background: #fff; border-color: var(--line-strong); }
+
+    .focus-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+
+    .focus-indicator.urgent { background: var(--red-500); box-shadow: 0 0 8px rgba(224,64,53,0.3); }
+    .focus-indicator.warning { background: var(--amber-500); }
+    .focus-indicator.info { background: var(--blue-500); }
+
+    .focus-item-content { flex: 1; min-width: 0; }
+    .focus-item-content h4 { font-size: 0.92rem; font-weight: 600; margin-bottom: 2px; }
+    .focus-item-content p { font-size: 0.82rem; color: var(--text-secondary); }
+
+    .focus-item .btn { flex-shrink: 0; }
+
+    .focus-tags { display: flex; gap: 6px; margin-top: 6px; }
+    .focus-tag {
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: var(--purple-100);
+      color: var(--purple-600);
+    }
+
+    /* -- Side column -- */
+    .side-stack {
+      grid-column: 3;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .feedback-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .feedback-item:last-child { border-bottom: 0; padding-bottom: 0; }
+    .feedback-item:first-child { padding-top: 0; }
+
+    .feedback-source {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .feedback-source .badge { font-size: 0.68rem; }
+    .feedback-source .time { font-size: 0.75rem; color: var(--text-tertiary); }
+
+    .feedback-item h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 3px; }
+    .feedback-item p { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+
+    .notice-list { display: grid; gap: 8px; }
+
+    .notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--purple-50);
+      font-size: 0.82rem;
+    }
+
+    .notice svg { width: 16px; height: 16px; color: var(--purple-500); flex-shrink: 0; margin-top: 1px; }
+    .notice.muted { background: #f0edf4; color: var(--text-secondary); }
+    .notice.muted svg { color: var(--text-tertiary); }
+
+    .tool-grid-small { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .tool-tile {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      background: var(--purple-50);
+      border: 1px solid transparent;
+      transition: all 150ms var(--ease);
+      text-align: left;
+    }
+
+    .tool-tile:hover { background: var(--purple-100); }
+    .tool-tile strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+    .tool-tile span { font-size: 0.75rem; color: var(--text-secondary); }
+
+    /* -- Week strip -- */
+    .week-card { grid-column: 1 / 3; }
+
+    .week-strip {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .day-col {
+      padding: 12px 10px;
+      border-radius: var(--radius-md);
+      background: rgba(245,240,255,0.5);
+      border: 1px solid var(--line);
+      min-height: 120px;
+      transition: all 150ms var(--ease);
+    }
+
+    .day-col:hover { border-color: var(--line-strong); }
+    .day-col.today { background: var(--purple-50); border-color: var(--purple-500); }
+
+    .day-col .day-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+
+    .day-col.today .day-label { color: var(--purple-600); }
+
+    .day-event {
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      margin-bottom: 4px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .day-event.lecture { background: rgba(0,118,224,0.1); color: var(--blue-600); }
+    .day-event.task { background: var(--amber-100); color: var(--amber-600); }
+    .day-event.review { background: var(--green-100); color: var(--green-600); }
+    .day-event.focus { background: var(--purple-100); color: var(--purple-600); }
+    .day-event.deadline { background: var(--red-100); color: var(--red-600); font-weight: 700; }
+
+    .day-event .event-time { display: block; font-size: 0.68rem; opacity: 0.7; }
+
+    .planner-hint {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--blue-50), var(--purple-50));
+      border: 1px solid rgba(124,58,237,0.08);
+    }
+
+    .planner-hint-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--purple-500), var(--blue-500));
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .planner-hint-icon svg { width: 18px; height: 18px; color: #fff; }
+
+    .planner-hint-content { flex: 1; }
+    .planner-hint-content strong { font-size: 0.88rem; display: block; margin-bottom: 2px; }
+    .planner-hint-content p { font-size: 0.82rem; color: var(--text-secondary); }
+
+    /* -- Progress section -- */
+    .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .progress-bar-wrap { margin-bottom: 14px; }
+    .progress-bar-wrap:last-child { margin-bottom: 0; }
+    .progress-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      margin-bottom: 6px;
+    }
+    .progress-bar-label span:last-child { font-weight: 600; color: var(--purple-600); }
+
+    .progress-bar {
+      height: 8px;
+      border-radius: 99px;
+      background: #eae6f2;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--purple-500), var(--blue-500));
+      transition: width 600ms var(--ease);
+    }
+
+    .competency-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .comp-mini {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      background: rgba(245,240,255,0.6);
+      border: 1px solid var(--line);
+    }
+
+    .comp-mini strong { display: block; font-size: 0.85rem; margin-bottom: 3px; }
+    .comp-mini span { font-size: 0.78rem; color: var(--text-secondary); }
+    .comp-mini.warn { background: var(--amber-50); border-color: rgba(199,120,0,0.12); }
+    .comp-mini.ok { background: var(--green-50); }
+
+    /* ========================================
+       PLANNER SCREEN
+       ======================================== */
+    .planner-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 18px;
+    }
+
+    .planner-aside .card + .card { margin-top: 14px; }
+
+    .suggestion-item {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      background: var(--amber-50);
+      border: 1px solid rgba(199,120,0,0.08);
+      margin-bottom: 8px;
+    }
+
+    .suggestion-item:last-child { margin-bottom: 0; }
+    .suggestion-item strong { display: block; font-size: 0.85rem; margin-bottom: 2px; }
+    .suggestion-item p { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; }
+
+    .timeline-legend {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+    }
+
+    .legend-dot.lecture { background: var(--blue-500); }
+    .legend-dot.task { background: var(--amber-500); }
+    .legend-dot.review { background: var(--green-500); }
+    .legend-dot.focus { background: var(--purple-500); }
+    .legend-dot.deadline { background: var(--red-500); }
+
+    .timeline-cols {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .tl-col {
+      border-radius: var(--radius-md);
+      background: rgba(245,240,255,0.4);
+      border: 1px solid var(--line);
+      min-height: 400px;
+      overflow: hidden;
+    }
+
+    .tl-col-head {
+      padding: 10px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-tertiary);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.6);
+    }
+
+    .tl-col.today .tl-col-head {
+      background: var(--purple-100);
+      color: var(--purple-600);
+    }
+
+    .tl-col-body { padding: 8px; display: grid; gap: 6px; align-content: start; }
+
+    .tl-event {
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .tl-event strong { display: block; margin-bottom: 2px; }
+    .tl-event span { font-size: 0.72rem; opacity: 0.7; }
+
+    .tl-event.lecture { background: rgba(0,118,224,0.1); color: var(--blue-600); }
+    .tl-event.review { background: var(--green-100); color: var(--green-600); }
+    .tl-event.task { background: var(--amber-100); color: var(--amber-600); }
+    .tl-event.focus { background: var(--purple-100); color: var(--purple-600); }
+    .tl-event.deadline { background: var(--red-100); color: var(--red-600); }
+
+    .tl-empty {
+      padding: 12px;
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+
+    /* ========================================
+       COMPETENCIES SCREEN
+       ======================================== */
+    .comp-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 18px;
+    }
+
+    .comp-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--line);
+      margin-bottom: 10px;
+      transition: all 180ms var(--ease);
+      cursor: pointer;
+    }
+
+    .comp-row:hover { background: #fff; border-color: var(--line-strong); }
+    .comp-row:last-child { margin-bottom: 0; }
+
+    .comp-row-info { flex: 1; min-width: 0; }
+    .comp-row-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; }
+    .comp-row-info p { font-size: 0.82rem; color: var(--text-secondary); }
+
+    .comp-bar { width: 120px; }
+
+    .detail-panel {
+      position: sticky;
+      top: 24px;
+    }
+
+    .detail-section {
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      background: var(--purple-50);
+      margin-bottom: 10px;
+    }
+
+    .detail-section:last-child { margin-bottom: 0; }
+    .detail-section h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 8px; }
+
+    .detail-list {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      gap: 6px;
+    }
+
+    .detail-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .detail-list li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 99px;
+      background: var(--purple-500);
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+
+    /* ========================================
+       FEEDBACK SCREEN
+       ======================================== */
+    .feedback-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 18px;
+    }
+
+    .fb-card {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.85);
+      border: 1px solid var(--line);
+      margin-bottom: 12px;
+      transition: all 180ms var(--ease);
+    }
+
+    .fb-card:hover { background: #fff; border-color: var(--line-strong); }
+    .fb-card:last-child { margin-bottom: 0; }
+
+    .fb-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .fb-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+    .fb-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
+
+    .fb-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+    /* ---- Chat panel in feedback ---- */
+    .chat-panel {
+      position: sticky;
+      top: 24px;
+    }
+
+    .chat-panel .card { display: flex; flex-direction: column; height: 560px; }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 4px 0;
+    }
+
+    .chat-msg {
+      max-width: 88%;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .chat-msg.assistant {
+      background: var(--purple-50);
+      align-self: flex-start;
+    }
+
+    .chat-msg.user {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      align-self: flex-end;
+    }
+
+    .chat-msg.intro {
+      background: linear-gradient(135deg, var(--purple-100), var(--magenta-100));
+    }
+
+    .chat-msg-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+    .prompt-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px; }
+
+    .prompt-chip {
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      text-align: left;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--line);
+      transition: all 150ms var(--ease);
+    }
+
+    .prompt-chip:hover { background: var(--purple-50); border-color: var(--purple-500); }
+
+    .chat-composer {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.8);
+      font-size: 0.82rem;
+      color: var(--text-tertiary);
+    }
+
+    /* ========================================
+       FLOATING COACH BUBBLE
+       ======================================== */
+    .float-coach {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 20;
+      animation: floatIn 400ms 300ms var(--ease) both;
+    }
+
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .float-coach.is-hidden { display: none; }
+
+    .coach-bubble {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,240,247,0.98));
+      border: 1px solid rgba(229,0,125,0.12);
+      box-shadow: var(--shadow-xl);
+      cursor: pointer;
+      transition: all 200ms var(--ease);
+      max-width: 380px;
+    }
+
+    .coach-bubble:hover { transform: translateY(-2px); box-shadow: 0 24px 68px rgba(30,15,60,0.18); }
+
+    .coach-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--magenta-500), var(--purple-600));
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .coach-icon svg { width: 24px; height: 24px; color: #fff; }
+
+    .coach-bubble-text { min-width: 0; }
+    .coach-bubble-text .label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--magenta-600); font-weight: 700; }
+    .coach-bubble-text strong { display: block; font-size: 0.9rem; margin: 2px 0; }
+    .coach-bubble-text p { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
+
+    .coach-bubble-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .coach-bubble-close {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 99px;
+      background: #fff;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-size: 0.7rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ========================================
+       COACH DRAWER
+       ======================================== */
+    .coach-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,15,50,0.3);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms var(--ease);
+      z-index: 29;
+    }
+
+    body.coach-open .coach-overlay { opacity: 1; pointer-events: auto; }
+
+    .coach-drawer {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      bottom: 16px;
+      width: 440px;
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(124,58,237,0.12);
+      background:
+        radial-gradient(circle at top right, rgba(229,0,125,0.06), transparent 50%),
+        linear-gradient(180deg, #fff, #faf8fc);
+      box-shadow: var(--shadow-xl);
+      display: grid;
+      grid-template-rows: auto auto 1fr auto auto;
+      gap: 12px;
+      padding: 20px;
+      transform: translateX(120%);
+      transition: transform 280ms var(--ease);
+      z-index: 30;
+      overflow: hidden;
+    }
+
+    body.coach-open .coach-drawer { transform: translateX(0); }
+
+    .coach-drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .coach-drawer-header h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .coach-drawer-header .eyebrow {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--magenta-600);
+      font-weight: 600;
+      margin-bottom: 2px;
+      font-family: var(--font-body);
+    }
+
+    .coach-context {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .coach-ctx-card {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.8);
+    }
+
+    .coach-ctx-card .ctx-label {
+      display: block;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--magenta-600);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .coach-ctx-card strong { font-size: 0.85rem; display: block; margin-bottom: 3px; }
+    .coach-ctx-card p { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
+
+    .coach-messages {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 4px 2px;
+    }
+
+    .coach-prompt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .coach-composer-wrap {
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+    }
+
+    .coach-input {
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.8);
+      font-size: 0.82rem;
+      color: var(--text-tertiary);
+      margin-bottom: 10px;
+    }
+
+    .coach-footer { display: flex; justify-content: space-between; gap: 8px; }
+
+    /* ========================================
+       RESPONSIVE
+       ======================================== */
+    @media (max-width: 1440px) {
+      .dash-grid { grid-template-columns: 1fr 1fr 300px; }
+      .week-strip { grid-template-columns: repeat(7, 1fr); }
+    }
+
+    @media (max-width: 1200px) {
+      .dash-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .side-stack { grid-column: 1 / 3; grid-row: auto; }
+      .focus-card { grid-column: 1 / 3; }
+      .week-card { grid-column: 1 / 3; }
+      .timeline-cols { grid-template-columns: repeat(4, 1fr); }
+      .comp-layout, .feedback-layout { grid-template-columns: 1fr; }
+      .planner-layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .rail { display: none; }
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 16px;
+      }
+      .week-strip { grid-template-columns: repeat(4, 1fr); }
+      .dash-grid { grid-template-columns: 1fr; }
+      .focus-card, .week-card, .side-stack { grid-column: auto; }
+      .coach-drawer { width: calc(100% - 32px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- ====== RAIL ====== -->
+    <nav class="rail">
+      <div class="rail-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#fff"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      </div>
+      <button class="rail-btn active" title="Dashboard" data-nav="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </button>
+      <button class="rail-btn" title="Weekplanning" data-nav="planner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </button>
+      <button class="rail-btn" title="Competenties" data-nav="competencies">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </button>
+      <button class="rail-btn" title="Feedback" data-badge="2" data-nav="feedback">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <div class="rail-spacer"></div>
+      <button class="rail-coach" data-open-coach title="Leerkompas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+      </button>
+    </nav>
+
+    <!-- ====== SIDEBAR ====== -->
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">WH</div>
+        <div class="sidebar-user-info">
+          <strong>Wares Helmand</strong>
+          <span>Semester 6 - Open Learning</span>
+        </div>
+      </div>
+
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">F</div>
+        <div class="sidebar-brand-text">
+          <span class="label">Fontys ICT</span>
+          <h1>Study Hub</h1>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-nav="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </button>
+        <button class="nav-btn" data-nav="planner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Weekplanning
+        </button>
+        <button class="nav-btn" data-nav="competencies">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Competenties
+        </button>
+        <button class="nav-btn" data-nav="feedback">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Feedback
+        </button>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Context</div>
+        <strong>HBO-ICT Open Learning</strong>
+        <p>Canvas als basis, aangevuld met een studentgerichte laag die samenhang, planning en competenties centraal zet.</p>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Actieve koppelingen</div>
+        <div class="tool-pills">
+          <span class="tool-pill">Canvas</span>
+          <span class="tool-pill">Portflow</span>
+          <span class="tool-pill">FeedPulse</span>
+          <span class="tool-pill">Teams</span>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ====== MAIN ====== -->
+    <main class="main">
+      <div class="topbar">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Zoek in opdrachten, feedback, competenties of tools" aria-label="Zoeken">
+        </div>
+        <div class="topbar-actions">
+          <button class="chip active">Semester 6</button>
+          <button class="chip toggle">Alleen relevant</button>
+          <button class="icon-btn" data-badge="3" title="Meldingen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <div class="topbar-avatar">WH</div>
+        </div>
+      </div>
+
+      <!-- ============ DASHBOARD ============ -->
+      <section id="dashboard" class="screen active">
+        <div class="screen-header">
+          <div>
+            <div class="eyebrow">Hoofdscherm</div>
+            <h2>Wat moet ik nu doen?</h2>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">Bekijk semester</button>
+            <button class="btn btn-accent" data-prompt="plan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Auto-plan mijn week
+            </button>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <!-- Focus -->
+          <div class="card focus-card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Vandaag</div>
+                <h3>Dit vraagt je aandacht</h3>
+              </div>
+              <span class="badge badge-alert">3 acties</span>
+            </div>
+            <div class="focus-list">
+              <div class="focus-item">
+                <div class="focus-indicator urgent"></div>
+                <div class="focus-item-content">
+                  <h4>API beroepsproduct inleveren</h4>
+                  <p>Software Design - deadline morgen 23:59</p>
+                  <div class="focus-tags">
+                    <span class="focus-tag">Analyseren</span>
+                    <span class="focus-tag">Realiseren</span>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-secondary">Open opdracht</button>
+              </div>
+              <div class="focus-item">
+                <div class="focus-indicator warning"></div>
+                <div class="focus-item-content">
+                  <h4>2 Portflow-punten wachten op actie</h4>
+                  <p>Portfolio sprintreview - 18 uur geleden bijgewerkt</p>
+                  <div class="focus-tags">
+                    <span class="focus-tag">Reflecteren</span>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-secondary">Bekijk feedback</button>
+              </div>
+              <div class="focus-item">
+                <div class="focus-indicator info"></div>
+                <div class="focus-item-content">
+                  <h4>Samenwerken loopt achter op schema</h4>
+                  <p>Voeg nog 1 reflectie of peer review toe</p>
+                  <div class="focus-tags">
+                    <span class="focus-tag">Samenwerken</span>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-secondary" data-prompt="competencies">Plan bewijs</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Side stack -->
+          <div class="side-stack">
+            <!-- Recent feedback -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="eyebrow">Feedback</div>
+                  <h3>Recent ontvangen</h3>
+                </div>
+                <button class="btn btn-sm btn-ghost" data-nav="feedback">Alles</button>
+              </div>
+              <div class="feedback-item">
+                <div class="feedback-source">
+                  <span class="badge badge-info">Portflow</span>
+                  <span class="time">18 uur geleden</span>
+                </div>
+                <h4>API beroepsproduct</h4>
+                <p>Je argumentatie is sterk. Werk je keuze voor authenticatie nog uit en verwijs naar testresultaten.</p>
+              </div>
+              <div class="feedback-item">
+                <div class="feedback-source">
+                  <span class="badge badge-ok">FeedPulse</span>
+                  <span class="time">Gisteren</span>
+                </div>
+                <h4>Peer review wireflow</h4>
+                <p>Heldere flow. Voeg een edge case toe voor foutmeldingen.</p>
+              </div>
+            </div>
+
+            <!-- Meldingen -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="eyebrow">Meldingen</div>
+                  <h3>Relevant voor jou</h3>
+                </div>
+                <span class="badge badge-ok">Gefilterd</span>
+              </div>
+              <div class="notice-list">
+                <div class="notice">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Nieuwe rubric bij Portfolio sprintreview
+                </div>
+                <div class="notice">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                  Teams meeting morgen om 19:00
+                </div>
+                <div class="notice muted">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                  Semester 7 meldingen verborgen
+                </div>
+              </div>
+            </div>
+
+            <!-- Tools -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="eyebrow">Koppelingen</div>
+                  <h3>Snelle tools</h3>
+                </div>
+              </div>
+              <div class="tool-grid-small">
+                <button class="tool-tile"><strong>Portflow</strong><span>2 feedbackitems</span></button>
+                <button class="tool-tile"><strong>FeedPulse</strong><span>1 open review</span></button>
+                <button class="tool-tile"><strong>Teams</strong><span>Meeting 19:00</span></button>
+                <button class="tool-tile"><strong>Fontys Links</strong><span>3 bronnen</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Week strip -->
+          <div class="card week-card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Deze week</div>
+                <h3>Weekoverzicht</h3>
+              </div>
+              <div class="header-actions">
+                <button class="btn btn-sm btn-ghost" data-nav="planner">Volledig scherm</button>
+              </div>
+            </div>
+            <div class="week-strip">
+              <div class="day-col today">
+                <div class="day-label">Ma 7</div>
+                <div class="day-event lecture"><span class="event-time">18:30</span>Software Design</div>
+              </div>
+              <div class="day-col">
+                <div class="day-label">Di 8</div>
+                <div class="day-event review"><span class="event-time">19:00</span>Teams feedback</div>
+              </div>
+              <div class="day-col">
+                <div class="day-label">Wo 9</div>
+                <div class="day-event review"><span class="event-time">20 min</span>Peer review</div>
+              </div>
+              <div class="day-col">
+                <div class="day-label">Do 10</div>
+                <div class="day-event focus"><span class="event-time">20:00</span>Focusblok API</div>
+                <div class="day-event task"><span class="event-time">23:59</span>Portfolio upload</div>
+              </div>
+              <div class="day-col">
+                <div class="day-label">Vr 11</div>
+                <div class="day-event deadline"><span class="event-time">23:59</span>API deadline</div>
+              </div>
+              <div class="day-col">
+                <div class="day-label">Za 12</div>
+                <div class="day-event focus"><span class="event-time">10:00</span>Feedback verwerken</div>
+              </div>
+              <div class="day-col">
+                <div class="day-label">Zo 13</div>
+              </div>
+            </div>
+            <div class="planner-hint">
+              <div class="planner-hint-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <div class="planner-hint-content">
+                <strong>Leerkompas advies</strong>
+                <p>Reserveer donderdag 20:00 - 21:30 voor je API beroepsproduct. Je hebt nog geen werkblok ingepland.</p>
+              </div>
+              <button class="btn btn-sm btn-primary" data-prompt="plan">Toevoegen</button>
+            </div>
+          </div>
+
+          <!-- Progress -->
+          <div class="card" style="grid-column: 1 / 3;">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Voortgang</div>
+                <h3>Vakken en competenties</h3>
+              </div>
+              <button class="btn btn-sm btn-ghost" data-nav="competencies">Details</button>
+            </div>
+            <div class="progress-grid">
+              <div>
+                <h4 style="font-size:0.88rem; margin-bottom:14px;">Per vak</h4>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-label"><span>Software Design</span><span>76%</span></div>
+                  <div class="progress-bar"><div class="progress-bar-fill" style="width:76%"></div></div>
+                </div>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-label"><span>UX Design</span><span>54%</span></div>
+                  <div class="progress-bar"><div class="progress-bar-fill" style="width:54%"></div></div>
+                </div>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-label"><span>Projectsemester</span><span>68%</span></div>
+                  <div class="progress-bar"><div class="progress-bar-fill" style="width:68%"></div></div>
+                </div>
+              </div>
+              <div>
+                <h4 style="font-size:0.88rem; margin-bottom:14px;">Per competentie</h4>
+                <div class="competency-mini-grid">
+                  <div class="comp-mini ok"><strong>Analyseren</strong><span>Op schema</span></div>
+                  <div class="comp-mini warn"><strong>Samenwerken</strong><span>1 bewijs ontbreekt</span></div>
+                  <div class="comp-mini ok"><strong>Realiseren</strong><span>Bijna afgerond</span></div>
+                  <div class="comp-mini"><strong>Reflecteren</strong><span>Nieuwe feedback</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PLANNER ============ -->
+      <section id="planner" class="screen">
+        <div class="screen-header">
+          <div>
+            <div class="eyebrow">Weekscherm</div>
+            <h2>Activiteitenplanning</h2>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">Filters</button>
+            <button class="btn btn-accent" data-prompt="plan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Auto-plan
+            </button>
+          </div>
+        </div>
+
+        <div class="planner-layout">
+          <div class="planner-aside">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="eyebrow">Planhulp</div>
+                  <h3>Aanbevelingen</h3>
+                </div>
+              </div>
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:14px;">Er staan 3 deadlines gepland maar nog maar 1 studieblok. Leerkompas stelt 2 extra blokken voor.</p>
+              <div class="suggestion-item">
+                <strong>Donderdag 20:00 - 21:30</strong>
+                <p>Laatste checks API beroepsproduct</p>
+                <button class="btn btn-sm btn-secondary">Toevoegen</button>
+              </div>
+              <div class="suggestion-item">
+                <strong>Zaterdag 10:00 - 11:00</strong>
+                <p>Portflow feedback verwerken</p>
+                <button class="btn btn-sm btn-secondary">Toevoegen</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="eyebrow">Inzicht</div>
+                  <h3>Studiebelasting</h3>
+                </div>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-label"><span>Ingepland</span><span>4,5 uur</span></div>
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:45%"></div></div>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-label"><span>Aanbevolen</span><span>8 uur</span></div>
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:80%; background: linear-gradient(90deg, var(--amber-500), var(--red-500));"></div></div>
+              </div>
+              <p style="font-size:0.82rem; color:var(--amber-600); margin-top:8px;">Je week is nog niet haalbaar ingedeeld.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">7 apr - 13 apr 2026</div>
+                <h3>Weektijdlijn</h3>
+              </div>
+            </div>
+            <div class="timeline-legend">
+              <div class="legend-item"><div class="legend-dot lecture"></div>Les</div>
+              <div class="legend-item"><div class="legend-dot task"></div>Taak</div>
+              <div class="legend-item"><div class="legend-dot review"></div>Feedback</div>
+              <div class="legend-item"><div class="legend-dot focus"></div>Focusblok</div>
+              <div class="legend-item"><div class="legend-dot deadline"></div>Deadline</div>
+            </div>
+            <div class="timeline-cols">
+              <div class="tl-col today">
+                <div class="tl-col-head">Maandag</div>
+                <div class="tl-col-body">
+                  <div class="tl-event lecture"><strong>Software Design</strong><span>18:30 - 20:00</span></div>
+                </div>
+              </div>
+              <div class="tl-col">
+                <div class="tl-col-head">Dinsdag</div>
+                <div class="tl-col-body">
+                  <div class="tl-event review"><strong>Teams feedbacksessie</strong><span>19:00 - 20:00</span></div>
+                </div>
+              </div>
+              <div class="tl-col">
+                <div class="tl-col-head">Woensdag</div>
+                <div class="tl-col-body">
+                  <div class="tl-event review"><strong>FeedPulse review</strong><span>~20 min</span></div>
+                </div>
+              </div>
+              <div class="tl-col">
+                <div class="tl-col-head">Donderdag</div>
+                <div class="tl-col-body">
+                  <div class="tl-event focus"><strong>Focusblok API</strong><span>20:00 - 21:30</span></div>
+                  <div class="tl-event task"><strong>Portfolio upload</strong><span>23:59</span></div>
+                </div>
+              </div>
+              <div class="tl-col">
+                <div class="tl-col-head">Vrijdag</div>
+                <div class="tl-col-body">
+                  <div class="tl-event deadline"><strong>API deadline</strong><span>23:59</span></div>
+                </div>
+              </div>
+              <div class="tl-col">
+                <div class="tl-col-head">Zaterdag</div>
+                <div class="tl-col-body">
+                  <div class="tl-event focus"><strong>Feedback verwerken</strong><span>10:00 - 11:00</span></div>
+                </div>
+              </div>
+              <div class="tl-col">
+                <div class="tl-col-head">Zondag</div>
+                <div class="tl-col-body">
+                  <div class="tl-empty">Geen activiteiten</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ COMPETENCIES ============ -->
+      <section id="competencies" class="screen">
+        <div class="screen-header">
+          <div>
+            <div class="eyebrow">Detailpagina</div>
+            <h2>Competenties en bewijs</h2>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">Filter semester</button>
+            <button class="btn btn-primary" data-prompt="competencies">Wat ontbreekt nog?</button>
+          </div>
+        </div>
+
+        <div class="comp-layout">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Overzicht</div>
+                <h3>Competentiekaart</h3>
+              </div>
+            </div>
+            <div class="comp-row" data-comp="analyseren">
+              <div class="comp-row-info">
+                <h4>Analyseren</h4>
+                <p>3 gekoppelde opdrachten - 2 feedbackitems - op schema</p>
+              </div>
+              <div class="comp-bar">
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:76%"></div></div>
+              </div>
+              <span class="badge badge-ok">76%</span>
+            </div>
+            <div class="comp-row" data-comp="samenwerken">
+              <div class="comp-row-info">
+                <h4>Samenwerken</h4>
+                <p>1 bewijsstuk ontbreekt - peer review nog niet afgerond</p>
+              </div>
+              <div class="comp-bar">
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:54%"></div></div>
+              </div>
+              <span class="badge badge-warn">54%</span>
+            </div>
+            <div class="comp-row">
+              <div class="comp-row-info">
+                <h4>Realiseren</h4>
+                <p>API beroepsproduct en sprintdemo gekoppeld</p>
+              </div>
+              <div class="comp-bar">
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:82%"></div></div>
+              </div>
+              <span class="badge badge-ok">82%</span>
+            </div>
+            <div class="comp-row">
+              <div class="comp-row-info">
+                <h4>Reflecteren</h4>
+                <p>Nieuwe docentfeedback klaar om te verwerken</p>
+              </div>
+              <div class="comp-bar">
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:64%"></div></div>
+              </div>
+              <span class="badge badge-neutral">64%</span>
+            </div>
+            <div class="comp-row">
+              <div class="comp-row-info">
+                <h4>Adviseren</h4>
+                <p>Nog geen bewijs gekoppeld dit semester</p>
+              </div>
+              <div class="comp-bar">
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:20%"></div></div>
+              </div>
+              <span class="badge badge-alert">20%</span>
+            </div>
+            <div class="comp-row">
+              <div class="comp-row-info">
+                <h4>Ontwerpen</h4>
+                <p>UX wireflow en architectuurdocument gekoppeld</p>
+              </div>
+              <div class="comp-bar">
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:70%"></div></div>
+              </div>
+              <span class="badge badge-ok">70%</span>
+            </div>
+          </div>
+
+          <div class="detail-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="eyebrow">Geselecteerd</div>
+                  <h3>Samenwerken</h3>
+                </div>
+                <span class="badge badge-warn">Aandacht nodig</span>
+              </div>
+              <div class="detail-section">
+                <h4>Wat ontbreekt nog?</h4>
+                <ul class="detail-list">
+                  <li>1 peer review in FeedPulse</li>
+                  <li>1 reflectie op teamafspraken in Portflow</li>
+                  <li>Verwijzing naar sprint retrospective</li>
+                </ul>
+              </div>
+              <div class="detail-section">
+                <h4>Gekoppelde bronnen</h4>
+                <ul class="detail-list">
+                  <li>Projectsemester sprintreview</li>
+                  <li>FeedPulse peer review ronde 3</li>
+                  <li>Teams terugblik met projectgroep</li>
+                </ul>
+              </div>
+              <div class="detail-section">
+                <h4>Eerstvolgende kans</h4>
+                <ul class="detail-list">
+                  <li>FeedPulse peer review (open tot woensdag)</li>
+                  <li>Portflow snapshot uploaden (donderdag)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ FEEDBACK ============ -->
+      <section id="feedback" class="screen">
+        <div class="screen-header">
+          <div>
+            <div class="eyebrow">Inbox</div>
+            <h2>Feedbackoverzicht</h2>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">Bronnen</button>
+            <button class="btn btn-primary">Toon actie nodig</button>
+          </div>
+        </div>
+
+        <div class="feedback-layout">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Alles op een plek</div>
+                <h3>Nieuwe en recente feedback</h3>
+              </div>
+            </div>
+
+            <div class="fb-card">
+              <div class="fb-card-top">
+                <span class="badge badge-info">Portflow</span>
+                <span style="font-size:0.8rem; color:var(--text-tertiary)">18 uur geleden</span>
+              </div>
+              <h4>API beroepsproduct</h4>
+              <p>Je opbouw is duidelijk. Werk nog je argumentatie rond beveiligingskeuzes uit en verwijs naar je testresultaten.</p>
+              <div class="fb-card-actions">
+                <button class="btn btn-sm btn-secondary">Open bron</button>
+                <button class="btn btn-sm btn-secondary" data-prompt="plan">Voeg toe aan planning</button>
+              </div>
+            </div>
+
+            <div class="fb-card">
+              <div class="fb-card-top">
+                <span class="badge badge-ok">FeedPulse</span>
+                <span style="font-size:0.8rem; color:var(--text-tertiary)">Gisteren</span>
+              </div>
+              <h4>Peer review wireflow</h4>
+              <p>Heldere flow. Voeg nog een edge case toe voor foutmeldingen en zet je bron voor usability guidelines erbij.</p>
+              <div class="fb-card-actions">
+                <button class="btn btn-sm btn-secondary">Open review</button>
+                <button class="btn btn-sm btn-secondary" data-prompt="competencies">Koppel aan UX Design</button>
+              </div>
+            </div>
+
+            <div class="fb-card">
+              <div class="fb-card-top">
+                <span class="badge badge-purple">Canvas</span>
+                <span style="font-size:0.8rem; color:var(--text-tertiary)">3 dagen geleden</span>
+              </div>
+              <h4>Portfolio Review 1 - Complete</h4>
+              <p>Je portfolio snapshot is beoordeeld met Complete. Feedback van docent Crombach beschikbaar.</p>
+              <div class="fb-card-actions">
+                <button class="btn btn-sm btn-secondary">Bekijk beoordeling</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-panel">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="eyebrow">Leerkompas</div>
+                  <h3>Study Coach</h3>
+                </div>
+                <span class="badge badge-ok">Context actief</span>
+              </div>
+              <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg intro">
+                  <p>Ik kan je helpen met prioriteiten, planning, feedback en competenties. Klik hieronder op een vraag voor een snelle impressie.</p>
+                </div>
+              </div>
+              <div class="prompt-chips">
+                <button class="prompt-chip" data-prompt="deadline">Wat moet ik deze week afronden?</button>
+                <button class="prompt-chip" data-prompt="plan">Maak een weekplanning</button>
+                <button class="prompt-chip" data-prompt="competencies">Welke competenties raken mijn taken?</button>
+                <button class="prompt-chip" data-prompt="summary">Vat module 3 samen</button>
+              </div>
+              <div class="chat-composer">Typ een vraag om de assistent te testen...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ====== FLOATING COACH ====== -->
+  <div class="float-coach" id="floatCoach">
+    <div class="coach-bubble" data-open-coach style="position:relative;">
+      <button class="coach-bubble-close" data-hide-coach aria-label="Verberg">&times;</button>
+      <div class="coach-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+      </div>
+      <div class="coach-bubble-text">
+        <div class="label">Leerkompas</div>
+        <strong>Slimme leerhulp openen</strong>
+        <p>Planning, feedback en competenties in een interactieve assistent.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== COACH DRAWER ====== -->
+  <div class="coach-overlay" data-close-coach></div>
+  <aside class="coach-drawer" aria-hidden="true">
+    <div class="coach-drawer-header">
+      <div>
+        <div class="eyebrow" style="color:var(--magenta-600)">Interactieve impressie</div>
+        <h3>Leerkompas</h3>
+      </div>
+      <button class="icon-btn" data-close-coach aria-label="Sluiten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="coach-context">
+      <div class="coach-ctx-card">
+        <span class="ctx-label">Context</span>
+        <strong>Canvas + Portflow + FeedPulse</strong>
+        <p>Leerkompas leest mee met deadlines, feedback en competenties.</p>
+      </div>
+      <div class="coach-ctx-card">
+        <span class="ctx-label">Live status</span>
+        <strong id="coachStatus">2 deadlines en 1 feedbackactie</strong>
+        <p>Klik op een prompt voor een simulatie.</p>
+      </div>
+    </div>
+
+    <div class="coach-messages" id="coachMessages">
+      <div class="chat-msg intro">
+        <p>Ik kan je direct helpen met prioriteiten, planning, feedback en competenties. Kies hieronder een vraag voor een snelle impressie.</p>
+      </div>
+    </div>
+
+    <div class="coach-prompt-grid">
+      <button class="prompt-chip" data-prompt="deadline">Wat moet ik deze week afronden?</button>
+      <button class="prompt-chip" data-prompt="plan">Maak een slimme weekplanning</button>
+      <button class="prompt-chip" data-prompt="competencies">Welke competenties raken mijn taken?</button>
+      <button class="prompt-chip" data-prompt="summary">Vat module 3 samen</button>
+    </div>
+
+    <div class="coach-composer-wrap">
+      <div class="coach-input">Typ of kies een vraag om de assistent te testen...</div>
+      <div class="coach-footer">
+        <button class="btn btn-secondary" data-close-coach>Sluiten</button>
+        <button class="btn btn-accent" data-prompt="plan">Demo planning</button>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    // ---- Navigation ----
+    const allNavBtns = document.querySelectorAll('[data-nav]');
+    const allScreens = document.querySelectorAll('.screen');
+    const railBtns = document.querySelectorAll('.rail-btn[data-nav]');
+    const sideNavBtns = document.querySelectorAll('.nav-btn[data-nav]');
+
+    function navigateTo(target) {
+      allScreens.forEach(s => s.classList.remove('active'));
+      railBtns.forEach(b => b.classList.remove('active'));
+      sideNavBtns.forEach(b => b.classList.remove('active'));
+
+      const screen = document.getElementById(target);
+      if (screen) screen.classList.add('active');
+
+      railBtns.forEach(b => { if (b.dataset.nav === target) b.classList.add('active'); });
+      sideNavBtns.forEach(b => { if (b.dataset.nav === target) b.classList.add('active'); });
+    }
+
+    allNavBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo(btn.dataset.nav);
+      });
+    });
+
+    // ---- Coach drawer ----
+    const coachDrawer = document.querySelector('.coach-drawer');
+    const coachMessages = document.getElementById('coachMessages');
+    const coachStatus = document.getElementById('coachStatus');
+    const chatMessages = document.getElementById('chatMessages');
+    const floatCoach = document.getElementById('floatCoach');
+
+    function openCoach() { document.body.classList.add('coach-open'); }
+    function closeCoach() { document.body.classList.remove('coach-open'); }
+
+    document.querySelectorAll('[data-open-coach]').forEach(el => {
+      el.addEventListener('click', (e) => { e.stopPropagation(); openCoach(); });
+    });
+
+    document.querySelectorAll('[data-close-coach]').forEach(el => {
+      el.addEventListener('click', closeCoach);
+    });
+
+    document.querySelectorAll('[data-hide-coach]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        floatCoach.classList.add('is-hidden');
+      });
+    });
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCoach(); });
+
+    // ---- Prompt responses ----
+    const responses = {
+      deadline: {
+        user: 'Wat moet ik deze week afronden?',
+        assistant: 'Deze week springen drie dingen eruit: je API beroepsproduct op vrijdag, een Portflow upload op donderdag en een FeedPulse peer review die nog open staat. Mijn advies: begin met de API-opdracht, want die heeft de meeste impact op je voortgang.',
+        status: 'Prioriteiten opnieuw berekend op basis van deadlines.'
+      },
+      plan: {
+        user: 'Maak een slimme weekplanning.',
+        assistant: 'Ik stel twee extra focusblokken voor: donderdag 20:00 - 21:30 voor je API beroepsproduct en zaterdag 10:00 - 11:00 om feedback te verwerken. Daarmee is je week realistischer en sluit je planning beter aan op je deadlines.',
+        status: '2 studieblokken als voorstel toegevoegd aan je week.'
+      },
+      competencies: {
+        user: 'Welke competenties raken mijn taken?',
+        assistant: 'Je openstaande taken raken vooral analyseren, realiseren en samenwerken. De peer review helpt samenwerken, je API beroepsproduct raakt analyseren en realiseren, en je Portflow upload helpt reflecteren zichtbaar maken.',
+        status: 'Koppelingen tussen taken en competenties zichtbaar gemaakt.'
+      },
+      summary: {
+        user: 'Vat module 3 samen.',
+        assistant: 'Module 3 draait om het concretiseren van je beroepsproduct: werk je technische keuze uit, onderbouw waarom je architectuur passend is en lever bewijs aan vanuit tests en feedback. Wil je, dan zet ik dit ook om in een checklist.',
+        status: 'Samenvatting klaargezet in studententaal.'
+      }
+    };
+
+    function addMsg(container, role, text) {
+      const msg = document.createElement('div');
+      msg.className = `chat-msg ${role}`;
+      msg.innerHTML = `<p>${text}</p>`;
+      container.appendChild(msg);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function runPrompt(key) {
+      const r = responses[key];
+      if (!r) return;
+      openCoach();
+
+      addMsg(coachMessages, 'user', r.user);
+      addMsg(coachMessages, 'assistant', r.assistant);
+
+      if (chatMessages) {
+        addMsg(chatMessages, 'user', r.user);
+        addMsg(chatMessages, 'assistant', r.assistant);
+      }
+
+      if (coachStatus) coachStatus.textContent = r.status;
+    }
+
+    document.querySelectorAll('[data-prompt]').forEach(el => {
+      el.addEventListener('click', () => runPrompt(el.dataset.prompt));
+    });
+
+    // ---- Hash routing ----
+    if (window.location.hash === '#coach') runPrompt('plan');
+  </script>
+</body>
+</html>
+ing index.html…]()
