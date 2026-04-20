@@ -43,6 +43,7 @@ Voorbeeld: `docs: add LTI 1.3 technical exploration`
 |--------|--------|-------|--------|
 | v0.1 | Sprint 1 | maart 2026 | Analysefase afgerond: technische verkenning (Canvas API + LTI 1.3), ecosysteemanalyse, RAG-verkenning, reflectie, feedback-log. Nog geen werkende code. |
 | v0.2 | Sprint 2 | april 2026 | Adviesfase + start realisatie: chatbot-strategie herzien, gebruikersinterview verwerkt, chatbot-scope uitgewerkt, iteratie 1 voltooid (onderzoeksdocument, prototype, conclusie). Eerste werkende prototype: Qwen 2.5 14B via Ollama, twee-laagse JSON-context, drie testscenarios. |
+| v0.3 | Sprint 2 | april 2026 | Iteratie 2 voltooid: PostgreSQL 16 in Docker vervangt mock JSON, schema met vier tabellen, seed-script vanuit per-student JSON, loader-module en aangepaste chatbot die de database als context-bron gebruikt. Testresultaten zonder regressie t.o.v. iteratie 1. Bijdrage aan adviesrapport (Bijlage B en Bijlage E sectie 7) en databasevoorstel voor eindbeeld als opmaat naar sprint 3. |
 
 ---
 
@@ -56,8 +57,11 @@ Naast code worden ook de gebruikte AI-modellen bijgehouden als infrastructuurcom
 | Ollama | 0.20.0 | iteratie 1 | Local model serving |
 | LLM | Llama 3.1 8B | iteratie 1 start | Initiële keuze op basis van context window (128k) |
 | LLM | Qwen 2.5 14B | iteratie 1 conclusie | Llama hallucineert structureel, Qwen beter in instructieopvolging en Nederlands |
+| Docker | Desktop (huidige) | iteratie 2 | Uitvoeringsomgeving voor de database: reproduceerbaar, schoon weggooien en dichter bij productiedeployment |
+| PostgreSQL | 16 | iteratie 2 | Vervangt mock JSON als context-bron; ondersteunt JSONB en pgvector voor latere uitbreidingen |
+| psycopg | v3 | iteratie 2 | PostgreSQL-driver voor Python, bewust zonder ORM om queries expliciet te houden op PoC-schaal |
 
-Hardware referentie: RTX 3080, ~9GB VRAM bij Q4 quantisatie. Package-dependencies worden bijgehouden in `requirements.txt` (volgt in iteratie 2).
+Hardware referentie: RTX 3080, ~9GB VRAM bij Q4 quantisatie. Package-dependencies worden bijgehouden in `requirements.txt` per iteratie-prototype.
 
 ## Afspraken
 
