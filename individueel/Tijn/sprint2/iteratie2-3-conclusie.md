@@ -1,6 +1,6 @@
 # Iteratie 2 - Conclusie
 
-**Sprint 2 | Infrastructure (Infrastructure) - Realise & Manage & Control - Niveau 1**
+**Sprint 2 | Infrastructure (Infrastructure) - Realise, Analyse & Advise - Niveau 1**
 **Datum:** april 2026
 **Auteur:** Tijn Knapen
 
@@ -107,12 +107,12 @@ In Bijlage E van het adviesrapport staat al beschreven dat de modelkeuze (Qwen 2
 
 **Infrastructure (Infrastructure) - Realise - Niveau 1**
 
-In deze iteratie heb ik de infrastructuur uit het ontwerp van iteratie 2-1 gebouwd: een PostgreSQL-container via Docker, een relationeel schema met vier tabellen, een seed-script dat JSON-testdata omzet naar database-rijen, en een loader-module die per sessie de complete studentcontext ophaalt. Ik heb de bestaande chatbot uit iteratie 1 aangepast zodat hij de database als context-bron gebruikt in plaats van een bestand. Alle componenten zijn getest met drie bestaande scenario's en een nieuw scenario dat op een datumfilter leunt. Dit is een realisatie van ICT-componenten op basis van een eerder opgesteld ontwerp, in een gestructureerde en voorspelbare context.
-
-**Infrastructure (Infrastructure) - Manage & Control - Niveau 1**
-
-Tijdens iteratie 2 heb ik de database-container actief beheerd: schema-aanpassingen waren nodig (toevoeging van `toelichting` op voortgang, `semester` en `project` op student) en heb ik doorgevoerd via een schone herstart van de container met behoud van de reproduceerbare seed-stappen. Bij het testen bleek dat de loader onbedoeld database-interne IDs doorgaf aan het model, wat tot onnatuurlijke verwijzingen in de antwoorden leidde. Ik heb dit geanalyseerd, de oorzaak teruggeleid naar de SELECT-query en opgelost door het `id`-veld uit de output te verwijderen. Daarnaast heb ik de testscenario-formulering van scenario 3 bijgesteld nadat bleek dat het model de vraag verkeerd interpreteerde. Dit is het monitoren en bijsturen van een ICT-infrastructuurcomponent op basis van kwaliteitscriteria, volgens procedures in een voorspelbare context.
+Ik heb het ontwerp uit iteratie 2-1 gebouwd: PostgreSQL-container in Docker, schema met vier tabellen, seed-script vanuit JSON en een loader-module die per sessie studentcontext ophaalt. De chatbot uit iteratie 1 is aangepast zodat hij de database gebruikt in plaats van een bestand, en getest met vier scenario's.
 
 **Infrastructure (Infrastructure) - Analyse - Niveau 1**
 
-Op basis van de testresultaten heb ik een analyse gemaakt van wat in iteratie 2 werkt en waar de grenzen liggen. De data-laag functioneert zonder regressie ten opzichte van iteratie 1, maar twee typen beperkingen blijven over: scope drift bij complexe competentievragen en boundary-interpretatie bij tijd-gebonden vragen. Beide zijn niet data-gerelateerd maar model- en promptgerelateerd. Op basis daarvan heb ik vastgesteld dat function calling in iteratie 3 deze kwesties kan adresseren door het model niet meer te laten interpreteren maar te laten opvragen. Dit is een analyse van een eenvoudige infrastructuur op basis van meetbare kwaliteitscriteria in een voorspelbare context.
+Op basis van de testresultaten heb ik vastgesteld waar de grenzen van de huidige opzet liggen. De data-laag werkt zonder regressie, maar er blijven twee beperkingen: scope drift bij complexe vragen en ambigue boundaries bij tijd-gebonden vragen. Beide zijn model- en promptgerelateerd, niet data-gerelateerd.
+
+**Infrastructure (Infrastructure) - Advise - Niveau 1**
+
+Op basis van die analyse heb ik geadviseerd hoe iteratie 3 eruit moet zien: function calling als architectuurkeuze om de beperkingen op te lossen, uitbreiding van het schema met course, project en event, en Modal.com als vervolgonderzoek voor zwaardere modellen. Dit is concrete richting voor de volgende infrastructuur-stap binnen een voorspelbare context.
