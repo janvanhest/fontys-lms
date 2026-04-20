@@ -1,4 +1,4 @@
-# Databaseontwerp - Eindbeeld LMS chatbot
+# Databasevoorstel - Eindbeeld LMS chatbot
 
 **Sprint 3 | Infrastructure (Infrastructure) - Design - Niveau 1**
 **Datum:** april 2026
@@ -15,7 +15,12 @@ De iteraties in sprint 2 hebben geleerd welke data de chatbot daadwerkelijk gebr
 
 ## Scope
 
-Dit is geen minimaal schema voor een PoC, maar een ontwerp dat het **volledige eindbeeld** dekt: student-sessies, docent-sessies via function calling, schrijfacties vanuit de chatbot, nudging en LTI-integratie met Canvas. Hardware-vereisten en deployment-architectuur vallen buiten deze scope.
+Dit document bestaat uit twee delen:
+
+1. **De tabellen die ik zelf vanuit de chatbot nodig heb.** Hier heb ik wel volledige context over, omdat sprint 2 heeft laten zien welke data de chatbot daadwerkelijk raadpleegt. Dit zijn `user`, `competentie`, `student_competentie_voortgang` en `chat_sessie`.
+2. **Een voorstel voor de rest van de database.** Over deze tabellen heb ik niet de volledige context: de backend-teamgenoten werken hier zelf aan en beslissen uiteindelijk over de vorm. Ik neem ze hier op zodat de samenhang zichtbaar blijft en het ontwerp als geheel begrijpelijk is, maar ze zijn aangemerkt als voorstel/aanname.
+
+Hardware-vereisten en deployment-architectuur vallen buiten dit document.
 
 ## Kernontwerpkeuzes
 
@@ -50,7 +55,7 @@ Dit is geen minimaal schema voor een PoC, maar een ontwerp dat het **volledige e
 
 ### `course`
 
-*Voorstel/assumptie - Canvas-gedreven, valt onder het backend-ontwerp.*
+*Voorstel/aanname - Canvas-gedreven, ligt bij het backend-team.*
 
 Cursussen die uit Canvas komen.
 
@@ -65,7 +70,7 @@ Cursussen die uit Canvas komen.
 
 ### `enrollment`
 
-*Voorstel/assumptie - Canvas-gedreven, valt onder het backend-ontwerp.*
+*Voorstel/aanname - Canvas-gedreven, ligt bij het backend-team.*
 
 Koppelt gebruikers aan cursussen.
 
@@ -109,7 +114,7 @@ Uniek op (student_id, competentie_id).
 
 ### `project`
 
-*Voorstel/assumptie - valt buiten mijn scope, backend-team bepaalt.*
+*Voorstel/aanname - beperkte context aan mijn kant, definitieve vorm door backend-team.*
 
 Semester- of cursusprojecten.
 
@@ -124,7 +129,7 @@ Semester- of cursusprojecten.
 
 ### `project_lid`
 
-*Voorstel/assumptie - valt buiten mijn scope, backend-team bepaalt.*
+*Voorstel/aanname - beperkte context aan mijn kant, definitieve vorm door backend-team.*
 
 Welke studenten (en eventueel docenten) zitten in welk project.
 
@@ -139,7 +144,7 @@ Uniek op (project_id, user_id).
 
 ### `activiteit`
 
-*Voorstel/assumptie - valt buiten mijn scope, backend-team bepaalt.*
+*Voorstel/aanname - beperkte context aan mijn kant, definitieve vorm door backend-team.*
 
 Taken, opdrachten, deliverables en geplande momenten. In dit voorstel zijn activiteit en event samengevoegd omdat ze functioneel overlappen: beide hebben een titel, datum, beschrijving en gebruikers-koppeling. Het onderscheid zit in de velden die wel of niet gevuld zijn (een meeting heeft begin- en eind_tijd en locatie, een deliverable alleen een datum).
 
@@ -180,7 +185,7 @@ Elke binnenkomst van een nieuw bericht wordt geappend aan `berichten`. Dit is é
 
 ### `feedback`
 
-*Voorstel/assumptie - valt buiten mijn scope, backend-team bepaalt.*
+*Voorstel/aanname - beperkte context aan mijn kant, definitieve vorm door backend-team.*
 
 Feedback op activiteiten (van docent, peer of systeem).
 
