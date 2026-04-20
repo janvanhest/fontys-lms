@@ -942,6 +942,16 @@ Dit houdt de modelkeuze open. De architectuur van het prototype is niet gebonden
 
 De volledige testopzet, prompts en resultaten staan in `individueel/Tijn/sprint2/iteratie1-2-prototype/` en `iteratie1-3-conclusie.md`.
 
+**Competentieverantwoording**
+
+Infrastructure (Infrastructure) - Analyse - Niveau 1
+
+In deze sectie en in Bijlage B heb ik twee lokale taalmodellen (Llama 3.1 8B en Qwen 2.5 14B) geanalyseerd op basis van concrete kwaliteitscriteria: het voorkomen van hallucinaties, consistentie van output, specificiteit van antwoorden en responstijd. De analyse is gebaseerd op drie gestandaardiseerde testscenarios uitgevoerd op dezelfde data en promptopzet. Hiermee toon ik aan dat ik een eenvoudige infrastructuurcomponent kan analyseren op basis van meetbare kwaliteitseisen in een voorspelbare context.
+
+Infrastructure (Infrastructure) - Advise - Niveau 1
+
+Op basis van de testresultaten heb ik advies gegeven over de modelkeuze voor de chatbot-infrastructuur: Qwen 2.5 14B als huidige keuze voor de PoC-fase, met een concreet vervolgonderzoek naar Modal.com voor zwaardere modellen. Ik heb daarbij de hardwarevereisten beschreven, de beperkingen van de huidige setup benoemd en een richting aangegeven die de architectuur modelonafhankelijk houdt. Dit is advies over de inrichting van een nieuw ICT-systeem in een voorspelbare omgeving.
+
 ### **8\. Conclusie**
 
 Dit document heeft drie technische lagen verkend die samen een samenhangende denkrichting vormen voor het project.
