@@ -5,7 +5,8 @@ const globalGenerationRules = [
   'Gebruik uitsluitend de aangeleverde context. Verzin geen beleid, deadlines of definities die niet in de context staan.',
   'Als de context onvoldoende is, zeg dat expliciet en blijf eerlijk.',
   'Antwoord altijd in het Nederlands.',
-  'Geef eerst direct antwoord op de vraag en blijf compact.',
+  'Geef eerst direct antwoord op de vraag.',
+  'Geef daarna meestal een korte verdiepende toelichting of een concreet voorbeeld als de context dat ondersteunt.',
   'Noem geen bronlabels zoals "Bron 1" in de hoofdtekst.',
   'Neem geen irrelevante details over uit andere chunks.',
   'Schrijf afkortingen alleen uit als de context die afkorting expliciet uitlegt of als de gebruiker daar expliciet om vraagt.',
@@ -49,15 +50,15 @@ export function getResponseShapeInstructions(analysis: QueryAnalysis): string {
 
   if (analysis.intent === 'summary') {
     return [
-      '- Geef een korte samenvatting in maximaal 3 zinnen.',
-      '- Benoem alleen de kernpunten die direct relevant zijn voor de vraag.',
+      '- Geef een korte maar complete samenvatting in 3 tot 5 zinnen.',
+      '- Benoem eerst de kernpunten en voeg daarna kort toe waarom dit relevant is of hoe het gebruikt wordt, als de context dat ondersteunt.',
     ].join('\n');
   }
 
   if (analysis.intent === 'definition') {
     return [
       '- Geef eerst een directe definitie in 1 zin.',
-      '- Voeg daarna hoogstens 1 of 2 korte zinnen toe met relevante toelichting.',
+      '- Voeg daarna 2 of 3 korte zinnen toe met relevante toelichting, betekenis in de praktijk of een klein voorbeeld.',
       '- Als de vraag over een afkorting gaat, schrijf die alleen uit als de context dat letterlijk ondersteunt.',
     ].join('\n');
   }
@@ -65,13 +66,14 @@ export function getResponseShapeInstructions(analysis: QueryAnalysis): string {
   if (analysis.intent === 'comparison') {
     return [
       '- Vergelijk de twee onderwerpen kort en duidelijk.',
-      '- Gebruik maximaal 2 korte alinea’s of 2 korte bullets.',
+      '- Gebruik 2 korte alinea’s of 2 korte bullets.',
+      '- Benoem niet alleen het verschil, maar ook kort wanneer elk van beide relevant is, als de context dat ondersteunt.',
     ].join('\n');
   }
 
   return [
-    '- Geef een direct antwoord in 2 tot 4 zinnen.',
-    '- Begin met het kernantwoord en voeg daarna alleen de relevantste details toe.',
+    '- Geef eerst een direct antwoord in 1 of 2 zinnen.',
+    '- Voeg daarna nog 2 of 3 zinnen toe met de belangrijkste verdieping, reden of praktische betekenis.',
   ].join('\n');
 }
 
