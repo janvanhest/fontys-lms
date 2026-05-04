@@ -73,7 +73,9 @@ export function ChuckNorrisWidget({
           </>
         )}
         {isError && (
-          <Typography sx={{ color: 'error.main' }}>{errorMessage}</Typography>
+          <Typography sx={{ color: 'error.main' }}>
+            {errorMessage ?? 'Er is iets misgegaan bij het ophalen van de grap.'}
+          </Typography>
         )}
         {joke && (
           <Fade in key={joke.id}>

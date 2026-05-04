@@ -9,7 +9,7 @@ export interface ChuckNorrisJoke {
 
 async function fetchJoke(category: string | null): Promise<ChuckNorrisJoke> {
   const url = category
-    ? `https://api.chucknorris.io/jokes/random?category=${category}`
+    ? `https://api.chucknorris.io/jokes/random?category=${encodeURIComponent(category)}`
     : 'https://api.chucknorris.io/jokes/random'
   const res = await fetch(url)
   if (!res.ok) throw new Error('Kon geen grap ophalen')

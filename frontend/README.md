@@ -10,7 +10,7 @@ Frontend van het Fontys LMS proof of concept. LTI-integreerbare webapplicatie ge
 | TypeScript  | 6         | Typeveiligheid         |
 | Vite        | 8         | Dev server & bundler   |
 | Material UI | (gepland) | Componentenbibliotheek |
-| pnpm        | 10        | Packagemanager         |
+| pnpm        | 10        | Pakketmanager          |
 
 ## Installatie
 
