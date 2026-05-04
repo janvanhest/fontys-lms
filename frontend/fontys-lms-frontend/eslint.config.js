@@ -22,13 +22,23 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ['.storybook/*.ts', '.storybook/*.tsx', '*.d.ts'],
+        },
       },
     },
     rules: {
       'max-lines': ['warn', { max: 150, skipBlankLines: true, skipComments: true }],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
+  // Story bestanden: type-unsafe rules uitzetten voor Storybook helpers (fn, render wrappers)
+  {
+    files: ['**/*.stories.tsx'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
     },
   },
 ])
