@@ -72,6 +72,27 @@ import { Button } from "../../components/Button"; // niet doen
 
 De alias is geconfigureerd in `tsconfig.app.json` (TypeScript) en opgepikt door Vite via `resolve.tsconfigPaths`.
 
+### Componenten
+
+Een goede component doet één ding. Als je moeite hebt om te beschrijven wat hij doet zonder "en" te gebruiken, is dat een signaal om op te splitsen.
+
+- **~150 regels max** — een langere component is een signaal, geen harde grens
+- **Logica in custom hooks** — haal `useState`/`useEffect`-logica uit de component in een `use`-prefixed hook
+- **Geen componenten binnen componenten** — definieer nooit een component binnen een render-functie
+- **Props beperken** — meer dan 5 props wijst vaak op te veel verantwoordelijkheden
+
+ESLint waarschuwt bij bestanden boven de 150 regels en geeft een fout bij componenten die binnen een render-functie zijn gedefinieerd.
+
+### TypeScript
+
+TypeScript is geen optie, het is de standaard. Het helpt bugs vroeg te vangen en maakt code begrijpelijker voor iedereen.
+
+- **Typ props altijd expliciet** met een `interface` of `type`
+- **Geen `any`** — gebruik `unknown` als het type echt onbekend is, of modelleer het correct
+- **Typ de returnwaarde van custom hooks** expliciet
+- **Gebruik `import type`** voor type-only imports — ESLint dwingt dit af
+- **Vermijd type assertions (`as`)** tenzij echt noodzakelijk
+
 ## Scripts
 
 | Script         | Beschrijving                            |
