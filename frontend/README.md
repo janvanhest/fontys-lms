@@ -45,6 +45,33 @@ pnpm install     # Installeer dependencies
 pnpm dev      # Start de dev server op http://localhost:5173
 ```
 
+## Ontwikkelrichtlijnen
+
+Gebruik altijd de laatste conventies van de gebruikte libraries. Valideer dit via de officiële documentatie of via [context7](https://context7.com) — een MCP-server die up-to-date docs rechtstreeks in Claude laadt.
+
+Context7 toevoegen aan Claude Code:
+
+```bash
+claude mcp add context7 -- npx -y @upstash/context7-mcp
+```
+
+Voeg `use context7` toe aan je prompt om context7 expliciet te activeren:
+
+> _"Hoe configureer ik ESLint met TypeScript? use context7"_
+
+## Conventies
+
+### Imports
+
+`@/` is de projectstandaard voor absolute imports vanuit `src/`. Gebruik altijd `@/` in plaats van relatieve paden.
+
+```ts
+import { Button } from "@/components/Button"; // correct
+import { Button } from "../../components/Button"; // niet doen
+```
+
+De alias is geconfigureerd in `tsconfig.app.json` (TypeScript) en opgepikt door Vite via `resolve.tsconfigPaths`.
+
 ## Scripts
 
 | Script         | Beschrijving                            |
