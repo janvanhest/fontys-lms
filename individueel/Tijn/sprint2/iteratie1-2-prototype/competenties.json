@@ -1,0 +1,172 @@
+{
+  "framework": "HBO-i",
+  "toelichting": "Volledig HBO-i competentieframework voor avond/deeltijd HBO-ICT (niveaus 1-3). Een niveau is behaald als je 2 van de 3 facetten aantoont: autonomie, context-complexiteit en inhoud-complexiteit. PL en PS hebben geen activiteiten-uitsplitsing.",
+  "competenties": [
+    {
+      "naam": "Infrastructure",
+      "beschrijving": "Het geheel van ICT-systemen dat organisatieprocessen faciliteert: beschikbaar maken, beschikbaar houden en configureren van hardware- en software-infrastructuur, inclusief cloud.",
+      "activiteiten": {
+        "Analyse": {
+          "niveau_1": "Analyseer een eenvoudige infrastructuur op basis van een standaardmethode en gegeven kwaliteitseisen (bijv. beveiliging). Analyseer infrastructuur-gerelateerde incidenten, problemen en beveiligingsdreigingen.",
+          "niveau_2": "Analyseer een complexe infrastructuur zelfstandig op basis van meerdere kwaliteitseisen in een onvoorspelbare context. Identificeer structurele problemen en beveiligingsrisicos en doe onderbouwde aanbevelingen.",
+          "niveau_3": "Analyseer infrastructuur in een vage of weinig gedefinieerde situatie waarbij je zelfstandig de aanpak bepaalt. Jouw analyse stuurt de richting van het team of de organisatie."
+        },
+        "Advise": {
+          "niveau_1": "Geef advies over het inrichten van infrastructuurprocessen voor een nieuw ICT-systeem in een voorspelbare omgeving. Zorg voor de juiste configuratie van netwerken en cloud-omgevingen.",
+          "niveau_2": "Geef zelfstandig advies over complexe infrastructuurvraagstukken in een onvoorspelbare context. Weeg meerdere opties af en onderbouw je keuze op basis van technische en organisatorische criteria.",
+          "niveau_3": "Geef strategisch advies over infrastructuurrichting in vage situaties. Jouw advies heeft een aantoonbare impact op beslissingen van het team of de organisatie."
+        },
+        "Design": {
+          "niveau_1": "Ontwerp een eenvoudige ICT-infrastructuur om organisatieprocessen te ondersteunen, op basis van bestaande richtlijnen voor hardware en software in een voorspelbare context.",
+          "niveau_2": "Ontwerp een complexe infrastructuur zelfstandig, waarbij je rekening houdt met schaalbaarheid, beveiliging en onvoorspelbare omstandigheden.",
+          "niveau_3": "Ontwerp infrastructuur voor vage en complexe situaties. Jouw ontwerp dient als referentie voor het team en heeft invloed op de technische richting van het project."
+        },
+        "Realise": {
+          "niveau_1": "Ontwikkel en test ICT-componenten op basis van een ontwerp. Zorg voor beschikbaarheid en configureer componenten om organisatieprocessen te ondersteunen in een gestructureerde context.",
+          "niveau_2": "Realiseer complexe infrastructuurcomponenten zelfstandig in een onvoorspelbare context. Los technische problemen op die niet voorzien waren in het ontwerp.",
+          "niveau_3": "Realiseer infrastructuur in een vage situatie waarbij je de aanpak zelf bepaalt. Jouw realisatie heeft een positief effect op de kwaliteit en werkwijze van het team."
+        },
+        "Manage & Control": {
+          "niveau_1": "Monitor en beheer ICT-infrastructuurcomponenten om beschikbaarheid en correcte configuratie te waarborgen. Volg procedures om soepele operaties te garanderen.",
+          "niveau_2": "Beheer infrastructuur zelfstandig in een onvoorspelbare omgeving. Anticipeer op problemen, pas procedures aan en rapporteer afwijkingen proactief.",
+          "niveau_3": "Beheer infrastructuur in complexe en vage situaties. Jouw aanpak verbetert de beheerprocessen van het gehele team."
+        }
+      }
+    },
+    {
+      "naam": "Software",
+      "beschrijving": "Het realiseren van software die organisatieprocessen ondersteunt, inclusief het analyseren van requirements, ontwerpen van architectuur en implementeren van code.",
+      "activiteiten": {
+        "Analyse": {
+          "niveau_1": "Analyseer software-requirements en bestaande systemen op basis van gegeven methodes in een voorspelbare context.",
+          "niveau_2": "Analyseer complexe software-requirements zelfstandig in een onvoorspelbare context. Identificeer tegenstrijdigheden en leg verbanden met bestaande systemen.",
+          "niveau_3": "Analyseer software-vraagstukken in vage situaties waarbij je zelfstandig de aanpak bepaalt en het team stuurt."
+        },
+        "Advise": {
+          "niveau_1": "Geef advies over technologiekeuzes en softwareopbouw in een voorspelbare omgeving, op basis van gegeven criteria.",
+          "niveau_2": "Geef zelfstandig onderbouwd advies over softwarearchitectuur in een complexe en onvoorspelbare context.",
+          "niveau_3": "Geef strategisch advies over softwarerichting in vage situaties met aantoonbare impact op het team of project."
+        },
+        "Design": {
+          "niveau_1": "Ontwerp een eenvoudige softwarearchitectuur op basis van bestaande patronen en richtlijnen in een gestructureerde context.",
+          "niveau_2": "Ontwerp een complexe softwarearchitectuur zelfstandig, waarbij je rekening houdt met schaalbaarheid en onderhoudbaarheid.",
+          "niveau_3": "Ontwerp software voor vage en complexe situaties. Jouw ontwerp dient als richtlijn voor het team."
+        },
+        "Realise": {
+          "niveau_1": "Implementeer softwarecomponenten op basis van een ontwerp in een gestructureerde en voorspelbare context.",
+          "niveau_2": "Implementeer complexe software zelfstandig in een onvoorspelbare context. Los technische knelpunten op die niet voorzien waren.",
+          "niveau_3": "Implementeer software in vage situaties waarbij je de aanpak zelf bepaalt en het team ondersteunt."
+        },
+        "Manage & Control": {
+          "niveau_1": "Beheer en monitor software-applicaties op basis van procedures om beschikbaarheid te waarborgen.",
+          "niveau_2": "Beheer software zelfstandig in een onvoorspelbare omgeving en pas procedures aan op basis van de situatie.",
+          "niveau_3": "Stuur het beheer van software in complexe situaties en verbeter de werkwijze van het team."
+        }
+      }
+    },
+    {
+      "naam": "User Interaction",
+      "beschrijving": "Het ontwerpen en realiseren van interactie tussen gebruikers en ICT-systemen, gericht op gebruiksvriendelijkheid en toegankelijkheid.",
+      "activiteiten": {
+        "Analyse": {
+          "niveau_1": "Analyseer gebruikersbehoeften en interactiepatronen op basis van een standaardmethode in een voorspelbare context.",
+          "niveau_2": "Analyseer complexe gebruikersbehoeften zelfstandig in een onvoorspelbare context. Vertaal kwalitatief onderzoek naar concrete ontwerpinzichten.",
+          "niveau_3": "Analyseer gebruikersinteractie in vage situaties en stuur het team op basis van jouw bevindingen."
+        },
+        "Advise": {
+          "niveau_1": "Geef advies over interactieontwerp op basis van gebruikersonderzoek in een voorspelbare context.",
+          "niveau_2": "Geef zelfstandig onderbouwd advies over UX-richting in complexe situaties met meerdere gebruikersgroepen.",
+          "niveau_3": "Geef strategisch advies over interactieontwerp met aantoonbare impact op productkeuzes van het team."
+        },
+        "Design": {
+          "niveau_1": "Ontwerp een eenvoudige gebruikersinterface op basis van bestaande richtlijnen en gebruikersonderzoek in een gestructureerde context.",
+          "niveau_2": "Ontwerp complexe interfaces zelfstandig voor meerdere gebruikersgroepen in een onvoorspelbare context.",
+          "niveau_3": "Ontwerp gebruikersinteractie voor vage en complexe situaties. Jouw ontwerp heeft invloed op de productstrategie."
+        },
+        "Realise": {
+          "niveau_1": "Realiseer een gebruikersinterface op basis van een ontwerp in een gestructureerde en voorspelbare context.",
+          "niveau_2": "Realiseer complexe interfaces zelfstandig en los technische UX-problemen op die niet voorzien waren.",
+          "niveau_3": "Realiseer interactie in vage situaties en ondersteun het team in de aanpak."
+        },
+        "Manage & Control": {
+          "niveau_1": "Monitor en evalueer de gebruikersinterface op basis van vastgestelde criteria en gebruikersfeedback.",
+          "niveau_2": "Beheer UX-kwaliteit zelfstandig in een onvoorspelbare omgeving en stuur bij op basis van data.",
+          "niveau_3": "Stuur UX-kwaliteitsbeheer in complexe situaties en verbeter de werkwijze van het team."
+        }
+      }
+    },
+    {
+      "naam": "Organisational Processes",
+      "beschrijving": "Het analyseren, ontwerpen en verbeteren van organisatorische processen die door ICT worden ondersteund, inclusief informatiestromen, werkprocessen en bedrijfsarchitectuur.",
+      "activiteiten": {
+        "Analyse": {
+          "niveau_1": "Analyseer een eenvoudig organisatieproces op basis van een gegeven methode en vastgestelde kwaliteitseisen in een voorspelbare context.",
+          "niveau_2": "Analyseer complexe organisatieprocessen zelfstandig in een onvoorspelbare context. Identificeer knelpunten in informatiestromen en doe aanbevelingen voor verbetering.",
+          "niveau_3": "Analyseer organisatieprocessen in vage situaties waarbij je zelfstandig de aanpak bepaalt. Jouw analyse heeft aantoonbare impact op de procesrichting van de organisatie."
+        },
+        "Advise": {
+          "niveau_1": "Geef advies over het inrichten of verbeteren van een organisatieproces in een voorspelbare omgeving, op basis van gegeven richtlijnen.",
+          "niveau_2": "Geef zelfstandig onderbouwd advies over procesoptimalisatie in een complexe en onvoorspelbare context met meerdere belanghebbenden.",
+          "niveau_3": "Geef strategisch advies over procesrichting in vage situaties met aantoonbare impact op organisatorische beslissingen."
+        },
+        "Design": {
+          "niveau_1": "Ontwerp een eenvoudig organisatieproces of informatiesysteem op basis van bestaande methodes in een gestructureerde context.",
+          "niveau_2": "Ontwerp complexe organisatieprocessen of informatiesystemen zelfstandig, rekening houdend met meerdere stakeholders en onvoorspelbare omstandigheden.",
+          "niveau_3": "Ontwerp organisatieprocessen in vage en complexe situaties. Jouw ontwerp dient als richtlijn voor de organisatie of het team."
+        },
+        "Realise": {
+          "niveau_1": "Implementeer een organisatieproces of bijbehorend ICT-systeem op basis van een ontwerp in een gestructureerde context.",
+          "niveau_2": "Implementeer complexe procesondersteuning zelfstandig in een onvoorspelbare omgeving. Los problemen op die niet voorzien waren.",
+          "niveau_3": "Implementeer procesoplossingen in vage situaties en ondersteun het team in de aanpak en uitvoering."
+        },
+        "Manage & Control": {
+          "niveau_1": "Monitor en beheers organisatieprocessen op basis van vastgestelde KPIs en procedures.",
+          "niveau_2": "Beheers complexe processen zelfstandig in een onvoorspelbare omgeving. Pas procedures aan en rapporteer afwijkingen proactief.",
+          "niveau_3": "Stuur procesbeheer in complexe en vage situaties en verbeter de kwaliteit van beheerprocessen in de organisatie."
+        }
+      }
+    },
+    {
+      "naam": "Hardware Interfacing",
+      "beschrijving": "Het verbinden van hardware-componenten met software en systemen, inclusief het configureren van embedded systemen, sensoren, netwerkapparatuur en andere fysieke ICT-componenten.",
+      "activiteiten": {
+        "Analyse": {
+          "niveau_1": "Analyseer een eenvoudig hardware-systeem of interface op basis van technische specificaties en gegeven kwaliteitseisen in een voorspelbare context.",
+          "niveau_2": "Analyseer complexe hardware-interfaces zelfstandig in een onvoorspelbare context. Identificeer technische knelpunten en doe onderbouwde aanbevelingen.",
+          "niveau_3": "Analyseer hardware-vraagstukken in vage situaties waarbij je zelfstandig de aanpak bepaalt en het team stuurt."
+        },
+        "Advise": {
+          "niveau_1": "Geef advies over de keuze en configuratie van hardware-componenten in een voorspelbare omgeving, op basis van gegeven eisen.",
+          "niveau_2": "Geef zelfstandig onderbouwd advies over hardware-architectuur en interfacekeuzes in een complexe context.",
+          "niveau_3": "Geef strategisch advies over hardwarerichting in vage situaties met aantoonbare impact op de technische architectuur."
+        },
+        "Design": {
+          "niveau_1": "Ontwerp een eenvoudige hardware-interface of embedded oplossing op basis van bestaande richtlijnen in een gestructureerde context.",
+          "niveau_2": "Ontwerp complexe hardware-interfaces zelfstandig, rekening houdend met betrouwbaarheid en onvoorspelbare omstandigheden.",
+          "niveau_3": "Ontwerp hardware-oplossingen in vage en complexe situaties. Jouw ontwerp heeft invloed op de technische richting van het project."
+        },
+        "Realise": {
+          "niveau_1": "Realiseer en test hardware-componenten of interfaces op basis van een ontwerp in een gestructureerde en voorspelbare context.",
+          "niveau_2": "Realiseer complexe hardware-interfaces zelfstandig in een onvoorspelbare context. Los technische problemen op die niet voorzien waren.",
+          "niveau_3": "Realiseer hardware-oplossingen in vage situaties waarbij je de aanpak zelf bepaalt en het team ondersteunt."
+        },
+        "Manage & Control": {
+          "niveau_1": "Monitor en beheer hardware-componenten op basis van vastgestelde procedures om beschikbaarheid en goede werking te waarborgen.",
+          "niveau_2": "Beheer hardware-systemen zelfstandig in een onvoorspelbare omgeving. Anticipeer op storingen en pas procedures aan.",
+          "niveau_3": "Stuur hardwarebeheer in complexe en vage situaties en verbeter de beheerpraktijk van het team."
+        }
+      }
+    }
+  ],
+  "professionele_ontwikkeling": {
+    "toelichting": "PL en PS hebben geen activiteiten-uitsplitsing. Verantwoording wordt direct onder de competentiecode geschreven.",
+    "PL": {
+      "naam": "Personal Leadership",
+      "niveau_2": "Je kent je sterke en zwakke punten op ICT-gebied en in persoonlijke ontwikkeling. Je handelt naar je eigen waarden om continu te verbeteren en te leren."
+    },
+    "PS": {
+      "naam": "Professional Skills",
+      "niveau_2": "Je gebruikt professionele methodes om doelen te stellen, stakeholders te betrekken, onderzoek te doen, advies te geven, beslissingen te nemen en rapportages te maken - ethisch en duurzaam, zowel individueel als in teams."
+    }
+  }
+}

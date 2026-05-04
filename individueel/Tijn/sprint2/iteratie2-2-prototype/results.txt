@@ -1,0 +1,172 @@
+===============================================================
+TESTRESULTATEN - ITERATIE 2
+===============================================================
+
+Model:          Qwen 2.5 14B via Ollama
+Databron:       PostgreSQL (Docker, lokaal)
+Loader:         loader.py - eager loading via psycopg v3
+Student:        Jana de Wit (id 2, User Interaction focus)
+Voortgang:      5 items
+Activiteiten:   5 items
+Testvragen:     4 (per-student, uit students.json)
+
+Opmerking:
+  Er is bewust maar een student getest. Het doel van iteratie 2
+  is valideren dat de database-gestuurde context werkt. Het kunnen
+  filteren en kiezen per student-id is juist het bewijs dat de
+  aanpak werkt. Drie keer hetzelfde herhalen toont niets extra's.
+
+===============================================================
+SCENARIO 1: VOORTGANG EN ADVIES
+===============================================================
+
+Vraag:
+  Ik wil User Interaction Design niveau 2 behalen. Wat moet ik
+  daarvoor doen?
+
+Antwoord:
+  Om het niveau 2 van de competentie User Interaction (UX) te
+  behalen, heb je een serie complexere en meer uitgebreide
+  activiteiten nodig die gericht zijn op het gebruikersonderzoek,
+  het ontwerpen van interactieve patronen en het geven van advies.
+
+  ### Analyse (Niveau 1 naar Niveau 2)
+  - Interviews met meerdere respondenten: voer gedetailleerde
+    interviews uit met een bredere groep gebruikers.
+  - Gebruikersonderzoek op schaal: implementeer en analyseer
+    kwalitatief en kwantitatief gebruikersonderzoek.
+  - Thema's coderen en categoriseren met methodieken zoals
+    Grounded Theory.
+
+  ### Design (Niveau 1 naar Niveau 2)
+  - Complexere wireframes en prototypes: maak high-fidelity
+    interactieve prototypen voor complexe gebruiksgevallen.
+  - Interactiepatronen ontwerpen: ontwerp en implementeer een
+    volledige set interactiepatronen voor verschillende schermen
+    en functionaliteiten.
+  - Iteratief ontwikkelen op basis van feedback uit usability tests.
+
+  ### Advise (Niveau 1 naar Niveau 2)
+  - Gevorderde UX-notities met concrete aanbevelingen.
+  - Multidisciplinair adviesgeven op basis van bredere kennis.
+  - Ethiek en duurzaamheid meenemen in UX-adviezen.
+
+  ### Voorbeelden van specifieke activiteiten
+  1. Interviews verwerken en coderen
+  2. Wireframes en high-fidelity prototypen
+  3. Usability tests uitvoeren
+  4. UX-adviesnotitie opstellen
+
+Beoordeling:
+  + Gekoppeld aan haar echte activiteiten (interviews, wireframes,
+    nudging prototype, usability test, UX-adviesnotitie).
+  + Nederlands is goed.
+  + Geen DB-id leaks meer na loader-fix.
+  - Scope drift: vraag ging over Design, antwoord behandelt ook
+    Analyse en Advise. Valt te verdedigen (meerdere facetten nodig
+    voor een niveau), maar strikt gelezen niet wat gevraagd is.
+  - "Ethiek en duurzaamheid" en "multidisciplinair adviesgeven"
+    horen eerder bij PS-2, niet bij UI Advise niveau 2. Model
+    haalt eigen kennis erbij.
+  - "Grounded Theory" staat niet in de definitie, maar is wel een
+    echte methode. Aanvulling, geen hallucinatie.
+
+===============================================================
+SCENARIO 2: PLANNING OPVRAGEN
+===============================================================
+
+Vraag:
+  Wat staat er de komende dagen op mijn planning?
+
+Antwoord:
+  De komende dagen staan er nog enkele activiteiten in je planning,
+  voornamelijk gericht op het afronden van onderzoek en documentatie
+  voor je project "Fontys LMS - Nudging module".
+
+  1. Usability test nudging prototype (2026-04-22)
+     Taakgerichte sessie met vijf deelnemers om het prototype te
+     testen en feedback in te winnen.
+
+  2. UX-adviesnotitie opstellen (2026-04-25)
+     Bezig met het schrijven van een UX-adviesnotitie voor de
+     projectgroep.
+
+Beoordeling:
+  + Correcte datums en activiteiten.
+  + Project correct bij naam genoemd.
+  + Geen Sam/Omar-bleed.
+  + Geen hallucinatie over "vandaag" of weekindeling.
+  Voldoet volledig aan criteria.
+
+===============================================================
+SCENARIO 3: KOPPELING COMPETENTIE AAN PROJECT
+===============================================================
+
+Vraag:
+  Welk type document past het beste om User Interaction Advise aan
+  te tonen in mijn huidige project? Geef alleen een korte aanbeveling
+  met motivatie, geen uitgewerkt document.
+
+Antwoord:
+  Een UX-adviesnotitie is het meest geschikte type document om je
+  competentiedemonstratie voor User Interaction Advise te tonen.
+  Deze notitie moet de bevindingen van jouw onderzoek en prototype
+  integreren, en concrete adviespunten presenteren voor verbeteringen
+  in het studentendashboard met behulp van nudging-mechanica. Dit
+  helpt je om niveau 1 te behalen door duidelijk aan te tonen hoe je
+  UX-adviezen geeft op basis van empirisch onderzoek.
+
+Beoordeling:
+  + Korte, gerichte aanbeveling zoals gevraagd.
+  + Motivatie gekoppeld aan haar project en voortgang.
+  + Noemt correct niveau 1 (matcht haar voortgang).
+  + Aanscherping van de formulering werkt (van "Welk document kan
+    ik schrijven" naar "Welk type document past het beste... geef
+    alleen een korte aanbeveling").
+  Voldoet volledig aan criteria.
+
+===============================================================
+SCENARIO 4: REFLECTIE OP RECENT AFGEROND WERK
+===============================================================
+
+Vraag:
+  Welke activiteiten heb ik de afgelopen week afgerond?
+
+Antwoord:
+  De afgelopen week hebt u drie activiteiten afgerond:
+
+  1. Interviews verwerken en coderen
+     Datum: 2026-04-11
+     Beschrijving: Zes studentinterviews gecodeerd naar thema's.
+
+  2. Wireframes studentdashboard
+     Datum: 2026-04-15
+     Beschrijving: Low-fidelity schetsen voor de drie hoofdschermen.
+
+  3. Prototype nudging-mechaniek
+     Datum: 2026-04-18
+     Beschrijving: Geen beschrijving beschikbaar (null).
+
+Beoordeling:
+  + Alle genoemde activiteiten zijn afgerond in de database.
+  + Alleen Jana's activiteiten, geen bleed.
+  - 2026-04-11 valt buiten "afgelopen week" (9 dagen geleden bij
+    vandaag = 2026-04-20). Boundary is onduidelijk voor het model.
+  - Cosmetisch: "null" letterlijk geciteerd omdat het model de
+    JSON-waarde overneemt. Los op door lege velden uit de loader
+    weg te laten.
+
+===============================================================
+EINDOORDEEL
+===============================================================
+
+Data-laag werkt. Geen regressie tegenover iteratie 1. De aanpak
+van het vervangen van mock JSON door PostgreSQL, met een eager
+loader als tussenlaag, levert dezelfde kwaliteit chatbot-antwoorden
+op. Per-student context komt correct door.
+
+Resterende issues zijn niet data-gerelateerd maar model- en
+promptinterpretatie: scope drift bij complexe vragen en ambigue
+boundaries bij tijdsvragen. Beide horen thuis in iteratie 3, waar
+function calling het model scherper kan laten vragen om specifieke
+data in plaats van te werken op de volledige eager-load context.

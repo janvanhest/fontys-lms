@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup – Persoonlijk Leerpad Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══ Top navigation ═══════════════════════════════════ -->
+<nav class="topnav">
+  <span class="brand">📋 Leerpad Dashboard</span>
+  <button class="active" onclick="showScreen('title',this)">Intro</button>
+  <button onclick="showScreen('week',this)">Mijn Leerpad</button>
+  <button onclick="showScreen('chat',this)">Assistent</button>
+</nav>
+
+<!-- ══ SCREEN 1: Title ═══════════════════════════════════ -->
+<div class="screen active" id="screen-title">
+  <div style="max-width:760px; margin:2rem auto;">
+    <div class="title-screen">
+      <p class="pre-label">Paper Prototype · HBO-ICT Semester 4 · 8 april 2026</p>
+      <h1>Persoonlijk Leerpad Dashboard</h1>
+      <p class="subtitle">Van module-gestuurd naar student-gericht —<br>een persoonlijk overzicht als aanvulling op Canvas LMS</p>
+      <div class="concept-pills">
+        <span class="concept-pill">📅 Persoonlijk weekoverzicht</span>
+        <span class="concept-pill">👤 Student én docent voegen taken toe</span>
+        <span class="concept-pill">🤖 Assistent + nudging</span>
+        <span class="concept-pill">🎯 Competentiekoppeling</span>
+      </div>
+      <div class="survey-summary">
+        <div class="ss-item">
+          <span class="ss-num">10/12</span>
+          <span class="ss-desc">positief over persoonlijk weekoverzicht i.p.v. modulelijst</span>
+        </div>
+        <div class="ss-item">
+          <span class="ss-num">9/12</span>
+          <span class="ss-desc">willen hulp bij koppelen aan competenties</span>
+        </div>
+        <div class="ss-item">
+          <span class="ss-num">6/12</span>
+          <span class="ss-desc">willen een AI-assistent voor vragen en navigatie</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="section-title">Het probleem</p>
+      <p style="font-size:.88rem;color:#444;line-height:1.7;">
+        Canvas is <strong>module-gestuurd</strong>: informatie is georganiseerd per cursus en module.
+        Maar studenten leren niet module-gestuurd — zij hebben een <strong>eigen leerpad</strong> met taken van zichzelf én hun docent,
+        verspreid over meerdere modules en tools (FeedPulse, Portflow, Teams).
+        Het gevolg: studenten kunnen niets terugvinden, missen deadlines en weten niet welke competenties ze nog moeten aantonen.
+        <br><br>
+        Dit prototype verkent een <strong>persoonlijk laag bovenop Canvas</strong>: één overzicht, afgestemd op de student.
+      </p>
+    </div>
+    <div class="card">
+      <p class="section-title">Over dit prototype</p>
+      <p style="font-size:.88rem;color:#444;line-height:1.6;">
+        Dit is een <strong>paper prototype</strong> — een ruwe schets bedoeld voor discussie en feedback.
+        Gebruik de tabbladen bovenaan om door de schermen te navigeren.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 2: Mijn Leerpad (Week Overzicht) ══════════ -->
+<div class="screen" id="screen-week">
+  <div class="proto-badge">⚠ Paper Prototype – niet het uiteindelijke ontwerp</div>
+
+  <div class="app-chrome">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="url-bar">canvas.fontys.nl / mijn-leerpad</span>
+  </div>
+  <div class="app-body">
+
+    <!-- Week selector -->
+    <div class="week-header">
+      <button class="arrow-btn" title="Vorige week">◀</button>
+      <h2>👤 Mijn Leerpad &nbsp;–&nbsp; Week 14 &nbsp;|&nbsp; 7–13 april 2026</h2>
+      <button class="arrow-btn" title="Volgende week">▶</button>
+      <button class="btn primary" style="font-size:.78rem; padding:.3rem .7rem;" onclick="toggleAddForm()">+ Taak toevoegen</button>
+    </div>
+
+    <!-- Add task form (hidden by default) -->
+    <div id="add-form" style="display:none; background:#EDE7F6; border:1.5px solid #9C6BBE;
+        border-radius:8px; padding:.9rem 1.1rem; margin-bottom:1rem; font-size:.84rem;">
+      <strong>Nieuwe taak toevoegen</strong>
+      <input type="text" placeholder="Omschrijving van de taak..."
+        style="display:block;margin:.5rem 0 .4rem;width:100%;padding:.35rem .5rem;
+        border:1px solid #9C6BBE;border-radius:6px;font-family:inherit;font-size:.83rem;" />
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.5rem;">
+        <select style="flex:1;padding:.32rem .5rem;border:1px solid #9C6BBE;border-radius:6px;font-family:inherit;font-size:.8rem;">
+          <option>Competentie koppelen...</option>
+          <option>Analyse</option>
+          <option>Advice</option>
+          <option>Design</option>
+          <option>Realisation</option>
+          <option>Manage &amp; Control</option>
+          <option>Personal Leadership</option>
+          <option>Professional Standard</option>
+        </select>
+        <select style="flex:1;padding:.32rem .5rem;border:1px solid #9C6BBE;border-radius:6px;font-family:inherit;font-size:.8rem;">
+          <option>Toegevoegd door: Student</option>
+          <option>Toegevoegd door: Docent</option>
+        </select>
+      </div>
+      <button class="btn primary" style="font-size:.76rem;padding:.28rem .7rem;"
+        onclick="addTask()">Opslaan</button>
+      <button class="btn secondary" style="font-size:.76rem;padding:.28rem .7rem;"
+        onclick="toggleAddForm()">Annuleren</button>
+    </div>
+
+    <!-- Activity rows -->
+    <p class="section-title">Taken deze week</p>
+    <div class="activity-list" id="activity-list">
+
+      <div class="activity-row">
+        <input type="checkbox" checked />
+        <span class="act-name done">Sprint 2 retrospective inleveren</span>
+        <span class="tag manage">Manage &amp; Control</span>
+        <span class="by-badge by-docent">👨‍🏫 Docent</span>
+      </div>
+
+      <div class="activity-row">
+        <input type="checkbox" />
+        <span class="act-name">FeedPulse invullen voor Eric Slaats</span>
+        <span class="tag advice">Advice</span>
+        <span class="by-badge by-docent">👨‍🏫 Docent</span>
+      </div>
+
+      <div class="activity-row">
+        <input type="checkbox" />
+        <span class="act-name">Reflectie schrijven – Sprint 2</span>
+        <span class="tag analyse">Analyse</span>
+        <span class="by-badge by-student">🎓 Jijzelf</span>
+      </div>
+
+      <div class="activity-row">
+        <input type="checkbox" />
+        <span class="act-name">Canvas API – documentatie uitwerken</span>
+        <span class="tag realisation">Realisation</span>
+        <span class="by-badge by-student">🎓 Jijzelf</span>
+      </div>
+
+      <div class="activity-row">
+        <input type="checkbox" />
+        <span class="act-name">Projectplan finaliseren</span>
+        <span class="tag analyse">Analyse</span>
+        <span class="by-badge by-student">🎓 Jijzelf</span>
+      </div>
+
+      <div class="activity-row">
+        <input type="checkbox" />
+        <span class="act-name">Peer review uitvoeren voor groepsgenoot</span>
+        <span class="tag advice">Advice</span>
+        <span class="by-badge by-docent">👨‍🏫 Docent</span>
+      </div>
+
+      <div class="activity-row">
+        <input type="checkbox" checked />
+        <span class="act-name done">Mockup presenteren aan groep</span>
+        <span class="tag advice">Advice</span>
+        <span class="by-badge by-student">🎓 Jijzelf</span>
+      </div>
+
+    </div>
+
+    <!-- Nudge banner -->
+    <div id="week-nudge" style="
+        display:flex; align-items:flex-start; gap:.8rem;
+        background:#FFF8E1; border-left:4px solid #FFC107;
+        border-radius:0 8px 8px 0; padding:.9rem 1.1rem;
+        margin: 1rem 0 0; font-size:.84rem; color:#5D4037;">
+      <span style="font-size:1.2rem;flex-shrink:0;">🔔</span>
+      <div style="flex:1;">
+        <strong>Nudge:</strong> Je hebt deze week nog niets ingediend voor
+        <strong>Analyse</strong> en <strong>Personal Leadership</strong>.
+        Heb je al taken klaarstaan die je kunt koppelen?
+      </div>
+      <div style="display:flex;gap:.5rem;flex-shrink:0;">
+        <button class="btn primary" style="font-size:.76rem;padding:.28rem .65rem;"
+          onclick="document.getElementById('week-nudge').style.display='none';
+                   document.getElementById('week-koppel').style.display='block'">
+          Koppelen
+        </button>
+        <button class="btn secondary" style="font-size:.76rem;padding:.28rem .65rem;"
+          onclick="document.getElementById('week-nudge').style.display='none'">
+          Sluiten
+        </button>
+      </div>
+    </div>
+
+    <!-- Inline koppel-formulier -->
+    <div id="week-koppel" style="display:none; background:#EDE7F6; border:1.5px solid #9C6BBE;
+        border-radius:8px; padding:.9rem 1.1rem; margin-top:.6rem; font-size:.84rem;">
+      <strong>Koppel een taak aan Analyse:</strong>
+      <select style="display:block;margin:.5rem 0 .7rem;width:100%;padding:.35rem .5rem;
+          border:1px solid #9C6BBE;border-radius:6px;font-family:inherit;font-size:.83rem;">
+        <option>Projectplan finaliseren</option>
+        <option>Canvas API – documentatie uitwerken</option>
+        <option>Reflectie schrijven – Sprint 2</option>
+      </select>
+      <button class="btn primary" style="font-size:.76rem;padding:.28rem .7rem;"
+        onclick="document.getElementById('week-koppel').style.display='none';
+                 document.getElementById('week-success').style.display='block'">
+        Bevestigen
+      </button>
+      <button class="btn secondary" style="font-size:.76rem;padding:.28rem .7rem;"
+        onclick="document.getElementById('week-koppel').style.display='none'">
+        Annuleren
+      </button>
+    </div>
+    <div id="week-success" style="display:none; color:#2E7D32; background:#E8F5E9;
+        border:1px solid #A5D6A7; border-radius:8px; padding:.7rem 1rem;
+        margin-top:.6rem; font-size:.84rem;">
+      ✅ <strong>Gekoppeld!</strong> Projectplan is nu verbonden aan Analyse.
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-section">
+      <div class="ring-wrap">
+        <svg width="60" height="60" viewBox="0 0 60 60">
+          <circle cx="30" cy="30" r="24" fill="none" stroke="#CE93D8" stroke-width="7"/>
+          <circle cx="30" cy="30" r="24" fill="none" stroke="#4A1A6D" stroke-width="7"
+            stroke-dasharray="150.8" stroke-dashoffset="107.7" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-label">2/7</div>
+      </div>
+      <div class="progress-text">
+        <h4>Competenties aangeraakt deze week</h4>
+        <p>Je hebt 2 van 7 competenties gedekt. Mis je nog: <strong>Analyse</strong>, <strong>Design</strong>, <strong>Realisation</strong>, <strong>Personal Leadership</strong> &amp; <strong>Professional Standard</strong>.</p>
+        <div class="comp-pills">
+          <span class="pill done">Advice ✓</span>
+          <span class="pill done">Manage &amp; Control ✓</span>
+          <span class="pill">Analyse</span>
+          <span class="pill">Design</span>
+          <span class="pill">Realisation</span>
+          <span class="pill">Personal Leadership</span>
+          <span class="pill">Professional Standard</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="proto-note">Paper Prototype – niet het uiteindelijke ontwerp</div>
+</div>
+
+<!-- ══ SCREEN 3: Assistent ══════════════════════════════ -->
+<div class="screen" id="screen-chat">
+  <div class="proto-badge">⚠ Paper Prototype – niet het uiteindelijke ontwerp</div>
+
+  <div class="app-chrome">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="url-bar">canvas.fontys.nl / mijn-leerpad / assistent</span>
+  </div>
+  <div class="app-body">
+
+    <div style="display:flex; align-items:center; gap:.7rem; margin-bottom:1.2rem; padding-bottom:.8rem; border-bottom:1px solid #EEE;">
+      <div class="avatar bot" style="width:38px;height:38px;font-size:.9rem;">AI</div>
+      <div>
+        <div style="font-weight:700;font-size:.9rem;">Leerpad Assistent</div>
+        <div style="font-size:.75rem;color:#888;">Stel vragen over je taken, competenties, Canvas of je leerpad</div>
+      </div>
+      <span style="margin-left:auto;font-size:.72rem;color:#2E7D32;background:#E8F5E9;padding:.2rem .5rem;border-radius:12px;border:1px solid #A5D6A7;">● Online</span>
+    </div>
+
+    <div class="chat-window" id="chat-window">
+
+      <!-- Proactieve nudge -->
+      <div class="bubble-wrap">
+        <div class="avatar bot">AI</div>
+        <div class="bubble bot" style="border-left:3px solid #FFC107;padding-left:.8rem;">
+          🔔 <strong>Nudge:</strong> Hoi Tamar! Je hebt deze week nog niets ingediend voor
+          <strong>Analyse</strong>. Je projectplan staat nog open — wil je dat ik dat koppel?
+          <div class="suggestion-chips">
+            <span class="chip" onclick="doKoppelenNudge(this)">Ja, koppel projectplan</span>
+            <span class="chip" onclick="sendChip(this)">Niet nu</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bredere vraag: navigatie/terugvinden -->
+      <div class="bubble-wrap user">
+        <div class="avatar user">T</div>
+        <div class="bubble user">Waar vind ik de beoordelingscriteria voor mijn portfolio?</div>
+      </div>
+
+      <div class="bubble-wrap">
+        <div class="avatar bot">AI</div>
+        <div class="bubble bot">
+          De beoordelingscriteria voor je portfolio staan op twee plekken:<br><br>
+          📄 <strong>Module O-MA-AV → Outcomes</strong> — hier staan de competenties met rubrics<br>
+          📋 <strong>Competence Tool2</strong> (linkerzijbalk in Canvas) — overzicht per competentie<br><br>
+          Wil ik de link voor je openen, of wil je weten welke criteria jij deze sprint nog moet aantonen?
+          <div class="suggestion-chips">
+            <span class="chip" onclick="sendChipBot(this, 'Welke criteria moet ik nog aantonen?', 'Op basis van je ingediende werk mis je nog bewijs voor: <strong>Analyse</strong> (niveau 2) en <strong>Personal Leadership</strong> (niveau 1). Wil je daar een taak voor aanmaken in je leerpad?')">Welke criteria moet ik nog aantonen?</span>
+            <span class="chip" onclick="sendChip(this)">Open Outcomes pagina</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Competentievraag -->
+      <div class="bubble-wrap user">
+        <div class="avatar user">T</div>
+        <div class="bubble user">Welke competentie hoort bij mijn projectplan?</div>
+      </div>
+
+      <div class="bubble-wrap">
+        <div class="avatar bot">AI</div>
+        <div class="bubble bot">
+          Jouw projectplan past het beste bij:<br><br>
+          🔬 <strong>Analyse</strong> — je past een onderzoeksmethode toe<br>
+          💬 <strong>Advice</strong> — je stelt vragen en verwerkt feedback<br><br>
+          Wil ik het koppelen en een taak aanmaken in je leerpad?
+          <div class="suggestion-chips">
+            <span class="chip" onclick="doKoppelen(this)">Ja, koppel en maak taak aan</span>
+            <span class="chip" onclick="sendChip(this)">Alleen koppelen</span>
+            <span class="chip" onclick="sendChip(this)">Nee, later</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="chat-input-bar">
+      <input type="text" id="chat-input" placeholder="Vraag iets over je taken, competenties of Canvas..." onkeydown="if(event.key==='Enter')sendMsg()" />
+      <button onclick="sendMsg()">Verstuur ↑</button>
+    </div>
+
+  </div>
+  <div class="proto-note">Paper Prototype – niet het uiteindelijke ontwerp</div>
+</div>
+
+
+<script src="script.js"></script>
+</body>
+</html>

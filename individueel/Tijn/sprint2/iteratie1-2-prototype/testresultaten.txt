@@ -1,0 +1,185 @@
+TESTRESULTATEN - Iteratie 1
+Datum: 3 april 2026
+============================================================
+
+
+============================================================
+RUN 1 - Model: Llama 3.1 8B
+Prompt: eerste versie (geen gedragsregels, geen datum)
+============================================================
+
+Scenario 1: Voortgang en advies
+Vraag: Ik wil Infrastructure Analyse niveau 2 behalen. Wat moet ik daarvoor doen?
+----------------------------------------
+Om Infrastructure Analyse op niveau 2 te behalen, moet je volgens de competentiematrix het niveau 1 bereikt hebben en nu al werkend aan niveau 2 bezig zijn.
+
+Uit de student_progress tabel van de Student zien we dat hij niveau 1 al heeft bereikt voor Infrastructure Analyse, maar nog niet niveau 2. Hieronder zie je de specificatie:
+
+| Competentie    | Activiteit | Niveau Behaald | Niveau Bezigt |
+|----------------|------------|----------------|---------------|
+| Infrastructure | Analyse    | 1              | null          |
+
+Om niveau 2 te behalen, moet je dus een activiteit uitvoeren waarbij je een complexe interface of systeem analyseert en specifieke technische knelpunten identificeert. Hieronder zie je een mogelijke activiteit:
+
+* Activiteit: Analyse van de Chatbot-architectuur
+* Beschrijving: Analyseer de technische onderbouwing van de chatbot, met inbegrip van de complexe interfaces en technologieen die worden gebruikt.
+
+Ook uit de competentiematrix zien we dat hij nog geen niveau 2 heeft behaald. In de Student tabel staat onder competentie Infrastructure:
+
+* Competentie: Infrastructure
+* Activiteit: Analyse
+* Niveau Behaalt: null
+* Niveau Bezigt: 2
+
+Om nu aan niveau 2 te kunnen voldoen moet hij een concrete resultaat of output hebben, en dat is niet het geval hier.
+
+Dit betekent dat je als student moet beginnen met de analyse van de chatbot-architectuur en technische onderbouwing. Dit kan door bijvoorbeeld de volgende stappen te nemen:
+
+* Lees en begrijp de documentatie over de chatbot-technologie
+* Identificeer complexe interfaces en technologieen die worden gebruikt
+* Doe een technische verkenning van de systemen, databases en andere componenten die bijdragen aan de chatbot-functies
+
+Door deze stappen te nemen en een concrete resultaat of output te hebben, kun je aantonen dat je niveau 2 heeft behaald voor Infrastructure Analyse.
+
+[NOOT: model spreekt zichzelf tegen - eerst "niveau_bezig: null", daarna "niveau_bezig: 2"]
+
+
+Scenario 2: Planning opvragen
+Vraag: Wat staat er de komende dagen op mijn planning?
+----------------------------------------
+Ik kan kijken naar jouw planning!
+
+Op basis van het student-data dat je hebt gedeeld, zie ik dat je een aantal activiteiten hebt waarvan je eenmaal op de week aanwezig moet zijn. Hieronder vind je een samenvatting van de activiteiten die volgende dagen zullen plaatsvinden:
+
+1. Maandag: Je hebt geen activiteiten gepland voor maandag.
+2. Dinsdag:
+    - Werk aan het schrijven van een adviesrapport over chatbot-architectuur (iteratie 1) voor de competentie "Infrastructure - Advise".
+3. Woensdag: Je hebt geen activiteiten gepland voor woensdag.
+4. Donderdag:
+    - Werk aan het schrijven van een adviesrapport over chatbot-architectuur (iteratie 1) (continuatie van dinsdag).
+5. Vrijdag: Je hebt geen activiteiten gepland voor vrijdag.
+6. Zaterdag en zondag: Je hebt geen activiteiten gepland voor de weekenden.
+
+Ook heb je een aantal taken die in de komende dagen kunnen worden uitgevoerd, zoals het schrijven van een conclusie over iteratie 1 en het opstellen van een C4-diagram (level 1 en 2).
+
+[NOOT: model verzint een ma/di/wo-weekindeling. JSON heeft concrete datums: 4 april, 7 april, 10 april. Dit is hallucinatie.]
+
+
+Scenario 3: Koppeling competentie aan project
+Vraag: Welk document kan ik schrijven om Infrastructure Advise aan te tonen in mijn project?
+----------------------------------------
+[FOUT] Timeout - het model reageerde niet binnen 120 seconden.
+
+
+============================================================
+RUN 2 - Model: Qwen 2.5 14B
+Prompt: verbeterde versie (gedragsregels + datum + verbod op metataal)
+============================================================
+
+Scenario 1: Voortgang en advies
+Vraag: Ik wil Infrastructure Analyse niveau 2 behalen. Wat moet ik daarvoor doen?
+----------------------------------------
+Om het niveau 2 van de competentie Infrastructure in de activiteit Analyse te behalen, moet je een complexere ecosysteemanalyse en technische specificaties uitvoeren. Hier zijn de stappen die je kunt volgen:
+
+1. Complexe Ecosysteemanalyse: Ga verder dan de basis-ecosysteemanalyse die je al hebt uitgevoerd voor Canvas API-verkenning. Dit betekent dat je een gedetailleerde analyse moet doen van alle componenten, interfaces en interacties in het ecosysteem waarin je project zich bevindt.
+
+2. Technische Specificaties: Maak technische specificaties voor de chatbot-architectuur die je momenteel aan het uitwerken bent. Dit omvat:
+   - Het bepalen van de nodige API's en andere externe systemen.
+   - Het identificeren en documenteren van alle hulpbronnen (hardware, software) die nodig zijn voor het systeem.
+   - Een gedetailleerde analyse van de vereisten en limieten van elke technische component.
+
+3. Documentatie: Schrijf een volledige rapport of whitepaper waarin je ecosysteemanalyse en technische specificaties worden gedocumenteerd. Dit document moet duidelijk en overtuigend zijn, met toegelicht rationale voor alle beslissingen die je neemt.
+
+4. Feedback: Geef dit rapport aan je docent of teamleden voor feedback om ervoor te zorgen dat het volledig en correct is. Pas de documentatie waar nodig aan op basis van de ontvangen feedback.
+
+5. Iteratief Verbeteren: Maak gebruik van de feedback om iteratief te verbeteren en verder te gaan met je project. Dit zal helpen om ervoor te zorgen dat je ecosysteemanalyse en technische specificaties voldoende gedetailleerd zijn.
+
+Je moet deze stappen uitvoeren terwijl je aan het prototype iteratie 1 werkt en de chatbot-architectuur onderzoekt. Door dit proces volledig door te lopen, zul je in staat zijn om het niveau 2 voor de activiteit Analyse van de competentie Infrastructure te behalen.
+
+Als je meer specifieke richtlijnen of extra hulp nodig hebt, raad ik aan om contact op te nemen met je docent of coach.
+
+
+Scenario 2: Planning opvragen
+Vraag: Wat staat er de komende dagen op mijn planning?
+----------------------------------------
+De komende dagen heb je een aantal activiteiten die je moet afwerken of in werking moeten stellen. Hier is een overzicht van wat de komende weken voor je ligt:
+
+1. Prototype iteratie 1 bouwen en testen - Datum: 4 april 2026, Status: Bezig
+   - Je bent bezig met het bouwen en testen van de eerste iteratie van je prototype.
+
+2. C4-diagram opstellen (level 1 en 2) - Datum: 7 april 2026, Type: Document, Status: Open
+   - Op deze datum moet je een C4-diagram voor je project maken, waarschijnlijk om de technische architectuur te documenteren.
+
+3. Adviesrapport bijdrage schrijven (chatbot technische onderbouwing) - Datum: 7 april 2026, Type: Document, Status: Open
+   - Je moet een delen van het adviesrapport over de chatbot technisch onderbouwen.
+
+4. Iteratie 1 conclusie schrijven - Datum: 10 april 2026, Type: Document, Status: Open
+   - Na afloop van iteratie 1 moet je een conclusierapport opstellen met de resultaten en reflecties over deze iteratie.
+
+5. Sprint 2 reflectie schrijven - Datum: 19 april 2026, Type: Reflectie, Status: Open
+   - Tijdens of na sprint 2 moet je een reflectierapport schrijven waarin je de ervaringen en lessen van deze sprint beschrijft.
+
+Bijwerken en afhandelen van deze taken zal helpen om de vooruitgang te documenteren en het prototype verder te ontwikkelen.
+
+
+Scenario 3: Koppeling competentie aan project
+Vraag: Welk document kan ik schrijven om Infrastructure Advise aan te tonen in mijn project?
+----------------------------------------
+Om het niveau 'Advise' van de competentie 'Infrastructure' aan te tonen, kun je een document schrijven dat gericht is op technisch advies voor de chatbot-architectuur. Dit document zou moeten inhouden:
+
+1. Technische Keuze: Verkennen en toelichten van verschillende opties voor het ontwerp van de chatbot.
+2. Advise Over Technologische Standaarden: Toelichting op de keuzes die je maakt, met nadruk op betrouwbaarheid, schaalbaarheid en onderhoudsvriendelijkheid.
+3. Documentatie Van Het Adviesproces: Beschrijving van hoe je tot het advies bent gekomen, inclusief eventuele pro's en con's van verschillende opties.
+
+Hier is een voorbeeld-structuur voor het document:
+
+Titel: Technisch Adviesrapport voor Chatbot-Architectuur
+Datum: 2026-04-07
+Project: Fontys LMS - Chatbot module
+Student: Sam de Vries
+
+Inhoudsopgave
+1. Inleiding
+2. Overzicht van De Kernproblemen
+3. Technische Keuze en Rationeeleringen
+4. Analyse Van De Opties
+   - 4.1 Option A: [Beschrijving]
+   - 4.2 Option B: [Beschrijving]
+5. Advise Over Technologische Standaarden
+6. Conclusie en Voorstel
+7. Bijlagen
+
+Inleiding
+In dit adviesrapport bespreek ik de technische keuzes voor het ontwerp van een chatbot die als LTI-tool is gekoppeld aan Canvas, met behulp van de Canvas API.
+
+Overzicht van De Kernproblemen
+De kernproblemen om te adverteren zijn:
+- Betrouwbaarheid en betrouwbaarheid in interacties tussen het systeem en Canvas.
+- Schaalbaarheid voor een groeiend aantal studenten en gebruikers.
+- Onderhoudsvriendelijkheid van de chatbotarchitectuur.
+
+Technische Keuze en Rationeeleringen
+Bij de keuze van technologische opties heb ik rekening gehouden met:
+- Verborgen taken om te zorgen dat de chatbot efficiënt werkt.
+- Schaalbaarheid van de systeemarchitectuur.
+- Eenvoudige onderhoud en uitbreiding in de toekomst.
+
+Analyse Van De Opties
+Option A: [Beschrijving]
+- Voordelen: [Toelichting]
+- Nadelen: [Toelichting]
+
+Option B: [Beschrijving]
+- Voordelen: [Toelichting]
+- Nadelen: [Toelichting]
+
+Advise Over Technologische Standaarden
+Bij de keuze van technologische standaarden heb ik onder andere gekeken naar:
+- API-verificatie en autorisatie mechanismen.
+- Verwerking van grote hoeveelheden data zonder prestatieproblemen.
+- Veiligheid van de chatbot en interacties met Canvas.
+
+Conclusie en Voorstel
+Op basis van de beschreven analyse raad ik aan [keuze] te maken. Dit is gebaseerd op het punt dat dit optimaal past binnen onze architectuur, waarbij we zorgen voor een robuust systeem dat schaalbaar is en gemakkelijk onderhouden kan worden.
+
+[NOOT: taalfouten in output - "Rationeeleringen" en "adverteren" zijn geen correct Nederlands. Option A/B niet ingevuld - correct gedrag, staan niet in de data.]
