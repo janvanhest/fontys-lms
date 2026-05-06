@@ -5,12 +5,12 @@ import '@fontsource/roboto/300.css'
 import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
-import theme from '../src/theme'
+import muiTheme from '../src/themes/muiTheme'
 
 const preview: Preview = {
   decorators: [
     (Story) => (
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={muiTheme}>
         <CssBaseline />
         <Story />
       </ThemeProvider>
