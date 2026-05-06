@@ -65,7 +65,7 @@ export function ChuckNorrisWidget({
       <Divider />
 
       <CardContent sx={{ minHeight: '7.5rem' }}>
-        {isPending && (
+        {isPending && !joke && (
           <>
             <Skeleton width="90%" />
             <Skeleton width="75%" />
@@ -79,7 +79,15 @@ export function ChuckNorrisWidget({
         )}
         {joke && (
           <Fade in key={joke.id}>
-            <Typography variant="body1">{joke.value}</Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                opacity: isRefetching ? 0.7 : 1,
+                transition: 'opacity 0.2s ease',
+              }}
+            >
+              {joke.value}
+            </Typography>
           </Fade>
         )}
       </CardContent>

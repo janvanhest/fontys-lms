@@ -13,13 +13,23 @@ async function fetchJoke(category: string | null): Promise<ChuckNorrisJoke> {
     : 'https://api.chucknorris.io/jokes/random'
   const res = await fetch(url)
   if (!res.ok) throw new Error('Kon geen grap ophalen')
-  return res.json() as Promise<ChuckNorrisJoke>
+
+  try {
+    return (await res.json()) as ChuckNorrisJoke
+  } catch {
+    throw new Error('Kon geen grap ophalen')
+  }
 }
 
 async function fetchCategories(): Promise<string[]> {
   const res = await fetch('https://api.chucknorris.io/jokes/categories')
   if (!res.ok) throw new Error('Kon categorieën niet ophalen')
-  return res.json() as Promise<string[]>
+
+  try {
+    return (await res.json()) as string[]
+  } catch {
+    throw new Error('Kon categorieën niet ophalen')
+  }
 }
 
 export const chuckNorrisCategoriesOptions = queryOptions({
