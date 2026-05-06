@@ -9,32 +9,13 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useLayout } from '@/context/useLayout'
+import { defaultMessages, type ChatMessage } from './chatMessages'
 
-const messages = [
-  {
-    id: 'assistant-1',
-    role: 'assistant',
-    title: 'LMS-assistent',
-    content:
-      'Ik heb de laatste activiteit en challenge-context geladen. Waar wil je vandaag op sturen?',
-  },
-  {
-    id: 'student-1',
-    role: 'student',
-    title: 'Student',
-    content:
-      'Ik wil mijn stappenplan aanscherpen en checken of mijn competenties goed aansluiten op de challenge.',
-  },
-  {
-    id: 'assistant-2',
-    role: 'assistant',
-    title: 'LMS-assistent',
-    content:
-      'Prima. Open desgewenst de activiteitenkolom om het recente logboek mee te nemen in dit gesprek.',
-  },
-] as const
+type ChatTabProps = {
+  messages?: ChatMessage[]
+}
 
-export function ChatTab() {
+export function ChatTab({ messages = defaultMessages }: ChatTabProps = {}) {
   const { sidePanelOpen, setSidePanelOpen, activeTab } = useLayout()
 
   return (

@@ -6,7 +6,6 @@ import Collapse from '@mui/material/Collapse'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useLayout } from '@/context/useLayout'
-import { ActivityCard } from '@/layouts/side-panel/ActivityCard'
 import { ActivityDetails } from '@/layouts/side-panel/ActivityDetails'
 import { ActivityMenus } from '@/layouts/side-panel/ActivityMenus'
 import { ActivityTimeline } from '@/layouts/side-panel/ActivityTimeline'
@@ -24,10 +23,20 @@ import type {
   OpenSubmenu,
 } from '@/layouts/side-panel/types'
 
-export function SidePanel() {
+type SidePanelProps = {
+  initialActivityItems?: ActivityItem[]
+  initialSelectedActivityId?: string | null
+}
+
+export function SidePanel({
+  initialActivityItems = initialActivities,
+  initialSelectedActivityId = null,
+}: SidePanelProps = {}) {
   const { sidePanelOpen } = useLayout()
-  const [activities, setActivities] = useState(initialActivities)
-  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null)
+  const [activities, setActivities] = useState(initialActivityItems)
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
+    initialSelectedActivityId,
+  )
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
   const [menuActivityId, setMenuActivityId] = useState<string | null>(null)
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<HTMLElement | null>(null)
