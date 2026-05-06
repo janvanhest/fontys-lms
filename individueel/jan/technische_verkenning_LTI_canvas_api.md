@@ -1,6 +1,11 @@
-# Technische verkenning: LTI en Canvas API
+# Technische verkenning: LTI, Canvas API en RAG
 
-**Doel:** Verkennend onderzoek naar de technische mogelijkheden voor integratie met Canvas. Dit document dient als input voor de ideation-fase en als bewijs voor Software-Analyseren (niveau 3): analyse van functionaliteit en interfaces van bestaande systemen.
+**Doel:** Verkennend onderzoek naar de technische mogelijkheden voor integratie met Canvas en het intelligent ontsluiten van cursusinhoud via een taalmodel. Dit document dient als input voor de ideation-fase en als bewijs voor Software-Analyseren (niveau 3): analyse van functionaliteit en interfaces van bestaande en nieuwe systemen in een complexe context.
+
+**DOT-methodes:**
+- **Document analysis** (Library) — Canvas API documentatie en LTI 1.3 specificaties bestudeerd
+- **Available product analysis** (Library) — bestaande libraries, vector databases en taalmodellen vergeleken
+- **Literature study** (Library) — RAG als techniek onderbouwd en afgewogen tegen fine-tuning
 
 ---
 
@@ -126,19 +131,21 @@ Twee opties:
 
 ---
 
-## 3. LTI vs. Canvas API: wanneer wat?
+## 3. LTI vs. Canvas API vs. RAG: wanneer wat?
 
-| Scenario                             | LTI     | Canvas API           | Combinatie                                    |
-| ------------------------------------ | ------- | -------------------- | --------------------------------------------- |
-| Tool embedden in Canvas              | x       |                      |                                               |
-| Gebruiker identificeren zonder login | x       |                      |                                               |
-| Cursusinhoud ophalen en anders tonen |         | x                    |                                               |
-| Eigen activiteiten loggen            |         |                      | x (LTI voor context, eigen backend voor data) |
-| Cijfers terugsturen                  | x (AGS) | x                    |                                               |
-| Coach-dashboard bouwen               |         | x (Users, Analytics) | x (LTI voor launch, API voor data)            |
-| Chatbot in Canvas                    |         |                      | x (LTI voor embedding, API voor content)      |
+| Scenario | LTI | Canvas API | RAG | Combinatie |
+|---|---|---|---|---|
+| Tool embedden in Canvas | x | | | |
+| Gebruiker identificeren zonder login | x | | | |
+| Cursusinhoud ophalen | | x | | |
+| Cursusinhoud doorzoekbaar en conversationeel aanbieden | | | x | x (API haalt op, RAG indexeert en ontsluit) |
+| Eigen activiteiten loggen | | | | x (LTI voor context, eigen backend voor data) |
+| Cijfers terugsturen naar Canvas | x (AGS) | x | | |
+| Coach-dashboard bouwen | | x (Users, Analytics) | | x (LTI voor launch, API voor data) |
+| Chatbot in Canvas die vragen beantwoordt op basis van cursusinhoud | | | | x (LTI voor embedding, API voor content, RAG voor antwoorden) |
+| Blokkades signaleren en nudgen | | | | x (Analytics voor detectie, RAG voor gepersonaliseerde respons) |
 
-De meest waarschijnlijke aanpak is een **combinatie**: LTI voor de integratie in Canvas (launch, SSO, context), Canvas API voor het ophalen van data (cursusinhoud, studentactiviteit), en een eigen backend voor functionaliteit die Canvas niet biedt (activiteiten loggen, blokkades signaleren, nudging).
+De meest waarschijnlijke aanpak is een **combinatie van alle drie**: LTI voor de integratie in Canvas (launch, SSO, context), Canvas API voor het ophalen van data (cursusinhoud, studentactiviteit), en RAG voor het intelligent ontsluiten van die content via een conversatie-interface. Een eigen backend verbindt deze drie lagen en voegt functionaliteit toe die Canvas zelf niet biedt.
 
 ---
 
@@ -153,17 +160,84 @@ De meest waarschijnlijke aanpak is een **combinatie**: LTI voor de integratie in
 
 ## 5. Bestaande libraries en tooling
 
-| Taal    | LTI 1.3 library              | Canvas API library   |
-| ------- | ---------------------------- | -------------------- |
-| Python  | pylti1p3                     | canvasapi (UCF Open) |
-| Node.js | ltijs                        | node-canvas-api      |
-| PHP     | packback/lti-1-3-php-library | -                    |
-| .NET    | - (handmatig)                | - (handmatig)        |
+| Taal | LTI 1.3 library | Canvas API library |
+|---|---|---|
+| Python | pylti1p3 | canvasapi (UCF Open) |
+| Node.js | ltijs | node-canvas-api |
+| PHP | packback/lti-1-3-php-library | - |
+| .NET | - (handmatig) | - (handmatig) |
 
 De keuze voor technologiestack is nog niet gemaakt - dat is onderdeel van de adviesfase. Dit overzicht dient als input voor die keuze.
 
 ---
 
-## 6. Conclusie
+## 6. RAG (Retrieval Augmented Generation)
 
-Canvas biedt via LTI en de REST API voldoende mogelijkheden om een externe tool te bouwen die naadloos integreert met de bestaande omgeving. De combinatie van LTI (voor embedding en SSO) en de REST API (voor data) is de meest logische aanpak. De belangrijkste beperking is dat Canvas geen native ondersteuning biedt voor activiteit-gebaseerde navigatie of blokkade-signalering - dat is precies wat wij zouden moeten bouwen.
+### Wat is het?
+
+RAG is een techniek waarbij een taalmodel niet op basis van zijn trainingsdata antwoord geeft, maar op basis van content die op het moment van de vraag wordt opgehaald uit een externe databron. Het model wordt zo gevoed met actuele, domeinspecifieke informatie zonder dat het opnieuw getraind hoeft te worden.
+
+Voor dit project betekent dat: cursusinhoud uit Canvas wordt opgeslagen in een doorzoekbare database. Als een student een vraag stelt, worden de meest relevante stukken content opgehaald en meegegeven aan het taalmodel. Het model antwoordt op basis van die echte cursusinhoud.
+
+### Waarom RAG en niet fine-tuning?
+
+Fine-tuning betekent dat je een bestaand model bijtraint op eigen data. Dat klinkt aantrekkelijk, maar heeft voor dit use case drie grote nadelen:
+
+- **Kosten** - een trainingsrun kost honderden euro's en vereist ML-expertise
+- **Statisch** - zodra cursusinhoud verandert, moet je opnieuw trainen
+- **Onbetrouwbaar voor feiten** - taalmodellen onthouden feiten niet betrouwbaar via training; ze verzinnen plausibele antwoorden
+
+RAG lost dit op: de content zit in een database die je live kunt updaten. Het model hoeft alleen maar te redeneren over de aangeleverde context.
+
+### Hoe werkt het technisch?
+
+**Stap 1 - Indexeren (eenmalig)**
+Canvas-content (pagina's, modules, opdrachten) wordt opgehaald via de REST API. De tekst wordt opgesplitst in kleine stukken ("chunks") en omgezet naar vectoren via een embedding model. Die vectoren worden opgeslagen in een vector database.
+
+**Stap 2 - Ophalen (bij elke vraag)**
+De vraag van de student wordt ook omgezet naar een vector. De vector database zoekt de meest gelijkende chunks op - dat zijn de stukken content die semantisch het meest aansluiten bij de vraag.
+
+**Stap 3 - Beantwoorden**
+De relevante chunks worden samen met de gespreksgeschiedenis meegegeven in de context van de API-call naar het taalmodel. Het model genereert een antwoord op basis van die echte cursusinhoud.
+
+### Relevantie voor dit project
+
+| Wat we willen | Hoe RAG dat oplost |
+|---|---|
+| Studenten vinden informatie niet in Canvas | Chatbot zoekt en vat samen op basis van echte content |
+| Herhalende vragen aan docenten | Chatbot beantwoordt ze zelfstandig met bronvermelding |
+| Content tekstgebaseerd en slecht leesbaar | Chatbot biedt content aan in conversatievorm |
+| Cursusinhoud up-to-date houden | Database updaten is voldoende, geen hertraining nodig |
+
+### Technische keuzes (nog te maken in adviesfase)
+
+| Onderdeel | Opties |
+|---|---|
+| Embedding model | OpenAI text-embedding-3-small, Anthropic, of open source (e.g. sentence-transformers) |
+| Vector database | Supabase pgvector (eenvoudig, PostgreSQL-gebaseerd), Pinecone (managed), Chroma (lokaal) |
+| Taalmodel | Claude Sonnet via Anthropic API |
+| Backend | Node.js of Python als proxy tussen frontend en API |
+
+### Kosten inschatting
+
+De Anthropic API (Claude Sonnet 4.6) kost $3 per miljoen input tokens en $15 per miljoen output tokens. Een gemiddeld studentgesprek van 10 berichten inclusief RAG-context is circa 3.000 tokens. Bij 500 studenten die elk 5 gesprekken per dag voeren: circa €20-30 per dag. Voor een PoC met beperkt testgebruik zijn de kosten verwaarloosbaar - enkele euro's per week.
+
+### Beperkingen
+
+- **AVG** - studentdata wordt verwerkt en opgeslagen. Dit vereist een verwerkersovereenkomst en documentatie.
+- **Kwaliteit van chunks** - slecht opgesplitste content leidt tot slechte antwoorden. De chunking-strategie is bepalend voor de kwaliteit.
+- **Hallucinaties** - het model kan buiten de aangeleverde context redeneren. Dit vereist een strenge systeem-prompt die het model instrueert alleen op basis van de aangeleverde content te antwoorden.
+
+---
+
+## 8. Conclusie
+
+Dit document heeft drie technische lagen verkend die samen een samenhangende denkrichting vormen voor het project.
+
+**LTI** zorgt dat de tool naadloos in Canvas leeft — studenten hoeven niet apart in te loggen en de tool ontvangt direct de cursuscontext en gebruikersrol.
+
+**Canvas API** levert de data — cursusinhoud, studentactiviteit en voortgang zijn allemaal opvraagbaar via goed gedocumenteerde endpoints.
+
+**RAG** maakt die data intelligent doorzoekbaar — in plaats van studenten door modules te laten navigeren, beantwoordt een chatbot vragen op basis van de echte cursusinhoud.
+
+Deze drie lagen vormen samen een technisch haalbare denkrichting die aansluit bij het kernprobleem. Of dit de juiste oplossingsrichting is, wordt bepaald in de ideation-fase van sprint 2, gevoed door de enquête- en interviewresultaten. Een aanvullend ontwerpprincipe dat in dit project wordt verkend — nudging — is uitgewerkt in een separate literature study.
