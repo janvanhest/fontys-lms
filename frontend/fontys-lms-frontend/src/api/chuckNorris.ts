@@ -25,7 +25,8 @@ async function fetchCategories(): Promise<string[]> {
 export const chuckNorrisCategoriesOptions = queryOptions({
   queryKey: ['chuck-norris-categories'],
   queryFn: fetchCategories,
-  staleTime: Infinity,
+  staleTime: 1000 * 60 * 60,
+  refetchOnWindowFocus: true,
 })
 
 export function chuckNorrisJokeOptions(category: string | null) {
