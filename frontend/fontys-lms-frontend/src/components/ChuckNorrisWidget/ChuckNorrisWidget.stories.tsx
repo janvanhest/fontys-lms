@@ -58,9 +58,6 @@ const meta: Meta<typeof ChuckNorrisWidget> = {
 export default meta
 type Story = StoryObj<typeof ChuckNorrisWidget>
 
-export const Default: Story = {}
-
-// Interactieve story — categorie selectie werkt echt
 function InteractiveWidget(args: React.ComponentProps<typeof ChuckNorrisWidget>) {
   const [selected, setSelected] = useState<string | null>(null)
 
@@ -75,6 +72,8 @@ function InteractiveWidget(args: React.ComponentProps<typeof ChuckNorrisWidget>)
     />
   )
 }
+
+export const Default: Story = {}
 
 export const Interactive: Story = {
   render: (args) => <InteractiveWidget {...args} />,
