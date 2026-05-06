@@ -45,15 +45,30 @@ pnpm install     # Installeer dependencies
 pnpm dev      # Start de dev server op http://localhost:5173
 ```
 
+## Storybook
+
+Gebruik Storybook om componenten los van de applicatie te bekijken en te ontwikkelen. Start eerst de normale frontend-setup, en start daarna Storybook in een aparte terminalsessie.
+
+```bash
+nvm use
+corepack enable
+pnpm install
+
+pnpm dev        # Start de app op http://localhost:5173
+pnpm storybook  # Start Storybook op http://localhost:6006
+```
+
 ## Ontwikkelrichtlijnen
 
 Gebruik altijd de laatste conventies van de gebruikte libraries. Valideer dit via de officiële documentatie of via [context7](https://context7.com) — een MCP-server die up-to-date docs rechtstreeks in Claude laadt.
 
-Context7 toevoegen aan Claude Code:
+Context7 toevoegen aan je setup:
 
 ```bash
-claude mcp add context7 -- npx -y @upstash/context7-mcp
+npx ctx7 setup
 ```
+
+Dit is de makkelijkste manier om Context7 werkend te krijgen met je huidige setup.
 
 Voeg `use context7` toe aan je prompt om context7 expliciet te activeren:
 
