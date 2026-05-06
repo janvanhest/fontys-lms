@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { HomePage } from '@/pages/HomePage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 import { StorybookDemoPage } from '@/pages/StorybookDemoPage'
 
 function App() {
@@ -10,7 +11,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/storybook-demo" element={<StorybookDemoPage />} />
-          <Route path="*" element={<Box sx={{ p: 4 }}>404 - Page not found</Box>} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Box>
     </BrowserRouter>
