@@ -8,6 +8,10 @@ import { Sidebar } from './Sidebar'
 import { SidePanel } from './SidePanel'
 import { Topbar } from './Topbar'
 
+function assertUnreachable(_tab: never): never {
+  throw new Error('Unexpected activeTab value')
+}
+
 function renderActiveTab(activeTab: ReturnType<typeof useLayout>['activeTab']) {
   switch (activeTab) {
     case 'chat':
@@ -20,7 +24,7 @@ function renderActiveTab(activeTab: ReturnType<typeof useLayout>['activeTab']) {
     case 'stappenplan':
       return <StappenplanTab />
     default:
-      return <ChatTab />
+      return assertUnreachable(activeTab)
   }
 }
 
