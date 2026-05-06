@@ -13,6 +13,32 @@ const MOCK_JOKE = {
   url: 'https://api.chucknorris.io/jokes/abc123',
 }
 
+const LONG_JOKE = {
+  ...MOCK_JOKE,
+  id: 'long-joke',
+  value:
+    'Chuck Norris does not need pagination. When a result list gets too long, the internet quietly reorganizes itself into a single page that fits whatever Chuck Norris wanted to see in the first place.',
+}
+
+const MANY_CATEGORIES = [
+  'animal',
+  'career',
+  'celebrity',
+  'dev',
+  'fashion',
+  'food',
+  'history',
+  'money',
+  'movie',
+  'music',
+  'science',
+  'sport',
+  'travel',
+  'space',
+  'technology',
+  'university',
+]
+
 const meta: Meta<typeof ChuckNorrisWidget> = {
   title: 'Components/ChuckNorrisWidget',
   component: ChuckNorrisWidget,
@@ -72,4 +98,12 @@ export const Error: Story = {
 
 export const NoCategories: Story = {
   args: { categories: [] },
+}
+
+export const LongJoke: Story = {
+  args: { joke: LONG_JOKE },
+}
+
+export const ManyCategories: Story = {
+  args: { categories: MANY_CATEGORIES },
 }
