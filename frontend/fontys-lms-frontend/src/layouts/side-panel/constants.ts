@@ -3,10 +3,10 @@ import type { ActivityItem, ActivityStatus, ActivityType, GroupKey } from './typ
 export const panelWidth = 320
 
 export const groupMeta: Record<GroupKey, { label: string; rangeLabel: string }> = {
-  eerder: { label: 'eerder', rangeLabel: 'vóór 14 mrt' },
-  'deze-week': { label: 'deze week', rangeLabel: '14–18 mrt' },
-  'volgende-week': { label: 'volgende week', rangeLabel: '21–25 mrt' },
-  later: { label: 'later', rangeLabel: 'na 25 mrt' },
+  eerder: { label: 'eerder', rangeLabel: 'vóór deze week' },
+  'deze-week': { label: 'deze week', rangeLabel: 'deze week' },
+  'volgende-week': { label: 'volgende week', rangeLabel: 'volgende week' },
+  later: { label: 'later', rangeLabel: 'na volgende week' },
 }
 
 export const groupOrder: GroupKey[] = ['eerder', 'deze-week', 'volgende-week', 'later']

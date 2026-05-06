@@ -124,7 +124,9 @@ export function SidePanel({
     if (event.key !== 'Enter' && event.key !== ' ') {
       return
     }
-
+    if ((event.target as HTMLElement).closest('button,[role="button"]')) {
+      return
+    }
     event.preventDefault()
     handleSelectActivity(activityId)
   }

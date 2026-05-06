@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box'
 import { useLayout } from '@/context/useLayout'
-import { ChatTab } from '@/tabs/ChatTab'
+import { ChatTab } from '@/tabs/chat/ChatTab'
 import { ChallengeTab } from '@/tabs/ChallengeTab'
 import { CompetentiesTab } from '@/tabs/CompetentiesTab'
 import { StappenplanTab } from '@/tabs/StappenplanTab'
