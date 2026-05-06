@@ -1,56 +1,135 @@
+import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import Paper from '@mui/material/Paper'
+import Collapse from '@mui/material/Collapse'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import Timeline from '@mui/lab/Timeline'
-import TimelineConnector from '@mui/lab/TimelineConnector'
-import TimelineContent from '@mui/lab/TimelineContent'
-import TimelineDot from '@mui/lab/TimelineDot'
-import TimelineItem from '@mui/lab/TimelineItem'
-import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent'
-import TimelineSeparator from '@mui/lab/TimelineSeparator'
 import { useLayout } from '@/context/useLayout'
-
-const panelWidth = 320
-
-const activityGroups = [
-  {
-    label: 'Vandaag',
-    items: [
-      {
-        time: '09:10',
-        title: 'Coach note toegevoegd',
-        description: 'Feedback op studievoortgang en vervolgstap voor reflectie.',
-      },
-      {
-        time: '11:45',
-        title: 'Nieuwe challenge gekoppeld',
-        description: 'Challenge sprint staat klaar voor bespreking in het gesprek.',
-      },
-    ],
-  },
-  {
-    label: 'Gisteren',
-    items: [
-      {
-        time: '15:20',
-        title: 'Competentie-update',
-        description: 'Communicatie en analyse gemarkeerd als aandachtspunt.',
-      },
-    ],
-  },
-]
+import { ActivityCard } from '@/layouts/side-panel/ActivityCard'
+import { ActivityDetails } from '@/layouts/side-panel/ActivityDetails'
+import { ActivityMenus } from '@/layouts/side-panel/ActivityMenus'
+import { ActivityTimeline } from '@/layouts/side-panel/ActivityTimeline'
+import {
+  groupMeta,
+  groupOrder,
+  initialActivities,
+  panelWidth,
+} from '@/layouts/side-panel/constants'
+import type {
+  ActivityGroupSection,
+  ActivityItem,
+  ActivityStatus,
+  ActivityType,
+  OpenSubmenu,
+} from '@/layouts/side-panel/types'
 
 export function SidePanel() {
   const { sidePanelOpen } = useLayout()
+  const [activities, setActivities] = useState(initialActivities)
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
+  const [menuActivityId, setMenuActivityId] = useState<string | null>(null)
+  const [submenuAnchorEl, setSubmenuAnchorEl] = useState<HTMLElement | null>(null)
+  const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>(null)
+
+  const selectedActivity =
+    activities.find((activity) => activity.id === selectedActivityId) ?? null
+
+  const groupedActivities = useMemo(
+    () =>
+      groupOrder
+        .map((groupKey) => ({
+          groupKey,
+          ...groupMeta[groupKey],
+          items: activities.filter((activity) => activity.groupKey === groupKey),
+        }))
+        .filter((group) => group.items.length > 0),
+    [activities],
+  ) as ActivityGroupSection[]
+
+  const closeMenus = () => {
+    setMenuAnchorEl(null)
+    setMenuActivityId(null)
+    setSubmenuAnchorEl(null)
+    setOpenSubmenu(null)
+  }
+
+  const handleOpenMenu = (
+    event: MouseEvent<HTMLButtonElement>,
+    activityId: string,
+  ) => {
+    event.stopPropagation()
+    setMenuAnchorEl(event.currentTarget)
+    setMenuActivityId(activityId)
+    setSubmenuAnchorEl(null)
+    setOpenSubmenu(null)
+  }
+
+  const handleOpenSubmenu = (
+    event: MouseEvent<HTMLElement>,
+    submenu: Exclude<OpenSubmenu, null>,
+  ) => {
+    event.stopPropagation()
+    setSubmenuAnchorEl(event.currentTarget)
+    setOpenSubmenu(submenu)
+  }
+
+  const updateActivity = (activityId: string, updater: (activity: ActivityItem) => ActivityItem) => {
+    setActivities((currentActivities) =>
+      currentActivities.map((activity) =>
+        activity.id === activityId ? updater(activity) : activity,
+      ),
+    )
+  }
+
+  const handleStatusChange = (status: ActivityStatus) => {
+    if (!menuActivityId) {
+      return
+    }
+
+    updateActivity(menuActivityId, (activity) => ({
+      ...activity,
+      status,
+    }))
+    closeMenus()
+  }
+
+  const handleTypeChange = (nextType: ActivityType) => {
+    if (!menuActivityId) {
+      return
+    }
+
+    updateActivity(menuActivityId, (activity) => ({
+      ...activity,
+      type: nextType,
+    }))
+    closeMenus()
+  }
+
+  const handleSelectActivity = (activityId: string) => {
+    setSelectedActivityId(activityId)
+  }
+
+  const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>, activityId: string) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return
+    }
+
+    event.preventDefault()
+    handleSelectActivity(activityId)
+  }
+
+  const closeSubmenu = () => {
+    setSubmenuAnchorEl(null)
+    setOpenSubmenu(null)
+  }
 
   return (
     <Box
       sx={{
         width: sidePanelOpen ? panelWidth : 0,
+        minWidth: sidePanelOpen ? panelWidth : 0,
         flexShrink: 0,
         overflow: 'hidden',
         transition: 'width 0.2s ease',
@@ -66,75 +145,40 @@ export function SidePanel() {
           display: 'flex',
           flexDirection: 'column',
           minHeight: 0,
+          bgcolor: 'background.paper',
         }}
       >
         <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
           <Typography variant="h6">Activiteiten</Typography>
           <Typography variant="body2" color="text.secondary">
-            Tijdlijn van recente acties rond deze student.
+            Tijdlijn van activiteiten en deadlines rond deze student.
           </Typography>
         </Box>
 
         <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1.5, py: 1.5 }}>
           <Stack spacing={2}>
-            {activityGroups.map((group) => (
-              <Box key={group.label}>
-                <Divider sx={{ mb: 1.5 }}>
-                  <Typography variant="caption" sx={{ letterSpacing: '0.08em' }}>
-                    {group.label}
-                  </Typography>
-                </Divider>
-
-                <Timeline
-                  sx={{
-                    m: 0,
-                    p: 0,
-                    [`& .MuiTimelineItem-root:before`]: {
-                      flex: 0,
-                      padding: 0,
-                    },
-                  }}
-                >
-                  {group.items.map((activity, index) => (
-                    <TimelineItem key={`${group.label}-${activity.time}`}>
-                      <TimelineOppositeContent
-                        sx={{
-                          flex: 0.22,
-                          px: 0.5,
-                          pt: 1.5,
-                          color: 'text.secondary',
-                          fontSize: 12,
-                        }}
-                      >
-                        {activity.time}
-                      </TimelineOppositeContent>
-                      <TimelineSeparator>
-                        <TimelineDot color={index === 0 ? 'primary' : 'grey'} />
-                        {index < group.items.length - 1 ? <TimelineConnector /> : null}
-                      </TimelineSeparator>
-                      <TimelineContent sx={{ py: 0.5, pr: 0.5 }}>
-                        <Paper
-                          variant="outlined"
-                          sx={{
-                            p: 1.5,
-                            bgcolor: 'background.paper',
-                          }}
-                        >
-                          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                            {activity.title}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {activity.description}
-                          </Typography>
-                        </Paper>
-                      </TimelineContent>
-                    </TimelineItem>
-                  ))}
-                </Timeline>
-              </Box>
-            ))}
+            <ActivityTimeline
+              groups={groupedActivities}
+              selectedActivityId={selectedActivityId}
+              menuActivityId={menuActivityId}
+              menuAnchorEl={menuAnchorEl}
+              onSelectActivity={handleSelectActivity}
+              onCardKeyDown={handleCardKeyDown}
+              onOpenMenu={handleOpenMenu}
+            />
           </Stack>
         </Box>
+
+        <Collapse in={Boolean(selectedActivity)} timeout="auto" unmountOnExit>
+          {selectedActivity ? (
+            <ActivityDetails
+              activity={selectedActivity}
+              onClose={() => {
+                setSelectedActivityId(null)
+              }}
+            />
+          ) : null}
+        </Collapse>
 
         <Box
           sx={{
@@ -151,6 +195,19 @@ export function SidePanel() {
           </Button>
         </Box>
       </Box>
+
+      <ActivityMenus
+        activities={activities}
+        menuActivityId={menuActivityId}
+        menuAnchorEl={menuAnchorEl}
+        submenuAnchorEl={submenuAnchorEl}
+        openSubmenu={openSubmenu}
+        onCloseMenus={closeMenus}
+        onOpenSubmenu={handleOpenSubmenu}
+        onCloseSubmenu={closeSubmenu}
+        onTypeChange={handleTypeChange}
+        onStatusChange={handleStatusChange}
+      />
     </Box>
   )
 }
