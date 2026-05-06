@@ -81,7 +81,11 @@ const typography = {
   },
 };
 
-function makeComponents(main: string, dark: string, lightBg: string) {
+function makeComponents(
+  primaryMain: string,
+  primaryDark: string,
+  primaryLightBg: string,
+) {
   return {
     MuiButton: {
       defaultProps: {
@@ -94,23 +98,23 @@ function makeComponents(main: string, dark: string, lightBg: string) {
           fontWeight: 600,
           textTransform: "none" as const,
           "&.MuiButton-containedPrimary": {
-            backgroundColor: main,
+            backgroundColor: primaryMain,
             "&:hover": {
-              backgroundColor: dark,
+              backgroundColor: primaryDark,
             },
           },
           "&.MuiButton-outlinedPrimary": {
-            borderColor: main,
-            color: main,
+            borderColor: primaryMain,
+            color: primaryMain,
             "&:hover": {
-              backgroundColor: lightBg,
-              borderColor: dark,
+              backgroundColor: primaryLightBg,
+              borderColor: primaryDark,
             },
           },
           "&.MuiButton-textPrimary": {
-            color: main,
+            color: primaryMain,
             "&:hover": {
-              backgroundColor: lightBg,
+              backgroundColor: primaryLightBg,
             },
           },
         },
@@ -119,25 +123,25 @@ function makeComponents(main: string, dark: string, lightBg: string) {
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: main,
+          backgroundColor: primaryMain,
         },
       },
     },
     MuiChip: {
       styleOverrides: {
         colorPrimary: {
-          backgroundColor: lightBg,
-          color: main,
-          border: `1px solid ${main}40`,
+          backgroundColor: primaryLightBg,
+          color: primaryMain,
+          border: `1px solid ${primaryMain}40`,
         },
       },
     },
     MuiLink: {
       styleOverrides: {
         root: {
-          color: main,
+          color: primaryMain,
           "&:hover": {
-            color: dark,
+            color: primaryDark,
           },
         },
       },
@@ -158,10 +162,10 @@ function makeComponents(main: string, dark: string, lightBg: string) {
       styleOverrides: {
         root: {
           "& .MuiOutlinedInput-root.Mui-focused fieldset": {
-            borderColor: main,
+            borderColor: primaryMain,
           },
           "& label.Mui-focused": {
-            color: main,
+            color: primaryMain,
           },
         },
       },
@@ -169,9 +173,9 @@ function makeComponents(main: string, dark: string, lightBg: string) {
     MuiCheckbox: {
       styleOverrides: {
         root: {
-          color: main,
+          color: primaryMain,
           "&.Mui-checked": {
-            color: main,
+            color: primaryMain,
           },
         },
       },
@@ -180,7 +184,7 @@ function makeComponents(main: string, dark: string, lightBg: string) {
       styleOverrides: {
         root: {
           "&.Mui-checked": {
-            color: main,
+            color: primaryMain,
           },
         },
       },
@@ -189,9 +193,9 @@ function makeComponents(main: string, dark: string, lightBg: string) {
       styleOverrides: {
         switchBase: {
           "&.Mui-checked": {
-            color: main,
+            color: primaryMain,
             "& + .MuiSwitch-track": {
-              backgroundColor: main,
+              backgroundColor: primaryMain,
             },
           },
         },
@@ -200,7 +204,7 @@ function makeComponents(main: string, dark: string, lightBg: string) {
     MuiTabs: {
       styleOverrides: {
         indicator: {
-          backgroundColor: main,
+          backgroundColor: primaryMain,
         },
       },
     },
@@ -216,9 +220,9 @@ function makeComponents(main: string, dark: string, lightBg: string) {
       styleOverrides: {
         root: {
           "&.MuiFab-primary": {
-            backgroundColor: main,
+            backgroundColor: primaryMain,
             "&:hover": {
-              backgroundColor: dark,
+              backgroundColor: primaryDark,
             },
           },
         },
@@ -228,7 +232,7 @@ function makeComponents(main: string, dark: string, lightBg: string) {
       styleOverrides: {
         badge: {
           "&.MuiBadge-colorPrimary": {
-            backgroundColor: main,
+            backgroundColor: primaryMain,
           },
         },
       },
