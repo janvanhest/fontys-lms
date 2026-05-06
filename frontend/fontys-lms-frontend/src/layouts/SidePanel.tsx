@@ -180,13 +180,11 @@ export function SidePanel({
           </Stack>
         </Box>
 
-        <Collapse in={Boolean(selectedActivity)} timeout="auto" unmountOnExit>
+        <Collapse in={!!selectedActivity} timeout="auto" unmountOnExit>
           {selectedActivity ? (
             <ActivityDetails
               activity={selectedActivity}
-              onClose={() => {
-                setSelectedActivityId(null)
-              }}
+              onClose={() => setSelectedActivityId(null)}
             />
           ) : null}
         </Collapse>
