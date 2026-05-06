@@ -8,8 +8,8 @@ import { Sidebar } from './Sidebar'
 import { SidePanel } from './SidePanel'
 import { Topbar } from './Topbar'
 
-function assertUnreachable(_tab: never): never {
-  throw new Error('Unexpected activeTab value')
+function assertUnreachable(tab: never): never {
+  throw new Error(`Unexpected activeTab value: ${String(tab)}`)
 }
 
 function renderActiveTab(activeTab: ReturnType<typeof useLayout>['activeTab']) {
