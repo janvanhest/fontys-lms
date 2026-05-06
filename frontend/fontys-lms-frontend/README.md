@@ -14,7 +14,7 @@ Frontend van het Fontys LMS proof of concept. LTI-integreerbare webapplicatie ge
 
 ## Installatie
 
-Dit project gebruikt [nvm](https://github.com/nvm-sh/nvm) om de juiste Node.js-versie te beheren (zie `.nvmrc`) en [pnpm](https://pnpm.io) via [Corepack](https://github.com/nodejs/corepack) als packagemanager.
+Dit project gebruikt [nvm](https://github.com/nvm-sh/nvm) om de juiste Node.js-versie te beheren (zie `.nvmrc`) en [pnpm](https://pnpm.io) via [Corepack](https://github.com/nodejs/corepack) als pakketmanager.
 
 **macOS**
 
@@ -96,7 +96,7 @@ import { Button } from "@/components/Button"; // correct
 import { Button } from "../../components/Button"; // niet doen
 ```
 
-De alias is geconfigureerd in `tsconfig.app.json` (TypeScript) en opgepikt door Vite via `resolve.tsconfigPaths`.
+De alias is geconfigureerd in `tsconfig.app.json` (TypeScript) en expliciet gekoppeld in `vite.config.ts` via `resolve.alias`.
 
 ### Componenten
 
