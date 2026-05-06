@@ -12,7 +12,17 @@ import App from '@/App'
 
 const queryClient = new QueryClient()
 
-createRoot(document.getElementById('root')!).render(
+function getRootElement(): HTMLElement {
+  const element = document.getElementById('root')
+
+  if (element === null) {
+    throw new Error('Root element "#root" not found')
+  }
+
+  return element
+}
+
+createRoot(getRootElement()).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
