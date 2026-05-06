@@ -1,0 +1,94 @@
+{
+  "user": {
+    "id": 1,
+    "naam": "Sam de Vries",
+    "opleiding": "HBO-ICT (avond/deeltijd)",
+    "semester": 4
+  },
+  "course": {
+    "id": 1,
+    "naam": "Semester 4 - Bouw je eigen LMS",
+    "beschrijving": "Studenten bouwen een werkend prototype als aanvulling op Canvas, gericht op vraaggestuurd onderwijs en persoonlijk leerpad.",
+    "periode": "februari 2026 - juni 2026"
+  },
+  "student_progress": [
+    {
+      "competentie": "Infrastructure",
+      "activiteit": "Analyse",
+      "niveau_behaald": 1,
+      "niveau_bezig": 2,
+      "toelichting": "Heeft een ecosysteemanalyse en Canvas API-verkenning afgerond in sprint 1."
+    },
+    {
+      "competentie": "Infrastructure",
+      "activiteit": "Advise",
+      "niveau_behaald": null,
+      "niveau_bezig": 1,
+      "toelichting": "Bezig met adviesrapport over chatbot-architectuur (iteratie 1)."
+    },
+    {
+      "competentie": "Infrastructure",
+      "activiteit": "Manage & Control",
+      "niveau_behaald": 1,
+      "niveau_bezig": null,
+      "toelichting": "Versiebeheer opgezet met branch-strategie en commit-conventies."
+    },
+    {
+      "competentie": "Software",
+      "activiteit": "Analyse",
+      "niveau_behaald": 1,
+      "niveau_bezig": null,
+      "toelichting": "Technische verkenning van bibliotheken en tooling afgerond."
+    },
+    {
+      "competentie": "User Interaction",
+      "activiteit": "Analyse",
+      "niveau_behaald": null,
+      "niveau_bezig": 1,
+      "toelichting": "Bezig met analyseren van stakeholderinterviews en enquete-uitkomsten."
+    }
+  ],
+  "activities": [
+    {
+      "id": 1,
+      "titel": "Prototype iteratie 1 bouwen en testen",
+      "datum": "2026-04-04",
+      "type": "realisatie",
+      "status": "bezig"
+    },
+    {
+      "id": 2,
+      "titel": "C4-diagram opstellen (level 1 en 2)",
+      "datum": "2026-04-07",
+      "type": "document",
+      "status": "open"
+    },
+    {
+      "id": 3,
+      "titel": "Adviesrapport bijdrage schrijven (chatbot technische onderbouwing)",
+      "datum": "2026-04-07",
+      "type": "document",
+      "status": "open"
+    },
+    {
+      "id": 4,
+      "titel": "Iteratie 1 conclusie schrijven",
+      "datum": "2026-04-10",
+      "type": "document",
+      "status": "open"
+    },
+    {
+      "id": 5,
+      "titel": "Sprint 2 reflectie schrijven",
+      "datum": "2026-04-19",
+      "type": "reflectie",
+      "status": "open"
+    }
+  ],
+  "project": {
+    "id": 1,
+    "naam": "Fontys LMS - Chatbot module",
+    "beschrijving": "Ontwikkelen van een chatbot als aanvulling op Canvas. De chatbot krijgt competentiedefinities en studentdata als context en beantwoordt vragen over voortgang, planning en leerdoelen. Gebouwd als LTI-tool, gekoppeld via de Canvas API.",
+    "rol": "Infrastructure engineer - verantwoordelijk voor technische architectuur, modelkeuze en iteratief prototype"
+  }
+}

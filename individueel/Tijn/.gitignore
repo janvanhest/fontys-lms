@@ -2,6 +2,7 @@
 CLAUDE.md
 rules.txt
 .claude/
+/canvas-prototype
 
 # Dev scripts
 _dev.bat
@@ -13,3 +14,4 @@ copy.txt
 .DS_Store
 Thumbs.db
 desktop.ini
+__pycache__/
