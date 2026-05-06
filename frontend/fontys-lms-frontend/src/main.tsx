@@ -5,10 +5,8 @@ import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import theme from '@/theme'
 import App from '@/App'
+import { LayoutProvider } from '@/context/LayoutProvider'
 
 const queryClient = new QueryClient()
 
@@ -25,10 +23,9 @@ function getRootElement(): HTMLElement {
 createRoot(getRootElement()).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+      <LayoutProvider>
         <App />
-      </ThemeProvider>
+      </LayoutProvider>
     </QueryClientProvider>
   </StrictMode>,
 )
