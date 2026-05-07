@@ -47,7 +47,7 @@ pnpm dev      # Start de dev server op http://localhost:5173
 
 ### Veelvoorkomende setup problemen
 
-Op Windows kan Corepack soms vastlopen op signature errors zoals `Cannot find matching keyid`. Als je daarna `pnpm` probeert te herstellen, kun je ook `EPERM` errors krijgen door admin-rechten op `C:\Program Files\nodejs`, of PATH-conflicten tussen een npm-geinstalleerde en een Corepack-managed `pnpm`.
+Op Windows kan Corepack soms vastlopen op signature errors zoals `Cannot find matching keyid`. Als je daarna `pnpm` probeert te herstellen, kun je ook `EPERM` errors krijgen door admin-rechten op `C:\Program Files\nodejs`, of PATH-conflicten tussen een npm-geïnstalleerde en een Corepack-managed `pnpm`.
 
 Werkende workaround: installeer de projectversie van `pnpm` rechtstreeks via npm en omzeil Corepack:
 
