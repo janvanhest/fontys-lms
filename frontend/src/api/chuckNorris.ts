@@ -43,7 +43,14 @@ async function fetchJson<T>(
   input: string | URL,
   errorMessage: string,
 ): Promise<T> {
-  const res = await fetch(input);
+  let res: Response;
+
+  try {
+    res = await fetch(input);
+  } catch {
+    throw new Error(errorMessage);
+  }
+
   if (!res.ok) throw new Error(errorMessage);
 
   try {

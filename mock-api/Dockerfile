@@ -1,10 +1,11 @@
-FROM node:22.12-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-RUN npm install -g json-server@1.0.0-beta.15
+COPY package.json /tmp/package.json
+COPY mock-api/db.json /app/db.json
 
-COPY db.json /app/db.json
+RUN npm install -g "json-server@$(node -p "JSON.parse(require('fs').readFileSync('/tmp/package.json', 'utf8')).devDependencies['json-server']")"
 
 EXPOSE 3002
 
