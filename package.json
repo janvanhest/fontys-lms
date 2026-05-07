@@ -4,12 +4,11 @@
   "version": "0.0.0",
   "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
   "scripts": {
-    "mock:api": "cross-env-shell \"json-server --host 0.0.0.0 --port ${MOCK_API_PORT:-3002} mock-api/db.json\"",
+    "mock:api": "cross-env-shell \"pnpm --dir mock-api exec json-server --host 0.0.0.0 --port ${MOCK_API_PORT:-3002} db.json\"",
     "mock:docker:build": "docker build -f mock-api/Dockerfile -t fontys-lms-mock-api .",
     "mock:docker:run": "cross-env-shell \"docker run --rm -p ${MOCK_API_PORT:-3002}:3002 fontys-lms-mock-api\""
   },
   "devDependencies": {
-    "cross-env": "^10.1.0",
-    "json-server": "1.0.0-beta.15"
+    "cross-env": "^10.1.0"
   }
 }

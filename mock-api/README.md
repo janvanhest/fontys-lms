@@ -9,6 +9,8 @@ pnpm install
 pnpm mock:api
 ```
 
+The root install also installs the `mock-api` workspace package that provides `json-server`.
+
 The API runs at `http://localhost:3002` by default.
 
 Use `MOCK_API_PORT` to override the port temporarily:
@@ -84,3 +86,5 @@ $env:VITE_CHUCK_API_MODE="mock"
 $env:VITE_CHUCK_API_BASE_URL="http://localhost:3002"
 pnpm dev
 ```
+
+`VITE_CHUCK_API_BASE_URL` may include a path segment, for example `http://localhost:3002/mock-api`.

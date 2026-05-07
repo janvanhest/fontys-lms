@@ -19,8 +19,15 @@ const mockApiBaseUrl =
   typeof import.meta.env.VITE_CHUCK_API_BASE_URL === "string"
     ? import.meta.env.VITE_CHUCK_API_BASE_URL
     : "http://localhost:3002";
-const mockJokesUrl = new URL("/jokes", mockApiBaseUrl);
-const mockCategoriesUrl = new URL("/categories", mockApiBaseUrl);
+
+function joinMockApiUrl(baseUrl: string, path: string) {
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const normalizedPath = path.replace(/^\/+/, "");
+  return `${normalizedBaseUrl}/${normalizedPath}`;
+}
+
+const mockJokesUrl = joinMockApiUrl(mockApiBaseUrl, "/jokes");
+const mockCategoriesUrl = joinMockApiUrl(mockApiBaseUrl, "/categories");
 const chuckNorrisApiUrl = "https://api.chucknorris.io";
 
 export const chuckNorrisApiSource = isMockApi

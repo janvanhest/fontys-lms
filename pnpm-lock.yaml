@@ -11,6 +11,9 @@ importers:
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
+
+  mock-api:
+    dependencies:
       json-server:
         specifier: 1.0.0-beta.15
         version: 1.0.0-beta.15
