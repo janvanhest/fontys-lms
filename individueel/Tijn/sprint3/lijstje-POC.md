@@ -213,6 +213,33 @@ services:
 - Sluit aan op productie-deploy patterns
 - Past op infra niveau 1: één commando voor opstarten of resetten, simpel te documenteren
 
+## Rollenverdeling infra (voorstel, nog af te stemmen met Jan)
+
+Tijn toont Infrastructure niveau 1, Jan toont Infrastructure niveau 2. Niveau 2 vraagt probleemgericht werken in onvoorspelbare context. Dat past op de "lastige" stukken: orchestratie, integratie, productie. Tijn houdt de voorspelbare basis.
+
+| Onderdeel | Wie | Waarom |
+|---|---|---|
+| NestJS backend container (Dockerfile, build, app draaiend) | Tijn | Simpele unit, voorspelbaar, "develop and test ICT components" = niveau 1 |
+| Postgres + pgvector container (init.sql, schema, seed) | Tijn | Standaard image + init script, voorspelbaar |
+| Compose-snippet voor backend + postgres | Tijn | Twee services aan elkaar via servicenaam = niveau 1 |
+| Installatiehandleiding + reset-procedure (mijn 2 services) | Tijn | Manage & Control niveau 1 |
+| 2 diagrammen (high-level + low-level) van mijn 2 services | Tijn | Design niveau 1 |
+| Root `docker-compose.yml` met alle 4 services geïntegreerd | Jan | Multi-service orchestratie, integratieproblemen oplossen = niveau 2 |
+| Netwerk-architectuur (subnetten, healthchecks, depends_on) | Jan | Zelfstandig projectproblemen oplossen |
+| Productie-deploy (Neon / VPS / iets gehost) | Jan | Onvoorspelbare context = niveau 2 |
+| CI/CD pipeline als die er komt | Jan | Niveau 2 |
+| Monitoring / logging / reverse proxy als nodig | Jan | Niveau 2 |
+| Cross-service debugging (waarom praat A niet met B) | Jan | Probleemgericht werken |
+
+**Wat dit voor mij makkelijker maakt:**
+
+- Geen Neon.tech meer in mijn scope (valt onder Jans productie-stuk; ik beargumenteer het wel als advies, bouw het niet)
+- Geen integratie-debugging als frontend niet praat met backend
+- Geen CI/CD, geen monitoring, geen reverse proxy
+- Geen security tussen services
+
+**Open punt:** of Jan dit voldoende niveau 2 vindt voor zijn portfolio. Hangt af van wat hij verder al heeft, dus eerst even bespreken.
+
 ## Eisen Infrastructure niveau 1 (mijn portfolio)
 
 Het verhaal voor niveau 1 zit niet in technische complexiteit maar in **completeness**. Vijf vakjes die vol moeten zijn:
@@ -224,6 +251,41 @@ Het verhaal voor niveau 1 zit niet in technische complexiteit maar in **complete
 - **Manage & Control:** installatiehandleiding + reset-procedure
 
 Niveau 1 vraagt geen HA, geen monitoring, geen IaC, geen CI/CD. Niet meer doen dan dit.
+
+## Todo Infrastructure niveau 1 (af / nog te doen per HBO-i activiteit)
+
+Veel is al gedekt door iteratie 1 en 2, hieronder per activiteit een check zodat ik altijd opties heb om uit te kiezen.
+
+### Analyse-I1
+
+- [x] Modelkeuze, hardware-analyse, context window (`sprint2/iteratie1-1-onderzoek.md`)
+- [x] Postgres vs alternatieven, Docker vs directe install, psycopg vs ORM (`sprint2/iteratie2-1-onderzoek.md`)
+- [ ] Optioneel: korte analyse waarom NestJS als backend-framework
+
+### Advise-I1
+
+- [x] Lokaal model + twee-laagse promptopzet (`sprint2/iteratie1-1-onderzoek.md`)
+- [x] Postgres + Docker + psycopg + plat SQL (`sprint2/iteratie2-1-onderzoek.md`)
+- [ ] Optioneel: shared (Neon) vs lokaal advies, ook al bouw ik Neon zelf niet
+
+### Design-I1
+
+- [x] Schema 4 tabellen, loader-flow, testopzet (`sprint2/iteratie2-1-onderzoek.md`)
+- [ ] High-level diagram (backend + postgres + Claude API + frontend)
+- [ ] Low-level diagram (NestJS-modules, schema-detail, compose-netwerk)
+
+### Realise-I1
+
+- [x] PostgreSQL + pgvector container draait, schema seed, loader (`sprint2/iteratie2-3-conclusie.md`)
+- [ ] NestJS backend container met Dockerfile (iteratie 3)
+- [ ] Compose-snippet die backend + postgres samen start
+
+### Manage & Control-I1
+
+- [x] Modelwissel Llama -> Qwen beheerd op kwaliteitscriteria (`sprint2/iteratie1-3-conclusie.md`)
+- [x] Reset-procedure Postgres compose (`sprint2/iteratie2-3-conclusie.md`)
+- [ ] Installatiehandleiding voor backend + postgres compose
+- [ ] Kort stappenplan beheer/deployment
 
 ## Volgorde van werken
 
