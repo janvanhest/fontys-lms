@@ -29,7 +29,6 @@ Useful endpoints:
 ```text
 GET /categories
 GET /jokes
-GET /jokes?category=dev
 GET /jokes/:id
 ```
 
@@ -45,6 +44,8 @@ GET /jokes
 ```
 
 Do not wrap them in a parent key like `"chuck-norris-api"`. If you do, `json-server` exposes that as a single object route instead of separate collection routes, and the frontend mock client will no longer be able to call `/categories` and `/jokes`.
+
+Mock joke records use `categories: string[]` to match the real Chuck Norris API shape. Category filtering in mock mode happens client-side in the frontend.
 
 ## Docker
 

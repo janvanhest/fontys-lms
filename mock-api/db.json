@@ -19,28 +19,28 @@
       "value": "Chuck Norris can merge a pull request before the branch exists.",
       "icon_url": "https://api.chucknorris.io/img/avatar/chuck-norris.png",
       "url": "http://localhost:3002/jokes/mock-dev-1",
-      "category": "dev"
+      "categories": ["dev"]
     },
     {
       "id": "mock-dev-2",
       "value": "Chuck Norris does not fix flaky tests. The tests apologize and pass.",
       "icon_url": "https://api.chucknorris.io/img/avatar/chuck-norris.png",
       "url": "http://localhost:3002/jokes/mock-dev-2",
-      "category": "dev"
+      "categories": ["dev"]
     },
     {
       "id": "mock-career-1",
       "value": "Chuck Norris added one line to his resume and LinkedIn scaled horizontally.",
       "icon_url": "https://api.chucknorris.io/img/avatar/chuck-norris.png",
       "url": "http://localhost:3002/jokes/mock-career-1",
-      "category": "career"
+      "categories": ["career"]
     },
     {
       "id": "mock-science-1",
       "value": "Chuck Norris measured uncertainty. It gave him a precise answer.",
       "icon_url": "https://api.chucknorris.io/img/avatar/chuck-norris.png",
       "url": "http://localhost:3002/jokes/mock-science-1",
-      "category": "science"
+      "categories": ["science"]
     },
     {
       "id": "mock-general-1",

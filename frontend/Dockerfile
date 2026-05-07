@@ -3,9 +3,11 @@ FROM node:22-alpine AS base
 WORKDIR /app
 
 ENV PNPM_HOME=/pnpm
+ENV PNPM_STORE_DIR=/pnpm/store
 ENV PATH=$PNPM_HOME:$PATH
 
 RUN corepack enable
+RUN pnpm config set store-dir $PNPM_STORE_DIR
 
 COPY package.json pnpm-lock.yaml ./
 

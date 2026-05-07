@@ -17,7 +17,8 @@ services:
       - "5173:5173"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend-node-modules:/app/node_modules
+      - frontend-pnpm-store:/pnpm/store
     depends_on:
       - mock-api
 
@@ -34,3 +35,7 @@ services:
       - mock-api
     profiles:
       - prod
+
+volumes:
+  frontend-node-modules:
+  frontend-pnpm-store:

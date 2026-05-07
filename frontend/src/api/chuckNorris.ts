@@ -5,15 +5,14 @@ export interface ChuckNorrisJoke {
   value: string;
   icon_url: string;
   url: string;
+  categories?: string[];
 }
 
 interface MockCategory {
   name: string;
 }
 
-interface MockJoke extends ChuckNorrisJoke {
-  category?: string;
-}
+type MockJoke = ChuckNorrisJoke;
 
 const isMockApi = import.meta.env.VITE_CHUCK_API_MODE === "mock";
 const mockApiBaseUrl =
@@ -35,6 +34,11 @@ function pickRandomJoke(jokes: MockJoke[]): ChuckNorrisJoke {
   return jokes[index];
 }
 
+function matchesCategory(joke: MockJoke, category: string | null) {
+  if (!category) return true;
+  return joke.categories?.includes(category) ?? false;
+}
+
 async function fetchJson<T>(
   input: string | URL,
   errorMessage: string,
@@ -51,12 +55,15 @@ async function fetchJson<T>(
 
 async function fetchJoke(category: string | null): Promise<ChuckNorrisJoke> {
   if (isMockApi) {
-    const url = new URL(mockJokesUrl);
-    if (category) url.searchParams.set("category", category);
-
-    return pickRandomJoke(
-      await fetchJson<MockJoke[]>(url, "Kon geen grap ophalen"),
+    const jokes = await fetchJson<MockJoke[]>(
+      mockJokesUrl,
+      "Kon geen grap ophalen",
     );
+    const filteredJokes = jokes.filter((joke) =>
+      matchesCategory(joke, category),
+    );
+
+    return pickRandomJoke(filteredJokes);
   }
 
   const url = category
