@@ -38,3 +38,5 @@ individueel/.DS_Store
 # Vite / test cache
 .vite/
 coverage/
+individueel/.DS_Store
+.DS_Store
