@@ -156,6 +156,63 @@ Dit is hoe de NestJS-backend eruit komt te zien als iteratie 3 en 4 klaar zijn.
 - Claude API key in `.env` (niet in repo)
 - Postgres-credentials in `.env`, lokaal default, productie via Neon (optioneel)
 
+## Project layout (afspraak met Jan)
+
+Multi-service Docker pattern. Elke service krijgt een eigen submap met een eigen `Dockerfile`. De project-root krijgt één `docker-compose.yml` die alles tegelijk start.
+
+```
+fontys-lms/
+├── docker-compose.yml      <- regie, bovenop
+├── .env                    <- shared variabelen (Claude key, DB-creds)
+├── backend/
+│   ├── Dockerfile          <- NestJS image
+│   ├── package.json
+│   ├── pnpm-lock.yaml
+│   └── src/...
+├── frontend/
+│   ├── Dockerfile
+│   ├── package.json
+│   └── src/...
+├── json-server/
+│   ├── Dockerfile (of inline in compose)
+│   └── db.json
+└── postgres/
+    └── init.sql            <- pgvector aanzetten + schema seed
+```
+
+`docker-compose.yml` ruwweg:
+
+```yaml
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports: ["5432:5432"]
+
+  backend:
+    build: ./backend
+    depends_on: [postgres]
+    env_file: .env
+    ports: ["3000:3000"]
+
+  frontend:
+    build: ./frontend
+    ports: ["5173:5173"]
+
+  json-server:
+    build: ./json-server
+    ports: ["3001:3001"]
+```
+
+`build: ./backend` betekent: ga naar `backend/`, gebruik die `Dockerfile`. Iedereen beheert zijn eigen submap, de root-compose voegt het samen. Eén commando start alles: `docker compose up -d`.
+
+**Waarom dit slim is:**
+
+- Services bereiken elkaar via servicenaam over het compose-netwerk (backend praat tegen `postgres:5432`, niet `localhost:5432`)
+- Sluit aan op productie-deploy patterns
+- Past op infra niveau 1: één commando voor opstarten of resetten, simpel te documenteren
+
 ## Eisen Infrastructure niveau 1 (mijn portfolio)
 
 Het verhaal voor niveau 1 zit niet in technische complexiteit maar in **completeness**. Vijf vakjes die vol moeten zijn:
@@ -183,14 +240,17 @@ Niveau 1 vraagt geen HA, geen monitoring, geen IaC, geen CI/CD. Niet meer doen d
 
 (Aanvullen zodra Jan zijn lijstje heeft.)
 
-| Onderdeel | Tijn | Jan | Keuze PoC |
-|---|---|---|---|
-| Model | Lokaal Qwen 2.5 14B via Ollama, daarna over op Claude API | | Claude API |
-| Database | PostgreSQL 16 in Docker, schema via entrypoint, geen migratietool | | PostgreSQL |
-| Vector store | Nog niet gebruikt, pgvector wel als toekomstige optie meegenomen in keuze | | pgvector |
-| Retrieval-strategie | Eager loading van complete studentcontext per sessie, RAG nog niet | | RAG |
-| Function calling lezen | Niet gebouwd, wel ontworpen voor iteratie 3 (`get_student_progress`, `get_activities`, `get_competentie`) | | |
-| Function calling schrijven | Niet gebouwd, ontworpen voor iteratie 4 (`update_activity`, `update_progress`, `add_activity`) | | |
-| Schema | 4 tabellen: `student`, `competentie`, `student_competentie_voortgang`, `activiteit`. Competenties als 25 rijen met JSONB definities | | |
-| Loader / context-opbouw | `loader.py` met `laad_student_context(student_id)`, drie queries, dict-output identiek aan iteratie 1 JSON | | |
-| Test-aanpak | Per-student vragen in `students.json` (data-driven), vier scenario's per student, afgestemd op focus-laag | | |
+
+| Onderdeel                  | Tijn                                                                                                                                | Jan | Keuze PoC  |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --- | ---------- |
+| Model                      | Lokaal Qwen 2.5 14B via Ollama, daarna over op Claude API                                                                           |     | Claude API |
+| Database                   | PostgreSQL 16 in Docker, schema via entrypoint, geen migratietool                                                                   |     | PostgreSQL |
+| Vector store               | Nog niet gebruikt, pgvector wel als toekomstige optie meegenomen in keuze                                                           |     | pgvector   |
+| Retrieval-strategie        | Eager loading van complete studentcontext per sessie, RAG nog niet                                                                  |     | RAG        |
+| Function calling lezen     | Niet gebouwd, wel ontworpen voor iteratie 3 (`get_student_progress`, `get_activities`, `get_competentie`)                           |     |            |
+| Function calling schrijven | Niet gebouwd, ontworpen voor iteratie 4 (`update_activity`, `update_progress`, `add_activity`)                                      |     |            |
+| Schema                     | 4 tabellen: `student`, `competentie`, `student_competentie_voortgang`, `activiteit`. Competenties als 25 rijen met JSONB definities |     |            |
+| Loader / context-opbouw    | `loader.py` met `laad_student_context(student_id)`, drie queries, dict-output identiek aan iteratie 1 JSON                          |     |            |
+| Test-aanpak                | Per-student vragen in `students.json` (data-driven), vier scenario's per student, afgestemd op focus-laag                           |     |            |
+
+
