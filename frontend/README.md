@@ -4,13 +4,13 @@ Frontend van het Fontys LMS proof of concept. LTI-integreerbare webapplicatie ge
 
 ## Stack
 
-| Tool        | Versie    | Doel                   |
-| ----------- | --------- | ---------------------- |
-| React       | 19        | UI-framework           |
-| TypeScript  | 6         | Typeveiligheid         |
-| Vite        | 8         | Dev server & bundler   |
-| Material UI | (gepland) | Componentenbibliotheek |
-| pnpm        | 10        | Pakketmanager          |
+| Tool        | Versie | Doel                   |
+| ----------- | ------ | ---------------------- |
+| React       | 19     | UI-framework           |
+| TypeScript  | 6      | Typeveiligheid         |
+| Vite        | 8      | Dev server & bundler   |
+| Material UI | 9      | Componentenbibliotheek |
+| pnpm        | 10     | Pakketmanager          |
 
 ## Installatie
 
@@ -43,6 +43,22 @@ corepack enable  # Activeer pnpm via Corepack (eenmalig)
 pnpm install     # Installeer dependencies
 
 pnpm dev      # Start de dev server op http://localhost:5173
+```
+
+### Veelvoorkomende setup problemen
+
+Op Windows kan Corepack soms vastlopen op signature errors zoals `Cannot find matching keyid`. Als je daarna `pnpm` probeert te herstellen, kun je ook `EPERM` errors krijgen door admin-rechten op `C:\Program Files\nodejs`, of PATH-conflicten tussen een npm-geinstalleerde en een Corepack-managed `pnpm`.
+
+Werkende workaround: installeer `pnpm` rechtstreeks via npm en omzeil Corepack:
+
+```powershell
+npm install -g pnpm@10.33.2 --force
+```
+
+Open daarna een nieuwe terminal en controleer of de juiste versie actief is:
+
+```powershell
+pnpm --version
 ```
 
 ## Storybook
