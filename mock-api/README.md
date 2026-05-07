@@ -9,7 +9,20 @@ pnpm install
 pnpm mock:api
 ```
 
-The API runs at `http://localhost:3002`.
+The API runs at `http://localhost:3002` by default.
+
+Use `MOCK_API_PORT` to override the port temporarily:
+
+```bash
+MOCK_API_PORT=4000 pnpm mock:api
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:MOCK_API_PORT="4000"
+pnpm mock:api
+```
 
 Useful endpoints:
 
@@ -24,7 +37,7 @@ GET /jokes/:id
 
 `json-server` generates routes from top-level keys in `db.json`.
 
-That means `categories` and `jokes` must stay at the root of [db.json](/Users/jhhest/school/fontys-lms/mock-api/db.json) if the frontend should keep working with:
+That means `categories` and `jokes` must stay at the root of [`db.json`](./db.json) if the frontend should keep working with:
 
 ```text
 GET /categories
@@ -39,7 +52,7 @@ Do not wrap them in a parent key like `"chuck-norris-api"`. If you do, `json-ser
 docker compose up --build
 ```
 
-This starts both `mock-api` and the Vite frontend from the root [docker-compose.yml](/Users/jhhest/school/fontys-lms/docker-compose.yml).
+This starts both `mock-api` and the Vite frontend from the root [`docker-compose.yml`](../docker-compose.yml).
 
 The compose file mounts `mock-api/db.json` read-only, so changing mock data only requires restarting the service.
 
@@ -47,6 +60,12 @@ For a production-style frontend container instead of the Vite dev server:
 
 ```bash
 docker compose --profile prod up --build
+```
+
+To publish the mock API container on a different host port:
+
+```bash
+MOCK_API_PORT=4000 pnpm mock:docker:run
 ```
 
 ## Frontend

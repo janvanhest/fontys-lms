@@ -47,7 +47,7 @@ pnpm dev      # Start de dev server op http://localhost:5173
 
 ## Docker
 
-Gebruik de root [docker-compose.yml](/Users/jhhest/school/fontys-lms/docker-compose.yml) om de frontend samen met de mock API te starten:
+Gebruik de root [`docker-compose.yml`](../docker-compose.yml) om de frontend samen met de mock API te starten:
 
 ```bash
 docker compose up --build
