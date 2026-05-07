@@ -59,7 +59,7 @@ const domainConcepts: DomainConceptConfig[] = [
 function hasAlias(normalized: string, alias: string): boolean {
   const haystack = ` ${normalized} `;
   const needle = ` ${alias.toLowerCase()} `;
-  return haystack.includes(needle) || normalized.includes(alias.toLowerCase());
+  return haystack.includes(needle);
 }
 
 export function expandDomainTerms(normalized: string, tokens: string[]): DomainExpansion {
