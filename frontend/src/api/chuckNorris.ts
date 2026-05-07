@@ -7,29 +7,67 @@ export interface ChuckNorrisJoke {
   url: string
 }
 
-async function fetchJoke(category: string | null): Promise<ChuckNorrisJoke> {
-  const url = category
-    ? `https://api.chucknorris.io/jokes/random?category=${encodeURIComponent(category)}`
-    : 'https://api.chucknorris.io/jokes/random'
-  const res = await fetch(url)
-  if (!res.ok) throw new Error('Kon geen grap ophalen')
+interface MockCategory {
+  name: string
+}
+
+interface MockJoke extends ChuckNorrisJoke {
+  category?: string
+}
+
+const isMockApi = import.meta.env.VITE_CHUCK_API_MODE === 'mock'
+const mockApiBaseUrl =
+  typeof import.meta.env.VITE_CHUCK_API_BASE_URL === 'string'
+    ? import.meta.env.VITE_CHUCK_API_BASE_URL
+    : 'http://localhost:3002'
+const mockJokesUrl = new URL('/jokes', mockApiBaseUrl)
+const mockCategoriesUrl = new URL('/categories', mockApiBaseUrl)
+const chuckNorrisApiUrl = 'https://api.chucknorris.io'
+
+export const chuckNorrisApiSource = isMockApi
+  ? `mock (${mockApiBaseUrl})`
+  : `external (${chuckNorrisApiUrl})`
+
+function pickRandomJoke(jokes: MockJoke[]): ChuckNorrisJoke {
+  if (jokes.length === 0) throw new Error('Kon geen grap ophalen')
+
+  const index = Math.floor(Math.random() * jokes.length)
+  return jokes[index]
+}
+
+async function fetchJson<T>(input: string | URL, errorMessage: string): Promise<T> {
+  const res = await fetch(input)
+  if (!res.ok) throw new Error(errorMessage)
 
   try {
-    return (await res.json()) as ChuckNorrisJoke
+    return (await res.json()) as T
   } catch {
-    throw new Error('Kon geen grap ophalen')
+    throw new Error(errorMessage)
   }
 }
 
-async function fetchCategories(): Promise<string[]> {
-  const res = await fetch('https://api.chucknorris.io/jokes/categories')
-  if (!res.ok) throw new Error('Kon categorieën niet ophalen')
+async function fetchJoke(category: string | null): Promise<ChuckNorrisJoke> {
+  if (isMockApi) {
+    const url = new URL(mockJokesUrl)
+    if (category) url.searchParams.set('category', category)
 
-  try {
-    return (await res.json()) as string[]
-  } catch {
-    throw new Error('Kon categorieën niet ophalen')
+    return pickRandomJoke(await fetchJson<MockJoke[]>(url, 'Kon geen grap ophalen'))
   }
+
+  const url = category
+    ? `${chuckNorrisApiUrl}/jokes/random?category=${encodeURIComponent(category)}`
+    : `${chuckNorrisApiUrl}/jokes/random`
+
+  return fetchJson<ChuckNorrisJoke>(url, 'Kon geen grap ophalen')
+}
+
+async function fetchCategories(): Promise<string[]> {
+  if (isMockApi) {
+    const categories = await fetchJson<MockCategory[]>(mockCategoriesUrl, 'Kon categorieën niet ophalen')
+    return categories.map((category) => category.name)
+  }
+
+  return fetchJson<string[]>(`${chuckNorrisApiUrl}/jokes/categories`, 'Kon categorieën niet ophalen')
 }
 
 export const chuckNorrisCategoriesOptions = queryOptions({
