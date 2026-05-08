@@ -11,7 +11,7 @@ RUN pnpm config set store-dir $PNPM_STORE_DIR
 
 FROM base AS deps
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc ./
 
 RUN pnpm install --frozen-lockfile
 
@@ -39,7 +39,7 @@ ENV NODE_ENV=production
 
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc ./
 
 RUN pnpm install --prod --frozen-lockfile
 
