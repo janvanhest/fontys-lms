@@ -1,0 +1,46 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      CORS_ORIGINS: http://localhost:5173
+    ports:
+      - "3000:3000"
+    volumes:
+      - backend-node-modules:/app/node_modules
+      - backend-pnpm-store:/pnpm/store
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/src
+          target: /app/src
+        - action: rebuild
+          path: ./backend/package.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    environment:
+      VITE_CHUCK_API_MODE: mock
+      VITE_CHUCK_API_BASE_URL: http://localhost:3002
+    ports:
+      - "5173:5173"
+    volumes:
+      - frontend-node-modules:/app/node_modules
+      - frontend-pnpm-store:/pnpm/store
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
+        - action: rebuild
+          path: ./frontend/package.json
+    depends_on:
+      - mock-api

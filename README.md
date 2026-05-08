@@ -22,8 +22,46 @@ Aan het einde van het semester staat er een **gevalideerd proof of concept** dat
 
 **Buiten scope:** een volledig nieuw LMS bouwen, productierijpe software voor alle rollen, migratie van FeedPulse of Portflow, en beheer of hosting na het semester.
 
-## Lokale environment variabelen
+## Vereisten
 
-`docker-compose.yml` leest de Postgres-credentials uit de root-`.env`.
+### Make installeren
 
-Gebruik `.env.example` als startpunt en maak een lokale `.env` voordat je `docker compose up` draait.
+**Mac**
+```bash
+brew install make
+```
+
+**Windows**
+```powershell
+winget install GnuWin32.Make
+```
+
+> Geen Make? Je kunt de commando's ook direct uitvoeren — zie de tabel hieronder.
+
+## Lokale omgeving starten
+
+Kopieer eerst de environment variabelen:
+
+```bash
+cp .env.example .env   # pas credentials aan waar nodig
+```
+
+| Commando | Alternatief zonder Make | Beschrijving |
+|---|---|---|
+| `make dev` | `docker compose up --watch` | Start alle services met hot reload |
+| `make prod` | `docker compose -f compose.yaml -f compose.prod.yaml up --build` | Bouwt en start de productie-images |
+| `make down` | `docker compose down` | Stopt alle containers |
+
+**Debuggen**
+
+```bash
+docker compose config                                      # toont de samengevoegde dev-configuratie
+docker compose -f compose.yaml -f compose.prod.yaml config # toont de samengevoegde prod-configuratie
+docker compose logs -f <service>                           # live logs van een service (backend, frontend, ...)
+```
+
+**Hoe werkt de split?**
+
+- `compose.yaml` — gedeelde services (postgres, mock-api)
+- `compose.override.yaml` — dev-configuratie, automatisch samengevoegd door Docker bij `docker compose up`
+- `compose.prod.yaml` — prod-configuratie, expliciet geladen via `make prod`
