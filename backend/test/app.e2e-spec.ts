@@ -3,16 +3,18 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { configureApp } from './../src/configure-app';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    configureApp(app);
     await app.init();
   });
 
@@ -20,10 +22,29 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect({ name: 'Fontys LMS API', version: '1.0.0' });
   });
 
-  afterEach(async () => {
+  it('/echo (POST) accepteert een geldig DTO-body', () => {
+    return request(app.getHttpServer())
+      .post('/echo')
+      .send({ message: 'Hallo Fontys' })
+      .expect(201)
+      .expect({ message: 'Hallo Fontys' });
+  });
+
+  it('/echo (POST) weigert onbekende velden', () => {
+    return request(app.getHttpServer())
+      .post('/echo')
+      .send({ message: 'Hallo Fontys', extra: true })
+      .expect(400);
+  });
+
+  it('/echo (POST) valideert verplichte velden', () => {
+    return request(app.getHttpServer()).post('/echo').send({}).expect(400);
+  });
+
+  afterAll(async () => {
     await app.close();
   });
 });

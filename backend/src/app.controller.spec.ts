@@ -1,22 +1,26 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
+import { EchoMessageDto } from './echo-message.dto';
 import { AppService } from './app.service';
 
 describe('AppController', () => {
   let appController: AppController;
 
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
-
-    appController = app.get<AppController>(AppController);
+  beforeEach(() => {
+    appController = new AppController(new AppService());
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return API info', () => {
+      expect(appController.getInfo()).toEqual({
+        name: 'Fontys LMS API',
+        version: '1.0.0',
+      });
+    });
+
+    it('should echo the DTO payload', () => {
+      const dto: EchoMessageDto = { message: 'Hallo Fontys' };
+
+      expect(appController.echo(dto)).toEqual(dto);
     });
   });
 });
