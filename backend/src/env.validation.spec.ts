@@ -26,4 +26,14 @@ describe('validate', () => {
     expect(() => validate({ PORT: '70000' })).toThrow(/"property": "PORT"/);
     expect(() => validate({ PORT: '70000' })).toThrow(/must not be greater than 65535/);
   });
+
+  it('rejects non-numeric port strings', () => {
+    expect(() => validate({ PORT: '3000abc' })).toThrow(/Environment validation failed/);
+    expect(() => validate({ PORT: '3000abc' })).toThrow(/"property": "PORT"/);
+  });
+
+  it('rejects empty port strings', () => {
+    expect(() => validate({ PORT: '' })).toThrow(/Environment validation failed/);
+    expect(() => validate({ PORT: '' })).toThrow(/"property": "PORT"/);
+  });
 });
