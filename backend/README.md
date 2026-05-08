@@ -8,6 +8,7 @@ NestJS backend voor het Fontys LMS-project. Deze service draait de API en public
 - TypeScript
 - pnpm
 - Swagger via `@nestjs/swagger`
+- Globale request-validatie via `ValidationPipe`, `class-validator` en `class-transformer`
 - Docker met aparte `development`, `build` en `production` stages
 
 ## Vereisten
@@ -41,6 +42,18 @@ http://localhost:3000/api
 
 De applicatie gebruikt `PORT` als environment variable. Als die niet gezet is, wordt poort `3000` gebruikt.
 
+## Validatie-standaard
+
+Deze backend gebruikt een globale `ValidationPipe`. Daardoor geldt DTO-validatie automatisch voor alle controllers zodra een route een class-based DTO in `@Body()`, `@Param()` of `@Query()` gebruikt.
+
+Actieve instellingen:
+
+- `whitelist: true` verwijdert properties die niet in het DTO staan
+- `forbidNonWhitelisted: true` geeft een `400 Bad Request` bij onbekende velden
+- `transform: true` zet inkomende payloads om naar DTO-instanties
+
+Een klein voorbeeld staat op `POST /echo` met `EchoMessageDto`.
+
 ## Beschikbare scripts
 
 ```bash
@@ -57,6 +70,33 @@ pnpm run test:cov
 pnpm run test:debug
 pnpm run test:e2e
 ```
+
+## Testen
+
+Unit tests:
+
+```bash
+pnpm run test
+pnpm run test:watch
+pnpm run test:cov
+pnpm run test:debug
+pnpm test -- --verbose
+```
+
+Gebruik deze commando's voor unit tests op losse modules, controllers, services en configuratie.
+
+`pnpm test -- --verbose` laat per test zien wat er precies is uitgevoerd.
+
+End-to-end tests:
+
+```bash
+pnpm run test:e2e
+pnpm test:e2e -- --verbose
+```
+
+Gebruik deze commando's voor end-to-end tests van complete HTTP-routes en request/response-gedrag.
+
+Voer in de praktijk zowel de unit tests als de e2e tests uit, zodat we geen regressies missen in losse logica of in de volledige request flow.
 
 ## Docker
 
