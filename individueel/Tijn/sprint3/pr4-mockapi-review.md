@@ -80,14 +80,13 @@ In `frontend-prod` staat `VITE_CHUCK_API_BASE_URL: http://localhost:3002`. Dat k
 
 ## Reviewbeslissing
 
-**Approve met comments**, dezelfde lijn als PR #3.
+**Approve met één comment** (geplaatst op GitHub).
 
-Comments die ik zou toevoegen op GitHub:
+Comment op GitHub:
 
-1. Build context voor mock-api consistent maken met frontend (`context: ./mock-api`).
-2. Klein dataconsistentie-bug in `db.json` op `mock-general-1` (string ipv array).
+1. Build context voor mock-api consistent maken met frontend (`context: ./mock-api`) zodat het patroon voor toekomstige services (`backend/`, `postgres/`) eenduidig blijft.
 
-Geen blocker. Het zijn opschoonpunten voor consistentie.
+Het db.json punt heb ik niet als comment geplaatst (zie aandachtspunt 5), het is puur mock-data en weegt niet op tegen de moeite van een review-ronde.
 
 ## Patronen die ik straks volg voor mijn iteratie 3
 
@@ -169,4 +168,4 @@ Dit is geen wijziging op deze PR maar een lijn die ik vasthoud zodra ik mijn eig
 
 ## Conclusie
 
-Solide werk van Jan. Het patroon klopt, de Dockerfiles zijn netjes opgezet, en de documentatie staat per service waar je hem zoekt. De drie comments hierboven zijn nette consistency-punten, geen blockers. Ik kan na merge direct verder met `backend/` en `postgres/` zonder dat ik eerst structurele dingen op de schop hoef te gooien.
+Solide werk van Jan. Het patroon klopt, de Dockerfiles zijn netjes opgezet, en de documentatie staat per service waar je hem zoekt. Eén consistency-comment geplaatst, geen blocker. Ik kan na merge direct verder met `backend/` en `postgres/` zonder dat ik eerst structurele dingen op de schop hoef te gooien.
