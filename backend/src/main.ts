@@ -1,18 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { configureApp } from './configure-app';
 
+/**
+ * Bootstraps and starts the NestJS application.
+ * This function initializes the app, applies configuration, and begins listening for incoming requests.
+ *
+ * Args:
+ *   None.
+ *
+ * Returns:
+ *   A promise that resolves when the application has started listening.
+ */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  const config = new DocumentBuilder()
-    .setTitle('Fontys LMS Backend')
-    .setDescription('NestJS backend voor de chatbot en API')
-    .setVersion('0.1')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-
+  configureApp(app);
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();
