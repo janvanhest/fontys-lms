@@ -21,3 +21,9 @@ Aan het einde van het semester staat er een **gevalideerd proof of concept** dat
 **Binnen scope:** gebruikersonderzoek (studenten dag/avond, coaches, docenten), ideation (ideeën ophalen, scoren en een richting kiezen), een PoC gekoppeld aan Canvas via API en/of LTI, architectuurdocumentatie (C4, ADR's) voor overdraagbaarheid, en validatie met echte gebruikers.
 
 **Buiten scope:** een volledig nieuw LMS bouwen, productierijpe software voor alle rollen, migratie van FeedPulse of Portflow, en beheer of hosting na het semester.
+
+## Lokale environment variabelen
+
+`docker-compose.yml` leest de Postgres-credentials uit de root-`.env`.
+
+Gebruik `.env.example` als startpunt en maak een lokale `.env` voordat je `docker compose up` draait.

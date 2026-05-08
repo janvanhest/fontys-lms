@@ -9,10 +9,8 @@ services:
 
   postgres:
     image: pgvector/pgvector:pg16
-    environment:
-      POSTGRES_USER: lms
-      POSTGRES_PASSWORD: lms
-      POSTGRES_DB: lms
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:
