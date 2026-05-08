@@ -11,9 +11,9 @@ RUN pnpm config set store-dir $PNPM_STORE_DIR
 
 FROM base AS deps
 
-COPY package.json pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-RUN pnpm install --frozen-lockfile --config.strict-dep-builds=false
+RUN pnpm install --frozen-lockfile
 
 FROM deps AS development
 
@@ -39,9 +39,9 @@ ENV NODE_ENV=production
 
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-RUN pnpm install --prod --frozen-lockfile --config.strict-dep-builds=false
+RUN pnpm install --prod --frozen-lockfile
 
 COPY --from=build /app/dist ./dist
 
