@@ -2,12 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class HealthService {
-  /**
-   * Provides a simple health status for the application.
-   * This service method is used to indicate whether the app is currently operational.
-   *
-   * @returns An object containing a status string representing the application's health.
-   */
+  // TODO: replace with @nestjs/terminus and add a DB health indicator once TypeORM/Prisma is wired up
   check(): { status: string } {
     return { status: 'ok' };
   }

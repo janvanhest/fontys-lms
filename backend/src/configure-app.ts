@@ -18,16 +18,6 @@ function getCorsOrigins(configService: ConfigService): string[] {
   return configuredOrigins;
 }
 
-/**
- * Configures the NestJS application with global validation and API documentation.
- * This function prepares the app for runtime by enabling validation behavior and Swagger UI.
- *
- * Args:
- *   app: The NestJS application instance to configure.
- *
- * Returns:
- *   This function does not return a value.
- */
 export function configureApp(app: INestApplication, configService: ConfigService): void {
   app.enableCors({
     origin: getCorsOrigins(configService),
