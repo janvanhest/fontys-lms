@@ -1,8 +1,7 @@
 services:
   mock-api:
     build:
-      context: .
-      dockerfile: ./mock-api/Dockerfile
+      context: ./mock-api
     ports:
       - "3002:3002"
     volumes:
@@ -31,9 +30,6 @@ services:
       args:
         VITE_CHUCK_API_MODE: mock
         VITE_CHUCK_API_BASE_URL: http://localhost:3002
-    environment:
-      VITE_CHUCK_API_MODE: mock
-      VITE_CHUCK_API_BASE_URL: http://localhost:3002
     ports:
       - "4173:4173"
     depends_on:
