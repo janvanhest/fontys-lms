@@ -74,6 +74,15 @@ Een aantal architectuurkeuzes liggen al vast, ongeacht welke iteratie als basis 
 - Tijd-boundary probleem opgelost: model geeft datums door als parameter, code filtert
 - Backend draait in Docker, opgenomen in root `docker-compose.yml` naast frontend, json-server en Postgres
 
+**Eerste milestone (skeleton-bewijs):** voordat ik zware features bouw, eerst aantonen dat de hele plumbing werkt. Concreet:
+
+- `GET /api/students/1` endpoint dat een student uit Postgres haalt
+- Zichtbaar in Swagger UI op `/api`
+- Backend en Postgres beide in compose, praten via servicenaam
+- Frontend kan dit endpoint aanroepen vanuit de browser
+
+Dit is dezelfde aanpak die Jan in PR #4 hanteert met de Chuck Norris widget op `/storybook-demo`: de feature zelf doet er niet toe, het bewijs is dat data over container-grenzen heen netjes naar de UI komt. Pas als dat werkt is het zinvol om function calling, Claude API en RAG erbij te bouwen.
+
 ### Iteratie 4 (gepland) - RAG met pgvector
 
 **Onderzoeksvraag:** kan RAG via pgvector de chatbot betere antwoorden geven door alleen relevante context op te halen in plaats van alles vooraf in te laden?
@@ -155,6 +164,23 @@ Dit is hoe de NestJS-backend eruit komt te zien als iteratie 3 en 4 klaar zijn.
 
 - Claude API key in `.env` (niet in repo)
 - Postgres-credentials in `.env`, lokaal default, productie via Neon (optioneel)
+
+## API-mode switch (patroon overgenomen uit PR #4)
+
+Jan introduceert in PR #4 een `VITE_CHUCK_API_MODE` switch waarmee de frontend kan kiezen tussen mock-data uit json-server of de echte externe API. Dat patroon zetten we breder in als `VITE_API_MODE` voor de hele app:
+
+- `VITE_API_MODE=real` -> frontend praat tegen NestJS op `http://localhost:3000`
+- `VITE_API_MODE=mock` -> frontend praat tegen json-server op `http://localhost:3002`
+- Per feature kan dat zelfs apart: chatbot altijd tegen NestJS, een nog-niet-gebouwde "leerdoel"-feature kan tijdelijk mock zijn
+
+**Waarom:**
+
+- Jan kan doorbouwen aan UI voordat mijn NestJS endpoints klaar zijn
+- Storybook stories werken zonder echte backend
+- E2E-tests gebruiken voorspelbare mockdata zonder de echte DB te raken
+- Edge cases (lege state, error, 100 items) makkelijker te triggeren via mock
+
+**Belangrijk:** chatbot-endpoint draait altijd tegen NestJS. Mock-mode voor de chatbot heeft geen zin (Claude API en function calling kun je niet via json-server mocken). Per feature kiezen, niet één globale switch voor alles.
 
 ## Project layout (afspraak met Jan)
 
