@@ -16,6 +16,12 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   backend:
     build:
@@ -23,12 +29,17 @@ services:
       target: development
     environment:
       PORT: 3000
+      NODE_ENV: development
+      CORS_ORIGINS: http://localhost:5173
     ports:
       - "3000:3000"
     volumes:
       - ./backend:/app
       - backend-node-modules:/app/node_modules
       - backend-pnpm-store:/pnpm/store
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
