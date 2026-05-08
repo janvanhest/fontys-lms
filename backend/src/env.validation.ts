@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
-import { IsIn, IsNumber, IsString, Max, Min, validateSync } from 'class-validator';
+import { IsIn, IsNumber, IsString, Max, Min, ValidationError, validateSync } from 'class-validator';
 
 class EnvironmentVariables {
   @IsIn(['development', 'production', 'test', 'provision'])
@@ -13,6 +13,22 @@ class EnvironmentVariables {
 
   @IsString()
   CORS_ORIGINS = 'http://localhost:5173';
+}
+
+type FormattedValidationError = {
+  property: string;
+  constraints: ValidationError['constraints'];
+  value: unknown;
+  children?: FormattedValidationError[];
+};
+
+function formatValidationErrors(errors: ValidationError[]): FormattedValidationError[] {
+  return errors.map((error) => ({
+    property: error.property,
+    constraints: error.constraints,
+    value: error.value,
+    children: error.children?.length ? formatValidationErrors(error.children) : undefined,
+  }));
 }
 
 export function validate(config: Record<string, unknown>): EnvironmentVariables {
@@ -31,7 +47,9 @@ export function validate(config: Record<string, unknown>): EnvironmentVariables 
   });
 
   if (errors.length > 0) {
-    throw new Error(errors.toString());
+    throw new Error(
+      `Environment validation failed:\n${JSON.stringify(formatValidationErrors(errors), null, 2)}`,
+    );
   }
 
   return validatedConfig;

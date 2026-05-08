@@ -22,6 +22,8 @@ describe('validate', () => {
   });
 
   it('rejects invalid ports', () => {
-    expect(() => validate({ PORT: '70000' })).toThrow(Error);
+    expect(() => validate({ PORT: '70000' })).toThrow(/Environment validation failed/);
+    expect(() => validate({ PORT: '70000' })).toThrow(/"property": "PORT"/);
+    expect(() => validate({ PORT: '70000' })).toThrow(/must not be greater than 65535/);
   });
 });
