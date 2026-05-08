@@ -5,3 +5,6 @@ dist
 storybook-static
 coverage
 *.log
+.env
+.env.*
+.env.local
