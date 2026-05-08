@@ -1,8 +1,4 @@
-import {
-  INestApplication,
-  ValidationPipe,
-  ValidationPipeOptions,
-} from '@nestjs/common';
+import { INestApplication, ValidationPipe, ValidationPipeOptions } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export const globalValidationPipeOptions: ValidationPipeOptions = {
@@ -10,6 +6,19 @@ export const globalValidationPipeOptions: ValidationPipeOptions = {
   forbidNonWhitelisted: true,
   transform: true,
 };
+
+const defaultCorsOrigins = ['http://localhost:5173'];
+
+function getCorsOptions() {
+  const configuredOrigins = process.env.CORS_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+
+  return {
+    origin:
+      configuredOrigins && configuredOrigins.length > 0 ? configuredOrigins : defaultCorsOrigins,
+  };
+}
 
 /**
  * Configures the NestJS application with global validation and API documentation.
@@ -22,6 +31,7 @@ export const globalValidationPipeOptions: ValidationPipeOptions = {
  *   This function does not return a value.
  */
 export function configureApp(app: INestApplication): void {
+  app.enableCors(getCorsOptions());
   app.useGlobalPipes(new ValidationPipe(globalValidationPipeOptions));
 
   const config = new DocumentBuilder()
