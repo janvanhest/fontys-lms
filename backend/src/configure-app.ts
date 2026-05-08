@@ -1,4 +1,5 @@
 import { INestApplication, ValidationPipe, ValidationPipeOptions } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export const globalValidationPipeOptions: ValidationPipeOptions = {
@@ -7,17 +8,14 @@ export const globalValidationPipeOptions: ValidationPipeOptions = {
   transform: true,
 };
 
-const defaultCorsOrigins = ['http://localhost:5173'];
-
-function getCorsOptions() {
-  const configuredOrigins = process.env.CORS_ORIGINS?.split(',')
+function getCorsOrigins(configService: ConfigService): string[] {
+  const configuredOrigins = configService
+    .getOrThrow<string>('CORS_ORIGINS')
+    .split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
 
-  return {
-    origin:
-      configuredOrigins && configuredOrigins.length > 0 ? configuredOrigins : defaultCorsOrigins,
-  };
+  return configuredOrigins;
 }
 
 /**
@@ -30,8 +28,10 @@ function getCorsOptions() {
  * Returns:
  *   This function does not return a value.
  */
-export function configureApp(app: INestApplication): void {
-  app.enableCors(getCorsOptions());
+export function configureApp(app: INestApplication, configService: ConfigService): void {
+  app.enableCors({
+    origin: getCorsOrigins(configService),
+  });
   app.useGlobalPipes(new ValidationPipe(globalValidationPipeOptions));
 
   const config = new DocumentBuilder()

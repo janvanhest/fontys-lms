@@ -4,6 +4,7 @@ import {
   INestApplication,
   ValidationPipe,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { configureApp, globalValidationPipeOptions } from './configure-app';
 import { EchoMessageDto } from './echo-message.dto';
 
@@ -30,31 +31,22 @@ jest.mock('@nestjs/swagger', () => ({
 }));
 
 describe('configureApp', () => {
-  const originalCorsOrigins = process.env.CORS_ORIGINS;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    delete process.env.CORS_ORIGINS;
-  });
-
-  afterAll(() => {
-    if (originalCorsOrigins === undefined) {
-      delete process.env.CORS_ORIGINS;
-      return;
-    }
-
-    process.env.CORS_ORIGINS = originalCorsOrigins;
   });
 
   it('registers the default localhost frontend origin for CORS', () => {
     const enableCors = jest.fn();
+    const configService = {
+      getOrThrow: jest.fn().mockReturnValue('http://localhost:5173'),
+    } as unknown as ConfigService;
     const app = {
       enableCors,
       useGlobalPipes: jest.fn<void, [ValidationPipe]>(),
       getHttpAdapter: jest.fn().mockReturnValue({}),
     } as unknown as INestApplication;
 
-    configureApp(app);
+    configureApp(app, configService);
 
     expect(enableCors).toHaveBeenCalledTimes(1);
     expect(enableCors).toHaveBeenCalledWith({
@@ -62,16 +54,20 @@ describe('configureApp', () => {
     });
   });
 
-  it('registers env-configured CORS origins', () => {
-    process.env.CORS_ORIGINS = 'http://localhost:5173, https://frontend.example.com  ,';
+  it('registers config-driven CORS origins', () => {
     const enableCors = jest.fn();
+    const configService = {
+      getOrThrow: jest
+        .fn()
+        .mockReturnValue('http://localhost:5173, https://frontend.example.com  ,'),
+    } as unknown as ConfigService;
     const app = {
       enableCors,
       useGlobalPipes: jest.fn<void, [ValidationPipe]>(),
       getHttpAdapter: jest.fn().mockReturnValue({}),
     } as unknown as INestApplication;
 
-    configureApp(app);
+    configureApp(app, configService);
 
     expect(enableCors).toHaveBeenCalledTimes(1);
     expect(enableCors).toHaveBeenCalledWith({
@@ -82,13 +78,16 @@ describe('configureApp', () => {
   it('registers the global validation pipe', () => {
     const useGlobalPipes = jest.fn<void, [ValidationPipe]>();
     const enableCors = jest.fn();
+    const configService = {
+      getOrThrow: jest.fn().mockReturnValue('http://localhost:5173'),
+    } as unknown as ConfigService;
     const app = {
       enableCors,
       useGlobalPipes,
       getHttpAdapter: jest.fn().mockReturnValue({}),
     } as unknown as INestApplication;
 
-    configureApp(app);
+    configureApp(app, configService);
 
     expect(useGlobalPipes).toHaveBeenCalledTimes(1);
     expect(useGlobalPipes).toHaveBeenCalledWith(expect.any(ValidationPipe));
