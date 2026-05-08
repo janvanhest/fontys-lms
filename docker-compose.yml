@@ -7,6 +7,31 @@ services:
     volumes:
       - ./mock-api/db.json:/app/db.json:ro
 
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: lms
+      POSTGRES_PASSWORD: lms
+      POSTGRES_DB: lms
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  backend:
+    build:
+      context: ./backend
+      target: development
+    environment:
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - backend-node-modules:/app/node_modules
+      - backend-pnpm-store:/pnpm/store
+
   frontend:
     build:
       context: ./frontend
@@ -40,3 +65,6 @@ services:
 volumes:
   frontend-node-modules:
   frontend-pnpm-store:
+  backend-node-modules:
+  backend-pnpm-store:
+  postgres-data:
