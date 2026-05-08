@@ -5,6 +5,7 @@ import Container from '@mui/material/Container'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { Link } from 'react-router-dom'
+import { chuckNorrisApiSource } from '@/api/chuckNorris'
 import { ChuckNorrisWidget } from '@/components/ChuckNorrisWidget'
 import { useChuckNorrisCategories } from '@/hooks/useChuckNorrisCategories'
 import { useChuckNorrisJoke } from '@/hooks/useChuckNorrisJoke'
@@ -31,6 +32,9 @@ export function StorybookDemoPage() {
           </Typography>
           <Typography variant="body1">
             Interactieve demo van de Chuck Norris widget binnen de app.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Data source: {chuckNorrisApiSource}
           </Typography>
         </Stack>
 

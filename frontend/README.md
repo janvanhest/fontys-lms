@@ -45,6 +45,27 @@ pnpm install     # Installeer dependencies
 pnpm dev      # Start de dev server op http://localhost:5173
 ```
 
+## Docker
+
+Gebruik de root [`docker-compose.yml`](../docker-compose.yml) om de frontend samen met de mock API te starten:
+
+```bash
+docker compose up --build
+```
+
+Dat start:
+
+- de Vite dev server op `http://localhost:5173`
+- de mock API op `http://localhost:3002`
+
+Voor een production-style frontend container naast de mock API:
+
+```bash
+docker compose --profile prod up --build
+```
+
+Die extra service serveert de gebouwde app op `http://localhost:4173`.
+
 ### Veelvoorkomende setup problemen
 
 Op Windows kan Corepack soms vastlopen op signature errors zoals `Cannot find matching keyid`. Als je daarna `pnpm` probeert te herstellen, kun je ook `EPERM` errors krijgen door admin-rechten op `C:\Program Files\nodejs`, of PATH-conflicten tussen een npm-geïnstalleerde en een Corepack-managed `pnpm`.
