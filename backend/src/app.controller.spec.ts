@@ -12,8 +12,8 @@ describe('AppController', () => {
   describe('root', () => {
     it('should return API info', () => {
       expect(appController.getInfo()).toEqual({
-        name: 'Fontys LMS API',
-        version: '1.0.0',
+        name: 'fontys-lms-backend',
+        version: '0.0.1',
       });
     });
 
