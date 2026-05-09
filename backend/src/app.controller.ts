@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AppInfoResponseDto } from './app-info-response.dto';
 import { EchoMessageDto } from './echo-message.dto';
 import { AppService } from './app.service';
 
@@ -10,12 +11,14 @@ export class AppController {
 
   @Get()
   @ApiOperation({ summary: 'API info' })
-  getInfo(): { name: string; version: string } {
+  @ApiOkResponse({ type: AppInfoResponseDto })
+  getInfo(): AppInfoResponseDto {
     return this.appService.getInfo();
   }
 
   @Post('echo')
   @ApiOperation({ summary: 'Echo endpoint voor DTO-validatie' })
+  @ApiOkResponse({ type: EchoMessageDto })
   echo(@Body() body: EchoMessageDto): EchoMessageDto {
     return body;
   }
