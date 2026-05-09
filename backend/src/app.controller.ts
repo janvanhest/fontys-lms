@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AppInfoResponseDto } from './app-info-response.dto';
 import { EchoMessageDto } from './echo-message.dto';
 import { AppService } from './app.service';
@@ -19,6 +19,7 @@ export class AppController {
   @Post('echo')
   @ApiOperation({ summary: 'Echo endpoint voor DTO-validatie' })
   @ApiOkResponse({ type: EchoMessageDto })
+  @ApiBadRequestResponse({ description: 'Validation failed for the request body.' })
   echo(@Body() body: EchoMessageDto): EchoMessageDto {
     return body;
   }
