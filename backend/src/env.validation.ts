@@ -3,7 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { IsIn, IsInt, IsString, Max, Min, ValidationError, validateSync } from 'class-validator';
 
 class EnvironmentVariables {
-  @IsIn(['development', 'production', 'test', 'provision'])
+  @IsIn(['development', 'production', 'test'])
   NODE_ENV = 'development';
 
   @IsInt()
@@ -26,7 +26,7 @@ function formatValidationErrors(errors: ValidationError[]): FormattedValidationE
   return errors.map((error) => ({
     property: error.property,
     constraints: error.constraints,
-    value: error.value,
+    value: error.value as unknown,
     children: error.children?.length ? formatValidationErrors(error.children) : undefined,
   }));
 }

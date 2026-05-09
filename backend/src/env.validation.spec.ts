@@ -21,6 +21,11 @@ describe('validate', () => {
     expect(config.CORS_ORIGINS).toBe('http://localhost:5173,https://frontend.example.com');
   });
 
+  it('rejects unsupported node environments', () => {
+    expect(() => validate({ NODE_ENV: 'provision' })).toThrow(/Environment validation failed/);
+    expect(() => validate({ NODE_ENV: 'provision' })).toThrow(/"property": "NODE_ENV"/);
+  });
+
   it('rejects invalid ports', () => {
     expect(() => validate({ PORT: '70000' })).toThrow(/Environment validation failed/);
     expect(() => validate({ PORT: '70000' })).toThrow(/"property": "PORT"/);
