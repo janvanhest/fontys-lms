@@ -9,11 +9,17 @@ export const globalValidationPipeOptions: ValidationPipeOptions = {
 };
 
 function getCorsOrigins(configService: ConfigService): string[] {
-  const configuredOrigins = configService
-    .getOrThrow<string>('CORS_ORIGINS')
+  const rawOrigins = configService.getOrThrow<string>('CORS_ORIGINS').trim();
+  const configuredOrigins = rawOrigins
     .split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
+
+  if (configuredOrigins.length === 0) {
+    throw new Error(
+      'Invalid CORS_ORIGINS configuration: no valid origins found. Ensure CORS_ORIGINS is a comma-separated list of non-empty origins.',
+    );
+  }
 
   return configuredOrigins;
 }

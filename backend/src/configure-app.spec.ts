@@ -75,6 +75,21 @@ describe('configureApp', () => {
     });
   });
 
+  it('throws when CORS_ORIGINS does not contain any valid origins', () => {
+    const configService = {
+      getOrThrow: jest.fn().mockReturnValue(' ,  , '),
+    } as unknown as ConfigService;
+    const app = {
+      enableCors: jest.fn(),
+      useGlobalPipes: jest.fn<void, [ValidationPipe]>(),
+      getHttpAdapter: jest.fn().mockReturnValue({}),
+    } as unknown as INestApplication;
+
+    expect(() => configureApp(app, configService)).toThrow(
+      'Invalid CORS_ORIGINS configuration: no valid origins found. Ensure CORS_ORIGINS is a comma-separated list of non-empty origins.',
+    );
+  });
+
   it('registers the global validation pipe', () => {
     const useGlobalPipes = jest.fn<void, [ValidationPipe]>();
     const enableCors = jest.fn();
