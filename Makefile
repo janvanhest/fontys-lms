@@ -1,4 +1,4 @@
-.PHONY: dev prod down
+.PHONY: dev prod down test
 
 dev:
 	docker compose up --watch
@@ -8,3 +8,6 @@ prod:
 
 down:
 	docker compose down
+
+test:
+	cd backend && pnpm test -- --verbose

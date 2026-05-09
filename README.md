@@ -51,6 +51,11 @@ cp .env.example .env   # pas credentials aan waar nodig
 | `make dev` | `docker compose up --watch` | Start alle services met hot reload |
 | `make prod` | `docker compose -f compose.yaml -f compose.prod.yaml up --build` | Bouwt en start de productie-images |
 | `make down` | `docker compose down` | Stopt alle containers |
+| `make test` | `cd backend && pnpm test -- --verbose` | Draait de backend unit tests met beschrijvende output |
+
+**Hoe werkt de Makefile?**
+
+De root `Makefile` bevat alleen dunne shortcuts voor veelgebruikte developer-commando's. Targets zoals `dev`, `prod`, `down` en `test` staan onder `.PHONY`. Volgens de GNU Make-documentatie markeert dat ze als command-targets in plaats van bestanden, zodat `make test` altijd wordt uitgevoerd, ook als er toevallig een bestand of map `test` bestaat.
 
 **Debuggen**
 
