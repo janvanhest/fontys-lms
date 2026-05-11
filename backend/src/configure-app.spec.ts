@@ -1,0 +1,143 @@
+import {
+  ArgumentMetadata,
+  BadRequestException,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { configureApp, globalValidationPipeOptions } from './configure-app';
+import { EchoMessageDto } from './echo-message.dto';
+
+jest.mock('@nestjs/swagger', () => ({
+  ApiProperty: () => () => undefined,
+  DocumentBuilder: class {
+    setTitle() {
+      return this;
+    }
+    setDescription() {
+      return this;
+    }
+    setVersion() {
+      return this;
+    }
+    build() {
+      return {};
+    }
+  },
+  SwaggerModule: {
+    createDocument: jest.fn().mockReturnValue({}),
+    setup: jest.fn(),
+  },
+}));
+
+describe('configureApp', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('registers the default localhost frontend origin for CORS', () => {
+    const enableCors = jest.fn();
+    const configService = {
+      getOrThrow: jest.fn().mockReturnValue('http://localhost:5173'),
+    } as unknown as ConfigService;
+    const app = {
+      enableCors,
+      useGlobalPipes: jest.fn<void, [ValidationPipe]>(),
+      getHttpAdapter: jest.fn().mockReturnValue({}),
+    } as unknown as INestApplication;
+
+    configureApp(app, configService);
+
+    expect(enableCors).toHaveBeenCalledTimes(1);
+    expect(enableCors).toHaveBeenCalledWith({
+      origin: ['http://localhost:5173'],
+    });
+  });
+
+  it('registers config-driven CORS origins', () => {
+    const enableCors = jest.fn();
+    const configService = {
+      getOrThrow: jest
+        .fn()
+        .mockReturnValue('http://localhost:5173, https://frontend.example.com  ,'),
+    } as unknown as ConfigService;
+    const app = {
+      enableCors,
+      useGlobalPipes: jest.fn<void, [ValidationPipe]>(),
+      getHttpAdapter: jest.fn().mockReturnValue({}),
+    } as unknown as INestApplication;
+
+    configureApp(app, configService);
+
+    expect(enableCors).toHaveBeenCalledTimes(1);
+    expect(enableCors).toHaveBeenCalledWith({
+      origin: ['http://localhost:5173', 'https://frontend.example.com'],
+    });
+  });
+
+  it('throws when CORS_ORIGINS does not contain any valid origins', () => {
+    const configService = {
+      getOrThrow: jest.fn().mockReturnValue(' ,  , '),
+    } as unknown as ConfigService;
+    const app = {
+      enableCors: jest.fn(),
+      useGlobalPipes: jest.fn<void, [ValidationPipe]>(),
+      getHttpAdapter: jest.fn().mockReturnValue({}),
+    } as unknown as INestApplication;
+
+    expect(() => configureApp(app, configService)).toThrow(
+      'Invalid CORS_ORIGINS configuration: no valid origins found. Ensure CORS_ORIGINS is a comma-separated list of non-empty origins.',
+    );
+  });
+
+  it('registers the global validation pipe', () => {
+    const useGlobalPipes = jest.fn<void, [ValidationPipe]>();
+    const enableCors = jest.fn();
+    const configService = {
+      getOrThrow: jest.fn().mockReturnValue('http://localhost:5173'),
+    } as unknown as ConfigService;
+    const app = {
+      enableCors,
+      useGlobalPipes,
+      getHttpAdapter: jest.fn().mockReturnValue({}),
+    } as unknown as INestApplication;
+
+    configureApp(app, configService);
+
+    expect(useGlobalPipes).toHaveBeenCalledTimes(1);
+    expect(useGlobalPipes).toHaveBeenCalledWith(expect.any(ValidationPipe));
+  });
+
+  describe('globalValidationPipeOptions', () => {
+    const metadata: ArgumentMetadata = {
+      type: 'body',
+      metatype: EchoMessageDto,
+      data: '',
+    };
+
+    it('transforms and accepts a valid DTO payload', async () => {
+      const pipe = new ValidationPipe(globalValidationPipeOptions);
+
+      await expect(pipe.transform({ message: 'Hallo Fontys' }, metadata)).resolves.toBeInstanceOf(
+        EchoMessageDto,
+      );
+      await expect(pipe.transform({ message: 'Hallo Fontys' }, metadata)).resolves.toEqual({
+        message: 'Hallo Fontys',
+      });
+    });
+
+    it('rejects unknown properties', async () => {
+      const pipe = new ValidationPipe(globalValidationPipeOptions);
+
+      await expect(
+        pipe.transform({ message: 'Hallo Fontys', extra: true }, metadata),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('rejects missing required properties', async () => {
+      const pipe = new ValidationPipe(globalValidationPipeOptions);
+
+      await expect(pipe.transform({}, metadata)).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+});
