@@ -21,3 +21,52 @@ Aan het einde van het semester staat er een **gevalideerd proof of concept** dat
 **Binnen scope:** gebruikersonderzoek (studenten dag/avond, coaches, docenten), ideation (ideeën ophalen, scoren en een richting kiezen), een PoC gekoppeld aan Canvas via API en/of LTI, architectuurdocumentatie (C4, ADR's) voor overdraagbaarheid, en validatie met echte gebruikers.
 
 **Buiten scope:** een volledig nieuw LMS bouwen, productierijpe software voor alle rollen, migratie van FeedPulse of Portflow, en beheer of hosting na het semester.
+
+## Vereisten
+
+### Make installeren
+
+**Mac**
+```bash
+brew install make
+```
+
+**Windows**
+```powershell
+winget install GnuWin32.Make
+```
+
+> Geen Make? Je kunt de commando's ook direct uitvoeren — zie de tabel hieronder.
+
+## Lokale omgeving starten
+
+Kopieer eerst de environment variabelen:
+
+```bash
+cp .env.example .env   # pas credentials aan waar nodig
+```
+
+| Commando | Alternatief zonder Make | Beschrijving |
+|---|---|---|
+| `make dev` | `docker compose up --watch` | Start alle services met hot reload |
+| `make prod` | `docker compose -f compose.yaml -f compose.prod.yaml up --build` | Bouwt en start de productie-images |
+| `make down` | `docker compose down` | Stopt alle containers |
+| `make test` | `cd backend && pnpm test -- --verbose` | Draait de backend unit tests met beschrijvende output |
+
+**Hoe werkt de Makefile?**
+
+De root `Makefile` bevat alleen dunne shortcuts voor veelgebruikte developer-commando's. Targets zoals `dev`, `prod`, `down` en `test` staan onder `.PHONY`. Volgens de GNU Make-documentatie markeert dat ze als command-targets in plaats van bestanden, zodat `make test` altijd wordt uitgevoerd, ook als er toevallig een bestand of map `test` bestaat.
+
+**Debuggen**
+
+```bash
+docker compose config                                      # toont de samengevoegde dev-configuratie
+docker compose -f compose.yaml -f compose.prod.yaml config # toont de samengevoegde prod-configuratie
+docker compose logs -f <service>                           # live logs van een service (backend, frontend, ...)
+```
+
+**Hoe werkt de split?**
+
+- `compose.yaml` — gedeelde services (postgres, mock-api)
+- `compose.override.yaml` — dev-configuratie, automatisch samengevoegd door Docker bij `docker compose up`
+- `compose.prod.yaml` — prod-configuratie, expliciet geladen via `make prod`
