@@ -1,0 +1,72 @@
+{
+  "students": [
+    {
+      "naam": "Sam de Vries",
+      "opleiding": "HBO-ICT (avond/deeltijd)",
+      "semester": 4,
+      "project": "Fontys LMS - Chatbot module. Ontwikkelen van een chatbot als aanvulling op Canvas. De chatbot krijgt competentiedefinities en studentdata als context en beantwoordt vragen over voortgang, planning en leerdoelen. Gebouwd als LTI-tool, gekoppeld via de Canvas API. Rol: Infrastructure engineer, verantwoordelijk voor technische architectuur, modelkeuze en iteratief prototype.",
+      "voortgang": [
+        { "laag": "Infrastructure", "activiteit": "Analyse", "niveau_behaald": 1, "niveau_bezig": 2, "toelichting": "Heeft een ecosysteemanalyse en Canvas API-verkenning afgerond in sprint 1." },
+        { "laag": "Infrastructure", "activiteit": "Advise", "niveau_behaald": 1, "niveau_bezig": null, "toelichting": "Adviesrapport over chatbot-architectuur opgeleverd in sprint 2." },
+        { "laag": "Infrastructure", "activiteit": "Design", "niveau_behaald": null, "niveau_bezig": 1, "toelichting": "Bezig met databaseschema-ontwerp en docker-compose opzet voor iteratie 2." },
+        { "laag": "Infrastructure", "activiteit": "Realise", "niveau_behaald": null, "niveau_bezig": 1, "toelichting": "Werkend prototype opgebouwd met Ollama en Qwen 2.5 14B." },
+        { "laag": "Infrastructure", "activiteit": "Manage & Control", "niveau_behaald": 1, "niveau_bezig": null, "toelichting": "Versiebeheer opgezet met branch-strategie en commit-conventies." },
+        { "laag": "Software", "activiteit": "Analyse", "niveau_behaald": 1, "niveau_bezig": null, "toelichting": "Technische verkenning van bibliotheken en tooling afgerond." },
+        { "laag": "User Interaction", "activiteit": "Analyse", "niveau_behaald": null, "niveau_bezig": 1, "toelichting": "Bezig met analyseren van stakeholderinterviews en enquete-uitkomsten." }
+      ],
+      "activiteiten": [
+        { "titel": "Prototype iteratie 1 bouwen en testen", "type": "realisatie", "datum": "2026-04-04", "afgerond": true, "beschrijving": "chatbot.py met Qwen 2.5 14B, drie testscenario's uitgevoerd" },
+        { "titel": "C4-diagram opstellen (level 1 en 2)", "type": "document", "datum": "2026-04-07", "afgerond": true, "beschrijving": "Gebruikt voor architectuuroverleg met de groep" },
+        { "titel": "Adviesrapport bijdrage schrijven (chatbot technische onderbouwing)", "type": "document", "datum": "2026-04-09", "afgerond": true, "beschrijving": "Bijlage B uitgebreid, Bijlage E sectie 7 toegevoegd" },
+        { "titel": "Iteratie 1 conclusie schrijven", "type": "document", "datum": "2026-04-10", "afgerond": true, "beschrijving": null },
+        { "titel": "Iteratie 2 onderzoeksdocument opstellen", "type": "document", "datum": "2026-04-15", "afgerond": true, "beschrijving": "PostgreSQL + Docker onderbouwing, criteria voor succes" },
+        { "titel": "PostgreSQL schema ontwerpen", "type": "document", "datum": "2026-04-17", "afgerond": true, "beschrijving": "4 tabellen: student, competentie, voortgang, activiteit" },
+        { "titel": "Docker-compose werkend krijgen", "type": "realisatie", "datum": "2026-04-19", "afgerond": true, "beschrijving": "Container draait lokaal, schema wordt auto-geladen" },
+        { "titel": "Seed-script schrijven voor testdata", "type": "realisatie", "datum": "2026-04-20", "afgerond": false, "beschrijving": null },
+        { "titel": "Loader module en chatbot integratie", "type": "realisatie", "datum": "2026-04-22", "afgerond": false, "beschrijving": null },
+        { "titel": "Iteratie 2 conclusie schrijven", "type": "document", "datum": "2026-04-24", "afgerond": false, "beschrijving": null },
+        { "titel": "Sprint 2 reflectie", "type": "reflectie", "datum": "2026-04-26", "afgerond": false, "beschrijving": null }
+      ]
+    },
+    {
+      "naam": "Jana de Wit",
+      "opleiding": "HBO-ICT (avond/deeltijd)",
+      "semester": 4,
+      "project": "Fontys LMS - Nudging module. Onderzoek naar hoe nudging in het dashboard studenten kan helpen bij het plannen en afronden van activiteiten. Rol: UX-onderzoeker en designer, verantwoordelijk voor gebruikersonderzoek, wireframes en interactiepatronen.",
+      "voortgang": [
+        { "laag": "User Interaction", "activiteit": "Analyse", "niveau_behaald": 1, "niveau_bezig": 2, "toelichting": "Interviews met semester 6 studenten afgerond en geanalyseerd." },
+        { "laag": "User Interaction", "activiteit": "Design", "niveau_behaald": 1, "niveau_bezig": 2, "toelichting": "Werkt aan interactiepatronen voor nudging-prototype." },
+        { "laag": "User Interaction", "activiteit": "Advise", "niveau_behaald": null, "niveau_bezig": 1, "toelichting": "Bezig met UX-adviesnotitie voor de projectgroep." },
+        { "laag": "Software", "activiteit": "Realise", "niveau_behaald": 1, "niveau_bezig": null, "toelichting": "Kleine React-componenten opgeleverd voor het dashboard." },
+        { "laag": "Organisational Processes", "activiteit": "Analyse", "niveau_behaald": null, "niveau_bezig": 1, "toelichting": "Bezig met procesanalyse van het huidige Canvas-werkproces." }
+      ],
+      "activiteiten": [
+        { "titel": "Interviews verwerken en coderen", "type": "onderzoek", "datum": "2026-04-11", "afgerond": true, "beschrijving": "Zes studentinterviews gecodeerd naar thema's" },
+        { "titel": "Wireframes studentdashboard", "type": "document", "datum": "2026-04-15", "afgerond": true, "beschrijving": "Low-fidelity schetsen voor de drie hoofdschermen" },
+        { "titel": "Prototype nudging-mechaniek", "type": "realisatie", "datum": "2026-04-18", "afgerond": true, "beschrijving": null },
+        { "titel": "Usability test nudging prototype", "type": "onderzoek", "datum": "2026-04-22", "afgerond": false, "beschrijving": "Vijf deelnemers, korte taakgerichte sessies" },
+        { "titel": "UX-adviesnotitie opstellen", "type": "document", "datum": "2026-04-25", "afgerond": false, "beschrijving": null }
+      ]
+    },
+    {
+      "naam": "Omar El Amrani",
+      "opleiding": "HBO-ICT (avond/deeltijd)",
+      "semester": 4,
+      "project": "Fontys LMS - Backend API. Bouwen van een backend die de koppeling verzorgt tussen Canvas, de chatbot en het studentdashboard. Rol: Backend engineer, verantwoordelijk voor API-contract, implementatie en Canvas-integratie.",
+      "voortgang": [
+        { "laag": "Software", "activiteit": "Analyse", "niveau_behaald": 1, "niveau_bezig": 2, "toelichting": "Heeft de backend-requirements geanalyseerd op basis van de use cases van de groep." },
+        { "laag": "Software", "activiteit": "Design", "niveau_behaald": 1, "niveau_bezig": null, "toelichting": "API-contract ontworpen voor de backend-routes." },
+        { "laag": "Software", "activiteit": "Realise", "niveau_behaald": null, "niveau_bezig": 1, "toelichting": "Werkt aan de eerste backend-endpoints voor de chatbot-koppeling." },
+        { "laag": "Infrastructure", "activiteit": "Realise", "niveau_behaald": null, "niveau_bezig": 1, "toelichting": "Bezig met Canvas API-integratie en token-handling." },
+        { "laag": "Infrastructure", "activiteit": "Manage & Control", "niveau_behaald": 1, "niveau_bezig": null, "toelichting": "Basis-monitoring opgezet voor de backend tijdens tests." }
+      ],
+      "activiteiten": [
+        { "titel": "API-contract opstellen", "type": "document", "datum": "2026-04-13", "afgerond": true, "beschrijving": "OpenAPI-specificatie voor de kernroutes" },
+        { "titel": "Backend API endpoints documenteren", "type": "document", "datum": "2026-04-18", "afgerond": true, "beschrijving": null },
+        { "titel": "Token-handling voor Canvas API", "type": "realisatie", "datum": "2026-04-20", "afgerond": false, "beschrijving": null },
+        { "titel": "Canvas API integratie afmaken", "type": "realisatie", "datum": "2026-04-25", "afgerond": false, "beschrijving": null },
+        { "titel": "Integratietest backend met chatbot", "type": "realisatie", "datum": "2026-04-28", "afgerond": false, "beschrijving": null }
+      ]
+    }
+  ]
+}

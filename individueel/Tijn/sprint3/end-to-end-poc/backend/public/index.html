@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hybride RAG + function calling PoC</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { font-family: system-ui, sans-serif; margin: 0; background: #1e1e1e; color: #ddd; display: flex; flex-direction: column; }
+    a { color: #8ab4f8; }
+
+    /* Header */
+    header { background: #2a2a2a; padding: 0.6rem 1rem; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; flex-shrink: 0; }
+    header strong { font-size: 1rem; }
+    header .meta { color: #888; font-size: 0.85rem; }
+    nav { margin-left: auto; display: flex; gap: 0.25rem; }
+    nav button { background: #2a2a2a; color: #aaa; border: 1px solid #444; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+    nav button.active { background: #3949ab; color: white; border-color: #3949ab; }
+
+    /* Layout */
+    main { flex: 1; max-width: 1100px; width: 100%; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; min-height: 0; }
+    section { display: none; flex: 1; min-height: 0; flex-direction: column; gap: 0.75rem; }
+    section.active { display: flex; }
+
+    /* Scenarios (compact) */
+    .scenarios { background: #2a2a2a; border: 1px solid #333; border-radius: 6px; padding: 0.5rem 0.75rem; flex-shrink: 0; }
+    .scenarios > strong { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 0.3rem; }
+    .scenarios .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+    .scenario { text-align: left; background: #1e1e1e; color: #ddd; border: 1px solid #444; padding: 0.4rem 0.55rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; line-height: 1.25; }
+    .scenario:hover { background: #333; border-color: #555; }
+    .scenario .tag { display: inline-block; font-size: 0.65rem; padding: 0.05rem 0.35rem; border-radius: 3px; margin-right: 0.4rem; vertical-align: middle; font-weight: 600; }
+    .scenario .title { font-weight: 600; }
+    .scenario .hint { color: #888; font-size: 0.72rem; display: block; margin-top: 0.2rem; }
+    .tag-A { background: #6a1b9a; color: white; }
+    .tag-B { background: #00897b; color: white; }
+    .tag-C { background: #d84315; color: white; }
+
+    /* Chat log */
+    #log { flex: 1; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem; background: #181818; border: 1px solid #2a2a2a; border-radius: 6px; overflow-anchor: none; }
+    #log:empty::before { content: "Geen berichten. Kies hierboven een scenario of typ je vraag onderaan."; color: #555; font-style: italic; align-self: center; margin-top: 2rem; }
+    .msg { padding: 0.6rem 0.9rem; border-radius: 6px; max-width: 75%; line-height: 1.5; }
+    .user { background: #3949ab; align-self: flex-end; color: white; white-space: pre-wrap; }
+    .assistant { background: #2a2a2a; align-self: flex-start; border: 1px solid #444; }
+    .assistant > *:first-child { margin-top: 0; }
+    .assistant > *:last-child { margin-bottom: 0; }
+    .assistant p { margin: 0.5rem 0; }
+    .assistant h1, .assistant h2, .assistant h3, .assistant h4 { margin: 0.6rem 0 0.3rem; line-height: 1.3; }
+    .assistant h1 { font-size: 1.1rem; }
+    .assistant h2 { font-size: 1.05rem; }
+    .assistant h3, .assistant h4 { font-size: 1rem; }
+    .assistant ul, .assistant ol { margin: 0.4rem 0; padding-left: 1.5rem; }
+    .assistant li { margin: 0.15rem 0; }
+    .assistant li > p { margin: 0.1rem 0; }
+    .assistant code { background: #1a1a1a; padding: 0.05rem 0.35rem; border-radius: 3px; font-size: 0.88em; font-family: ui-monospace, monospace; }
+    .assistant pre { background: #1a1a1a; padding: 0.6rem 0.8rem; border-radius: 4px; overflow-x: auto; margin: 0.5rem 0; }
+    .assistant pre code { background: none; padding: 0; font-size: 0.85em; }
+    .assistant blockquote { border-left: 3px solid #555; padding-left: 0.75rem; margin: 0.4rem 0; color: #bbb; }
+    .assistant a { color: #8ab4f8; }
+    .assistant strong { font-weight: 600; color: #fff; }
+    .assistant em { font-style: italic; }
+    .assistant table { border-collapse: collapse; margin: 0.5rem 0; font-size: 0.9em; }
+    .assistant th, .assistant td { border: 1px solid #444; padding: 0.3rem 0.5rem; }
+    .tools { font-size: 0.75rem; color: #888; background: #222; padding: 0.4rem 0.6rem; border-radius: 4px; align-self: flex-start; max-width: 100%; font-family: ui-monospace, monospace; }
+    .tool-call { background: #222; border-left: 3px solid #555; border-radius: 4px; padding: 0.4rem 0.6rem; font-family: ui-monospace, monospace; font-size: 0.75rem; align-self: flex-start; max-width: 100%; }
+    .tool-call summary { cursor: pointer; color: #aaa; word-break: break-all; }
+    .tool-call summary strong { color: #8ab4f8; }
+    .tool-call pre { background: #1a1a1a; padding: 0.5rem; border-radius: 3px; overflow-x: auto; margin: 0.5rem 0 0; white-space: pre-wrap; word-break: break-word; color: #ccc; }
+
+    /* Status bar (above form) */
+    .status { font-size: 0.85rem; padding: 0.5rem 0.75rem; border-radius: 4px; background: #2a2a2a; border-left: 3px solid #3949ab; font-family: ui-monospace, monospace; color: #ccc; display: none; flex-shrink: 0; }
+    .status.active { display: block; }
+    .status.error { border-left-color: #c62828; color: #ef9a9a; }
+    .status.done { border-left-color: #2e7d32; color: #a5d6a7; }
+    .status-step { display: block; padding: 0.1rem 0; font-size: 0.8rem; }
+    .status-step .check { color: #66bb6a; margin-right: 0.35rem; display: inline-block; width: 12px; }
+    .status-step .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #8ab4f8; margin-right: 0.35rem; animation: pulse 1s infinite; vertical-align: middle; }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* Chat form */
+    form { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    input[type=text], input[type=number], textarea { padding: 0.6rem; background: #2a2a2a; color: #ddd; border: 1px solid #444; border-radius: 4px; font-family: inherit; font-size: 0.9rem; }
+    input[type=text] { flex: 1; }
+    button.primary { padding: 0.6rem 1.1rem; background: #3949ab; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+    button.primary:hover:not(:disabled) { background: #4054b8; }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.danger { padding: 0.3rem 0.6rem; background: #c62828; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+    button.secondary { padding: 0.3rem 0.6rem; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    button.secondary:hover { background: #555; }
+
+    /* DB tabs */
+    .toolbar { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .db-content { flex: 1; overflow-y: auto; min-height: 0; }
+    .student-card { background: #2a2a2a; border: 1px solid #333; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+    .student-card h3 { margin: 0 0 0.5rem; color: #fff; font-size: 1rem; }
+    .student-card .project { color: #aaa; font-size: 0.85rem; margin-bottom: 0.75rem; line-height: 1.4; }
+    details summary { cursor: pointer; padding: 0.4rem 0; color: #aaa; font-size: 0.85rem; }
+    details summary strong { color: #ddd; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-top: 0.3rem; }
+    th, td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid #333; vertical-align: top; }
+    th { color: #aaa; font-weight: normal; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .vector-table { background: #2a2a2a; border: 1px solid #333; border-radius: 6px; }
+    .vector-table th, .vector-table td { padding: 0.5rem 0.6rem; }
+    .vector-table td.content { color: #ccc; line-height: 1.4; max-width: 500px; }
+    .vector-table td.actions { white-space: nowrap; }
+    .vector-table td.actions button { margin-right: 0.3rem; }
+    .empty-state { padding: 2rem; text-align: center; color: #888; background: #2a2a2a; border: 1px dashed #444; border-radius: 6px; }
+    .empty-state strong { color: #ef9a9a; }
+
+    /* Context banner above tabs */
+    .context-banner { background: linear-gradient(90deg, #1a237e22, #2a2a2a); border-left: 3px solid #3949ab; padding: 0.5rem 0.75rem; border-radius: 4px; font-size: 0.82rem; color: #bbb; flex-shrink: 0; }
+    .context-banner strong { color: #ddd; }
+    .context-banner code { background: #1a1a1a; padding: 0.05rem 0.3rem; border-radius: 3px; font-size: 0.85em; }
+
+    /* Info tab */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .info-card { background: #2a2a2a; border: 1px solid #333; border-radius: 6px; padding: 1rem; }
+    .info-card h3 { margin: 0 0 0.5rem; color: #fff; font-size: 0.95rem; }
+    .info-card h4 { margin: 0.6rem 0 0.3rem; color: #ddd; font-size: 0.88rem; }
+    .info-card p { margin: 0.3rem 0; color: #ccc; font-size: 0.85rem; line-height: 1.45; }
+    .info-card ul { margin: 0.3rem 0; padding-left: 1.2rem; font-size: 0.85rem; color: #ccc; }
+    .info-card li { margin: 0.15rem 0; }
+    .info-card .kv { display: grid; grid-template-columns: 140px 1fr; gap: 0.3rem 0.6rem; font-size: 0.83rem; }
+    .info-card .kv dt { color: #888; }
+    .info-card .kv dd { color: #ddd; margin: 0; word-break: break-word; }
+    .info-card code { background: #1a1a1a; padding: 0.05rem 0.35rem; border-radius: 3px; font-size: 0.85em; color: #8ab4f8; }
+    .pattern-card { border-top: 3px solid #555; padding-top: 0.4rem; }
+    .pattern-card.rag { border-top-color: #6a1b9a; }
+    .pattern-card.fc { border-top-color: #00897b; }
+    .pattern-card.hyb { border-top-color: #d84315; }
+    .pattern-card .meta { font-size: 0.75rem; color: #888; margin-top: 0.4rem; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 0.5rem; }
+    .stat { background: #1a1a1a; border-radius: 4px; padding: 0.5rem; text-align: center; }
+    .stat .num { font-size: 1.3rem; font-weight: 600; color: #8ab4f8; }
+    .stat .lbl { font-size: 0.7rem; color: #888; }
+    details.info-expand { background: #1a1a1a; border-radius: 4px; padding: 0.5rem 0.75rem; margin-top: 0.5rem; font-size: 0.82rem; }
+    details.info-expand summary { cursor: pointer; color: #ccc; }
+    details.info-expand summary strong { color: #fff; }
+    details.info-expand pre { background: #0d0d0d; padding: 0.6rem; border-radius: 4px; margin-top: 0.5rem; white-space: pre-wrap; word-break: break-word; color: #ccc; max-height: 400px; overflow-y: auto; font-size: 0.78rem; }
+    .tool-list-item { background: #1a1a1a; padding: 0.6rem 0.75rem; border-radius: 4px; margin: 0.4rem 0; }
+    .tool-list-item .name { color: #8ab4f8; font-family: ui-monospace, monospace; font-size: 0.85rem; font-weight: 600; }
+    .tool-list-item .desc { font-size: 0.8rem; color: #bbb; margin: 0.3rem 0; line-height: 1.45; }
+    .tool-list-item .params { font-size: 0.75rem; color: #888; font-family: ui-monospace, monospace; }
+    .tool-list-item .params .req { color: #ef9a9a; }
+    .arch-diagram { background: #1a1a1a; padding: 0.75rem; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.75rem; color: #ccc; white-space: pre; overflow-x: auto; line-height: 1.3; }
+
+    /* Chunk form */
+    .chunk-form { background: #2a2a2a; border: 1px solid #444; padding: 1rem; border-radius: 6px; display: none; flex-shrink: 0; }
+    .chunk-form.active { display: block; }
+    .chunk-form .field { margin-bottom: 0.5rem; }
+    .chunk-form label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 0.2rem; }
+    .chunk-form input, .chunk-form textarea { width: 100%; }
+    .chunk-form textarea { min-height: 100px; resize: vertical; }
+    .chunk-form .actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+
+    /* Badges */
+    .badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 3px; background: #333; font-size: 0.72rem; margin-right: 0.3rem; }
+    .badge-niv1 { background: #1565c0; color: white; }
+    .badge-niv2 { background: #6a1b9a; color: white; }
+    .badge-niv3 { background: #ad1457; color: white; }
+    .badge-true { background: #2e7d32; color: white; }
+    .badge-false { background: #555; color: white; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Hybride RAG + function calling PoC</strong>
+    <span class="meta">Swagger: <a href="/api/docs">/api/docs</a></span>
+    <nav>
+      <button data-tab="chat" class="active">Chat</button>
+      <button data-tab="relational">Relationele DB</button>
+      <button data-tab="vector">Vector DB</button>
+      <button data-tab="info">Info</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="tab-chat" class="active">
+      <div class="context-banner">
+        <strong>Ingelogd als Sam de Vries (student_id 1).</strong> Stel een vraag of klik een scenario. Klap onder elk antwoord de <code>tool-call</code> regels uit om te zien welke chunks of rijen Claude kreeg. Bekijk de <strong>Info</strong> tab voor de system prompt, tool-definities en architectuur.
+      </div>
+      <div class="scenarios">
+        <strong>Voorbeeldscenarios (klik om in te vullen):</strong>
+        <div class="row">
+          <button class="scenario" data-msg="Wat houdt Infrastructure Realise niveau 2 in?">
+            <span class="tag tag-A">A</span><span class="title">Alleen vector DB</span>
+            <span class="hint">search_hbo_competentie. Geen student data.</span>
+          </button>
+          <button class="scenario" data-msg="Welke activiteiten heb ik nog niet afgerond?">
+            <span class="tag tag-B">B</span><span class="title">Alleen relationele DB</span>
+            <span class="hint">get_student_activiteiten. Geen HBO-i kennis.</span>
+          </button>
+          <button class="scenario" data-msg="Ik wil Infrastructure Analyse niveau 2 behalen. Wat moet ik daarvoor doen?">
+            <span class="tag tag-C">C</span><span class="title">Hybride (beide)</span>
+            <span class="hint">search_hbo_competentie + get_student_voortgang.</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="log"></div>
+
+      <div id="status" class="status"></div>
+
+      <form id="chat-form">
+        <input type="text" id="message" placeholder="Stel een vraag, of klik een scenario hierboven" autofocus />
+        <button type="submit" class="primary" id="send">Verstuur</button>
+      </form>
+    </section>
+
+    <section id="tab-relational">
+      <div class="context-banner">
+        <strong>Relationele DB (PostgreSQL).</strong> Dit is wat de <code>get_student_*</code> tools ophalen via SQL. Drie tabellen: <code>student</code>, <code>voortgang</code> (per laag-activiteit combinatie), <code>activiteit</code> (geplande en afgeronde taken).
+      </div>
+      <div class="toolbar">
+        <button class="secondary" id="refresh-relational">Vernieuwen</button>
+      </div>
+      <div id="relational-content" class="db-content">Laden...</div>
+    </section>
+
+    <section id="tab-vector">
+      <div class="context-banner">
+        <strong>Vector DB (pgvector).</strong> 15 HBO-i Infrastructure chunks, embedded met Ollama <code>nomic-embed-text</code> (768 dim). De <code>search_hbo_competentie</code> tool zoekt hier via cosine-similarity. Toevoegen of bewerken triggert een re-embed.
+      </div>
+      <div class="toolbar">
+        <button class="secondary" id="refresh-vector">Vernieuwen</button>
+        <button class="primary" id="new-chunk">Nieuwe chunk toevoegen</button>
+      </div>
+
+      <div class="chunk-form" id="chunk-form">
+        <div class="field">
+          <label>Laag</label>
+          <input type="text" id="form-laag" value="Infrastructure" />
+        </div>
+        <div class="field">
+          <label>Activiteit</label>
+          <input type="text" id="form-activiteit" placeholder="Analyse / Advise / Design / Realise / Manage & Control" />
+        </div>
+        <div class="field">
+          <label>Niveau</label>
+          <input type="number" id="form-niveau" min="1" max="3" value="1" />
+        </div>
+        <div class="field">
+          <label>Content (wordt opnieuw geembed via Ollama)</label>
+          <textarea id="form-content"></textarea>
+        </div>
+        <div class="actions">
+          <button class="primary" id="form-save">Opslaan</button>
+          <button class="secondary" id="form-cancel">Annuleer</button>
+        </div>
+      </div>
+
+      <div id="vector-content" class="db-content">Laden...</div>
+    </section>
+
+    <section id="tab-info">
+      <div class="context-banner">
+        <strong>Live context van de chatbot.</strong> Wat zie je hier? Hieronder de stack, de drie patronen (RAG, function calling, hybride), de exacte system prompt die Claude meekrijgt en de tool-definities zoals Claude ze ziet.
+      </div>
+      <div id="info-content" class="db-content">Laden...</div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
