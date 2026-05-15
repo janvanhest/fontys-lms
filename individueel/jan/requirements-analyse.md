@@ -4,9 +4,8 @@ Op basis van de domeinanalyse zijn de concepten en entiteiten van het Activity F
 
 ## Stakeholders
 
-|                                           |                                                                          |
-| ----------------------------------------- | ------------------------------------------------------------------------ |
 | Stakeholder                               | Belang                                                                   |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
 | Student (avondopleiding HBO-ICT)          | Activiteiten loggen, beroepstaken koppelen, chatbot raadplegen           |
 | Eric Slaats (Digital Transformer, Fontys) | Canvas blijft intact, tool sluit aan op vraaggestuurd onderwijs, nudging |
 | Coach                                     | Inzicht in voortgang student zonder handmatig monitoren                  |
@@ -71,19 +70,30 @@ Het systeem stelt een student in staat een vraag te stellen aan de chatbot, die 
 
 - De chatbot heeft toegang tot de actieve challenge, recente activiteiten en gekoppelde beroepstaken van de student
 - Antwoorden zijn gebaseerd op geïndexeerde cursusinhoud (RAG) en studentcontext
-- De gespreksgeschiedenis wordt per student bewaard
 - De chatbot antwoordt binnen 10 seconden onder normale omstandigheden
 
 ---
 
-### FR-05 — Studentprofiel via LTI
+### FR-05a — Studentprofiel via mock-authenticatie (PoC)
+
+Het systeem injecteert bij elke request een hardcoded studentprofiel via een MockAuthGuard, zodat de PoC zonder Canvas-koppeling kan draaien.
+
+**Acceptatiecriteria:**
+
+- MockAuthGuard injecteert naam, email en student-id bij elke request
+- Een student hoeft niet apart in te loggen
+- De guard heeft dezelfde interface als de productie LtiAuthGuard zodat de swap later zonder andere codewijzigingen kan
+
+---
+
+### FR-05b — Studentprofiel via LTI 1.3 (productie)
 
 Het systeem haalt de gebruikersidentiteit op via LTI 1.3 bij elke launch vanuit Canvas.
 
 **Acceptatiecriteria:**
 
 - Naam, email en Canvas-gebruikers-id worden opgeslagen bij eerste launch
-- Een student hoeft niet apart in te loggen
+- LTI JWT wordt gevalideerd met de Canvas public key
 - Bij herhaalde launch wordt het bestaande profiel opgehaald, niet opnieuw aangemaakt
 
 ---
@@ -113,12 +123,13 @@ Het systeem suggereert automatisch een of meer beroepstaken na het aanmaken van 
 
 ---
 
-### FR-08 — Gespreksgeschiedenis bekijken
+### FR-08 — Gespreksgeschiedenis bewaren en bekijken
 
-Het systeem toont een student zijn eerdere gesprekken met de chatbot.
+Het systeem bewaart gespreksgeschiedenis per student en stelt een student in staat eerdere gesprekken te bekijken en voort te zetten.
 
 **Acceptatiecriteria:**
 
+- Elk gesprek wordt opgeslagen inclusief alle berichten en timestamps
 - Gesprekken zijn gesorteerd op datum, meest recent eerst
 - Een eerder gesprek kan worden heropend en voortgezet
 - Gespreksgeschiedenis is alleen zichtbaar voor de eigen student
@@ -179,9 +190,9 @@ Het systeem ondersteunt streaming van chatbot-antwoorden via Server-Sent Events 
 
 **Acceptatiecriteria:**
 
-- Een `POST /chat/stream` endpoint stuurt antwoorden als SSE-stream
-- De stream stuurt event-types: `status`, `tool_call`, `tool_result`, `final`, `error`
-- SSE-headers worden correct gezet: `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `Connection: keep-alive`
+- Een `POST /chat/stream` endpoint stuurt antwoorden als SSE-stream
+- De stream stuurt event-types: `status`, `tool_call`, `tool_result`, `final`, `error`
+- SSE-headers worden correct gezet: `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `Connection: keep-alive`
 - De synchrone en streaming-variant delen dezelfde businesslogica
 
 ---
@@ -237,13 +248,13 @@ Het systeem verwerkt persoonsgegevens van studenten conform de AVG.
 
 ### NFR-03 — Security
 
-Het systeem is uitsluitend toegankelijk via geldige LTI-launch.
+Het systeem is uitsluitend toegankelijk via geldige authenticatie.
 
 **Acceptatiecriteria:**
 
-- Alle API-endpoints vereisen een geldig sessie-token afgeleid van de LTI-launch
-- LTI JWT wordt gevalideerd met de Canvas public key
-- Geen endpoints zijn publiek toegankelijk zonder authenticatie
+- Alle API-endpoints vereisen een geldig sessie-token (MockAuthGuard voor PoC, LtiAuthGuard voor productie)
+- LTI JWT wordt gevalideerd met de Canvas public key (productie)
+- Geen endpoints zijn publiek toegankelijk zonder authenticatie, met uitzondering van diagnostische endpoints (zoals `GET /info`) in development-mode
 
 ---
 
@@ -310,9 +321,8 @@ Alle externe afhankelijkheden worden geconfigureerd via environment variables.
 
 ## Risicoanalyse (top 3)
 
-|     |                                                                |        |        |                                                                                    |
-| --- | -------------------------------------------------------------- | ------ | ------ | ---------------------------------------------------------------------------------- |
 | #   | Risico                                                         | Kans   | Impact | Mitigatie                                                                          |
+| --- | -------------------------------------------------------------- | ------ | ------ | ---------------------------------------------------------------------------------- |
 | R1  | Anthropic API-kosten lopen op bij intensief testgebruik        | Laag   | Middel | Gebruikslimiet instellen via Anthropic dashboard; PoC beperkt tot kleine testgroep |
 | R2  | Studentdata lekt via chatbot-antwoorden naar andere gebruikers | Laag   | Hoog   | Sessie-isolatie per student afdwingen; gespreksgeschiedenis nooit gedeeld          |
 | R3  | LTI-configuratie bij Fontys Canvas vereist beheerderstoegang   | Middel | Hoog   | Eric Slaats heeft developer keys toegezegd; tijdig afstemmen voor sprint 3         |
@@ -321,24 +331,24 @@ Alle externe afhankelijkheden worden geconfigureerd via environment variables.
 
 ## MoSCoW — PoC scope
 
-|       |                               |        |                                                                    |
-| ----- | ----------------------------- | ------ | ------------------------------------------------------------------ |
-| FR    | Requirement                   | MoSCoW | Reden                                                              |
-| FR-01 | Activiteit aanmaken           | Must   | Kern van het systeem — zonder dit geen data                        |
-| FR-02 | Beroepstaak koppelen          | Must   | Primaire waarde voor student — competentiekoppeling                |
-| FR-03 | Challenge aanmaken en beheren | Must   | Context voor activiteiten — zonder challenge geen activiteit       |
-| FR-04 | Chatbot raadplegen            | Must   | Kern van Concept D — RAG + studentcontext                          |
-| FR-05 | Studentprofiel via mock-auth  | Must   | Toegangspoort — MockAuthGuard voor PoC, LTI later                  |
-| FR-06 | Activiteitenoverzicht         | Must   | Student moet zien wat hij gelogd heeft                             |
-| FR-07 | Beroepstaaksuggestie          | Should | Waardevol maar chatbot kan dit deels overnemen                     |
-| FR-08 | Gespreksgeschiedenis          | Should | Nuttig maar niet blokkerend voor PoC-validatie                     |
-| FR-09 | Coach ziet studenten          | Could  | Coach buiten PoC-scope volgens C4 Level 1                          |
-| FR-10 | Coach voegt activiteit toe    | Could  | Afhankelijk van FR-09                                              |
-| FR-11 | Cursusinhoud indexeren        | Must   | RAG werkt niet zonder geïndexeerde inhoud                          |
-| FR-12 | Nudge bij inactiviteit        | Won't  | Waardevol concept, te vroeg voor PoC                               |
-| FR-13 | Streaming via SSE             | Must   | Chatbot zonder streaming voelt traag — directe feedback essentieel |
-| FR-14 | Hybride redeneren             | Must   | Kern van Concept D — RAG + tool use in één antwoord                |
-| FR-15 | Info endpoint                 | Could  | Handig voor demos en debugging, niet blokkerend                    |
+| FR     | Requirement                              | MoSCoW | Reden                                                                             |
+| ------ | ---------------------------------------- | ------ | --------------------------------------------------------------------------------- |
+| FR-01  | Activiteit aanmaken                      | Must   | Kern van het systeem — zonder dit geen data                                       |
+| FR-02  | Beroepstaak koppelen                     | Must   | Primaire waarde voor student — competentiekoppeling                               |
+| FR-03  | Challenge aanmaken en beheren            | Must   | Context voor activiteiten — zonder challenge geen activiteit                      |
+| FR-04  | Chatbot raadplegen                       | Must   | Kern van Concept D — RAG + studentcontext                                         |
+| FR-05a | Studentprofiel via mock-auth             | Must   | Toegangspoort voor PoC — MockAuthGuard zonder Canvas-koppeling                    |
+| FR-05b | Studentprofiel via LTI 1.3               | Won't  | Productie-implementatie — buiten PoC-scope                                        |
+| FR-06  | Activiteitenoverzicht                    | Must   | Student moet zien wat hij gelogd heeft                                            |
+| FR-07  | Beroepstaaksuggestie                     | Should | Waardevol maar chatbot kan dit deels overnemen                                    |
+| FR-08  | Gespreksgeschiedenis bewaren en bekijken | Must   | Bewaren is vereist voor chatbot-context; tonen hoort bij dezelfde functionaliteit |
+| FR-09  | Coach ziet studenten                     | Could  | Coach buiten PoC-scope volgens C4 Level 1                                         |
+| FR-10  | Coach voegt activiteit toe               | Could  | Afhankelijk van FR-09                                                             |
+| FR-11  | Cursusinhoud indexeren                   | Must   | RAG werkt niet zonder geïndexeerde inhoud                                         |
+| FR-12  | Nudge bij inactiviteit                   | Won't  | Waardevol concept, te vroeg voor PoC                                              |
+| FR-13  | Streaming via SSE                        | Must   | Chatbot zonder streaming voelt traag — directe feedback essentieel                |
+| FR-14  | Hybride redeneren                        | Must   | Kern van Concept D — RAG + tool use in één antwoord                               |
+| FR-15  | Info endpoint                            | Could  | Handig voor demos en debugging, niet blokkerend                                   |
 
 ---
 
@@ -346,15 +356,17 @@ Alle externe afhankelijkheden worden geconfigureerd via environment variables.
 
 # Epics
 
-**Project:** Activity First LMS **Student:** Jan van Hest | Semester 6 | HBO-ICT Open Learning | Fontys **Sprint:** 3 **Basis:** Must-requirements uit stap 4 (FR-01, FR-02, FR-03, FR-04, FR-05, FR-06, FR-11)
+**Project:** Activity First LMS
+**Student:** Jan van Hest | Semester 6 | HBO-ICT Open Learning | Fontys
+**Sprint:** 3
+**Basis:** Must-requirements (FR-01, FR-02, FR-03, FR-04, FR-05a, FR-06, FR-08, FR-11, FR-13, FR-14)
 
 ---
 
 ## Overzicht
 
-|      |                        |              |
-| ---- | ---------------------- | ------------ |
 | Epic | Naam                   | FR's         |
+| ---- | ---------------------- | ------------ |
 | E-01 | Toegang via Canvas     | FR-05        |
 | E-02 | Challenge beheren      | FR-03        |
 | E-03 | Activiteiten bijhouden | FR-01, FR-06 |
@@ -363,11 +375,12 @@ Alle externe afhankelijkheden worden geconfigureerd via environment variables.
 
 ---
 
-## E-01 — Toegang via Canvas
+## E-01 — Toegang via mock-authenticatie (PoC)
 
-Een student opent de applicatie vanuit Canvas via LTI Global Navigation. Het systeem herkent de student en maakt indien nodig een profiel aan. Geen apart inloggen.
+Een student opent de applicatie en wordt automatisch herkend via de MockAuthGuard. Geen apart inloggen, geen Canvas-koppeling voor de PoC.
 
-**FR's:** FR-05 **Afhankelijkheden:** Canvas developer key (Eric Slaats), LTI 1.3 configuratie
+**FR's:** FR-05a
+**Afhankelijkheden:** geen
 
 ---
 
@@ -375,7 +388,8 @@ Een student opent de applicatie vanuit Canvas via LTI Global Navigation. Het sys
 
 Een student maakt een challenge aan, activeert hem en rondt hem af. De actieve challenge vormt de context voor alle activiteiten en de chatbot.
 
-**FR's:** FR-03 **Afhankelijkheden:** E-01 (student moet bekend zijn)
+**FR's:** FR-03
+**Afhankelijkheden:** E-01
 
 ---
 
@@ -383,7 +397,8 @@ Een student maakt een challenge aan, activeert hem en rondt hem af. De actieve c
 
 Een student logt wat hij heeft gedaan — een workshop gevolgd, een opdracht geschreven, aan zijn challenge gewerkt. Hij ziet een overzicht van alles wat hij gelogd heeft.
 
-**FR's:** FR-01, FR-06 **Afhankelijkheden:** E-01, E-02
+**FR's:** FR-01, FR-06
+**Afhankelijkheden:** E-01, E-02
 
 ---
 
@@ -391,15 +406,17 @@ Een student logt wat hij heeft gedaan — een workshop gevolgd, een opdracht ges
 
 Een student koppelt een beroepstaak aan een activiteit en legt vast wat hij daarmee aantoont. De koppeling verwijst naar een specifieke combinatie van architectuurlaag, activiteit en beheersingsniveau uit het HBO-i raamwerk.
 
-**FR's:** FR-02 **Afhankelijkheden:** E-03, HBO-i referentiedata geladen
+**FR's:** FR-02
+**Afhankelijkheden:** E-03, HBO-i referentiedata geladen
 
 ---
 
 ## E-05 — Chatbot met context
 
-Een student stelt een vraag aan de chatbot. De chatbot weet aan welke challenge de student werkt, welke activiteiten hij heeft gelogd en welke beroepstaken hij nastreeft. Antwoorden zijn gebaseerd op geïndexeerde cursusinhoud.
+Een student stelt een vraag aan de chatbot. De chatbot weet aan welke challenge de student werkt, welke activiteiten hij heeft gelogd en welke beroepstaken hij nastreeft. Antwoorden worden gestreamd en zijn gebaseerd op geïndexeerde cursusinhoud gecombineerd met dynamische studentdata.
 
-**FR's:** FR-04, FR-11 **Afhankelijkheden:** E-01, E-02, E-03, cursusinhoud geïndexeerd
+**FR's:** FR-04, FR-08, FR-11, FR-13, FR-14
+**Afhankelijkheden:** E-01, E-02, E-03, cursusinhoud geïndexeerd
 
 ---
 
