@@ -23,6 +23,7 @@ class EnvironmentVariables {
   @IsString()
   CORS_ORIGINS = 'http://localhost:5173';
 
+  // Must include protocol: http://host:port or https://host:port — bare hosts like ollama:11434 are rejected
   @IsUrl({
     require_tld: false,
     require_protocol: true,
