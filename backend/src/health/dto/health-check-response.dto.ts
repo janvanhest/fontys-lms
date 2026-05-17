@@ -4,6 +4,6 @@ export class HealthCheckResponseDto {
   @ApiProperty({ example: 'ok', enum: ['ok', 'error'] })
   status!: string;
 
-  @ApiPropertyOptional({ example: { database: { status: 'down', message: 'Connection refused' } } })
-  details?: Record<string, unknown>;
+  @ApiPropertyOptional({ example: { message: 'Connection refused' } })
+  details?: { message: string };
 }
