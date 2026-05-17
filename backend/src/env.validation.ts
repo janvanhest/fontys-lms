@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
-import { IsIn, IsInt, IsString, Max, Min, ValidationError, validateSync } from 'class-validator';
+import { IsIn, IsInt, IsString, IsUrl, Max, Min, ValidationError, validateSync } from 'class-validator';
 
 class EnvironmentVariables {
   @IsIn(['development', 'production', 'test'])
@@ -13,6 +13,12 @@ class EnvironmentVariables {
 
   @IsString()
   CORS_ORIGINS = 'http://localhost:5173';
+
+  @IsUrl({
+    require_tld: false,
+    require_protocol: true,
+  })
+  OLLAMA_URL = 'http://ollama:11434';
 }
 
 type FormattedValidationError = {
