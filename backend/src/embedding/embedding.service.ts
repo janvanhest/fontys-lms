@@ -23,8 +23,19 @@ export class EmbeddingService {
         return null;
       }
 
-      const data = (await response.json()) as { embedding: number[] };
-      return data.embedding;
+      const data: unknown = await response.json();
+
+      if (
+        !data ||
+        typeof data !== 'object' ||
+        !Array.isArray((data as Record<string, unknown>).embedding) ||
+        !(data as Record<string, unknown[]>).embedding.every((v) => typeof v === 'number')
+      ) {
+        this.logger.warn('Ollama response did not contain a valid embedding array');
+        return null;
+      }
+
+      return (data as { embedding: number[] }).embedding;
     } catch (error) {
       this.logger.warn(`Failed to reach Ollama: ${String(error)}`);
       return null;
