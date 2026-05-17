@@ -70,7 +70,7 @@ describe('validate', () => {
     );
   });
 
-  it('accepts DATABASE_URL with protocol and local host', () => {
+  it('accepts DATABASE_URL with protocol and host', () => {
     expect(() =>
       validate({ ...validBase, DATABASE_URL: 'postgresql://user:pass@db:5432/lms' }),
     ).not.toThrow();

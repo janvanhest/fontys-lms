@@ -5,6 +5,7 @@ import {
   IsInt,
   IsString,
   IsUrl,
+  Matches,
   Max,
   Min,
   ValidationError,
@@ -30,11 +31,11 @@ class EnvironmentVariables {
   })
   OLLAMA_URL = 'http://ollama:11434';
 
-  @IsUrl({
-    require_tld: false,
-    require_protocol: true,
-    protocols: ['postgresql', 'postgres'],
+  // Must be a full postgres connection string: postgresql:// or postgres://
+  @Matches(/^postgr(?:es|esql):\/\/.+/, {
+    message: 'DATABASE_URL must start with postgresql:// or postgres://',
   })
+  @IsString()
   DATABASE_URL!: string;
 }
 
