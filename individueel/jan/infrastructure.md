@@ -3,7 +3,7 @@
 **Sprint:** 3
 **HBO-i:** Infrastructuur x Niveau 1 (Taakgericht)
 
-Dit document verantwoordt de infrastructuurkeuzes voor de Activity First LMS PoC. Het doorloopt alle vijf infrastructuur-activiteiten op niveau 1: analyseren, adviseren, ontwerpen, realiseren en manage & control. De infrastructuur bestaat uit een lokale Docker Compose setup met vier services: Next.js frontend, NestJS backend, PostgreSQL database en een externe Ollama instantie op de hostmachine.
+Dit document verantwoordt de infrastructuurkeuzes voor de Activity First LMS PoC. Het doorloopt alle vijf infrastructuur-activiteiten op niveau 1: analyseren, adviseren, ontwerpen, realiseren en manage & control. De infrastructuur bestaat uit een lokale Docker Compose setup met vijf services: React/Vite frontend, NestJS backend, PostgreSQL database, Ollama embedding service en een mock-API.
 
 ---
 
@@ -32,37 +32,38 @@ Geheugeninschatting per service bij PoC-gebruik (5-10 gelijktijdige gebruikers):
 | NestJS backend            | 256-512 MB            |
 | PostgreSQL + pgvector     | 512 MB - 1 GB         |
 | Ollama (nomic-embed-text) | 2-4 GB (modelgewicht) |
-| Next.js frontend          | 128-256 MB            |
+| React/Vite frontend       | 128-256 MB            |
 
-Ollama is de zwaarste service vanwege het modelgewicht. Op een MacBook met 16GB RAM is dit acceptabel voor een PoC.
+Ollama is de zwaarste service vanwege het modelgewicht. Op een MacBook met 16 GB RAM is dit acceptabel voor een PoC.
 
 ### Reliability
 
 De PoC draait lokaal en heeft geen SLA-verplichting. Acceptabel voor een proefballon. Risico: als Ollama crasht, werkt de embedding-pipeline niet. Mitigatie: foutafhandeling in de Embedding Module geeft een duidelijke fout terug in plaats van een stille null-return.
 
+De Ollama-container wacht via een healthcheck tot het `nomic-embed-text` model geladen is voordat de backend opstart. Dit voorkomt opstartfouten bij een koude start.
+
 ### Security
 
 Studentdata wordt verwerkt. Kwaliteitseisen:
 
-- Embeddings worden lokaal gegenereerd via Ollama - geen studentdata naar externe embedding-API
+- Embeddings worden lokaal gegenereerd via Ollama — geen studentdata naar externe embedding-API
 - API-sleutels worden beheerd via environment variables, nooit in code of version control
 - Alle endpoints vereisen authenticatie via MockAuthGuard (PoC) of LtiAuthGuard (productie)
-- PostgreSQL is niet publiek bereikbaar - alleen intern via Docker netwerk
+- PostgreSQL is niet publiek bereikbaar — alleen intern via Docker-netwerk
 
 ### Budget
 
-| Component                     | Kosten PoC                  |
-| ----------------------------- | --------------------------- |
-| Ollama + nomic-embed-text     | Gratis - lokaal             |
-| PostgreSQL + pgvector         | Gratis - lokaal             |
-| Anthropic API (Claude Sonnet) | ~euro 0,01-0,05 per gesprek |
-| Hosting                       | Geen - lokaal               |
+| Component                 | Kosten PoC      |
+| ------------------------- | --------------- |
+| Ollama + nomic-embed-text | Gratis — lokaal |
+| PostgreSQL + pgvector     | Gratis — lokaal |
+| Hosting                   | Geen — lokaal   |
 
-Voor een testgroep van 10 studenten met 5 gesprekken per week: verwachte kosten minder dan euro 10 per maand.
+De PoC maakt geen gebruik van externe betaalde API's. Alle inferentie vindt lokaal plaats via Ollama.
 
 ### Duurzaamheid
 
-Lokale embeddings via Ollama vermijden onnodige API-aanroepen naar externe diensten. Cursusinhoud wordt eenmalig geindexeerd en niet bij elke chatbotaanroep opnieuw opgehaald.
+Lokale embeddings via Ollama vermijden onnodige API-aanroepen naar externe diensten. Cursusinhoud wordt eenmalig geïndexeerd en niet bij elke chatbotaanroep opnieuw opgehaald.
 
 ---
 
@@ -76,35 +77,31 @@ Voor de PoC is gekozen voor een volledig lokale Docker Compose setup. Deze keuze
 
 **Redenen:**
 
-- Geen AVG-risico bij embeddings - studentdata verlaat het systeem niet
-
+- Geen AVG-risico bij embeddings — studentdata verlaat het systeem niet
 - Geen kosten voor hosting tijdens ontwikkeling
-
-- Snelle iteratiecyclus - geen deployment nodig bij elke wijziging
-
-- Ollama vereist GPU of voldoende RAM - beheerst op een developer machine
+- Snelle iteratiecyclus — geen deployment nodig bij elke wijziging
+- Ollama draait als container — geen lokale installatie vereist voor ontwikkelaars
 
 **Nadelen lokaal:**
 
-- Onboarding vereist Ollama-installatie per ontwikkelaar
-
 - Performance afhankelijk van hardware van de ontwikkelaar
-
 - Niet schaalbaar naar meerdere gelijktijdige gebruikers
+- Ollama-container vereist voldoende RAM (minimaal 8 GB aanbevolen)
 
 ## Naar productie
 
 Bij opschaling naar een productie-omgeving zijn de volgende aanpassingen nodig:
 
-| Component  | PoC               | Productie                                    |
-| ---------- | ----------------- | -------------------------------------------- |
-| Embeddings | Ollama lokaal     | Voyage AI of vergelijkbare managed service   |
-| Auth       | MockAuthGuard     | LtiAuthGuard met Canvas developer key        |
-| Hosting    | Lokaal Docker     | VPS of managed cloud (bijv. Railway, Fly.io) |
-| Database   | Lokale PostgreSQL | Managed PostgreSQL (bijv. Supabase, Neon)    |
-| Monitoring | Geen              | Uptime monitoring + alerting                 |
+| Component  | PoC                  | Productie                                    |
+| ---------- | -------------------- | -------------------------------------------- |
+| Embeddings | Ollama (container)   | Voyage AI of vergelijkbare managed service   |
+| Auth       | MockAuthGuard        | LtiAuthGuard met Canvas developer key        |
+| Hosting    | Lokaal Docker        | VPS of managed cloud (bijv. Railway, Fly.io) |
+| Database   | Lokale PostgreSQL    | Managed PostgreSQL (bijv. Supabase, Neon)    |
+| Mock-API   | json-server lokaal   | Canvas LMS API                               |
+| Monitoring | Geen                 | Uptime monitoring + alerting                 |
 
-De keuze voor lokale Docker is bewust tijdelijk - de architectuur is zo opgezet dat elke component los vervangen kan worden zonder de rest te raken.
+De keuze voor lokale Docker is bewust tijdelijk — de architectuur is zo opgezet dat elke component los vervangen kan worden zonder de rest te raken.
 
 ---
 
@@ -114,96 +111,145 @@ De keuze voor lokale Docker is bewust tijdelijk - de architectuur is zo opgezet 
 
 ## Services en poorten
 
-| Service          | Image                  | Poort | Verantwoordelijkheid                 |
-| ---------------- | ---------------------- | ----- | ------------------------------------ |
-| Next.js frontend | node:20-alpine         | 3000  | Chat UI, activiteitenpanel           |
-| NestJS backend   | node:20-alpine         | 3001  | API, RAG pipeline, tool use          |
-| PostgreSQL       | postgres:16 + pgvector | 5432  | Relationele data + vector embeddings |
-| Ollama           | host machine           | 11434 | Lokale embeddings                    |
+| Service             | Image                    | Poort (dev) | Poort (prod) | Verantwoordelijkheid                 |
+| ------------------- | ------------------------ | ----------- | ------------ | ------------------------------------ |
+| React/Vite frontend | node:20-alpine           | 5173        | 4173         | Chat UI, activiteitenpanel           |
+| NestJS backend      | node:20-alpine           | 3000        | 3000         | API, RAG pipeline, tool use          |
+| PostgreSQL          | pgvector/pgvector:pg16   | 5432        | 5432         | Relationele data + vector embeddings |
+| Ollama              | ollama/ollama            | 11434       | 11434        | Lokale embeddings (nomic-embed-text) |
+| mock-api            | node:20-alpine (custom)  | 3002        | 3002         | Gesimuleerde Canvas LMS API          |
 
 ## Docker Compose structuur
 
+De infrastructuur is opgesplitst in drie bestanden:
+
+**`compose.yaml`** — gedeelde base services (altijd actief):
+
 ```yaml
-
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    env_file: .env
+    ports: ["5432:5432"]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
 
-frontend:
+  ollama:
+    image: ollama/ollama
+    ports: ["11434:11434"]
+    volumes:
+      - ollama_data:/root/.ollama
+    # Serveert het model en trekt nomic-embed-text automatisch op eerste start
+    healthcheck:
+      test: ["CMD-SHELL", "ollama show nomic-embed-text >/dev/null 2>&1"]
+      retries: 30
 
-build: ./frontend
-
-ports: ["3000:3000"]
-
-depends_on: [backend]
-
-
-
-backend:
-
-build: ./backend
-
-ports: ["3001:3001"]
-
-depends_on: [postgres]
-
-extra_hosts:
-
-- "host.docker.internal:host-gateway"
-
-env_file: .env
-
-
-
-postgres:
-
-image: pgvector/pgvector:pg16
-
-ports: ["5432:5432"]
-
-volumes:
-
-- postgres_data:/var/lib/postgresql/data
-
-- ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-environment:
-
-POSTGRES_DB: activityfirst
-
-POSTGRES_USER: postgres
-
-POSTGRES_PASSWORD: ${DB_PASSWORD}
-
-
-
-volumes:
-
-postgres_data:
-
+  mock-api:
+    build: ./mock-api
+    ports: ["3002:3002"]
+    volumes:
+      - ./mock-api/db.json:/app/db.json:ro
 ```
 
-`extra_hosts: host.docker.internal:host-gateway` is nodig zodat de backend vanuit Docker de Ollama service op de hostmachine kan bereiken via `http://host.docker.internal:11434`.
+**`compose.override.yaml`** — development-specifieke overrides (automatisch meegeladen):
+
+```yaml
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      CORS_ORIGINS: http://localhost:5173
+      OLLAMA_URL: http://ollama:11434
+    ports: ["3000:3000"]
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/src
+          target: /app/src
+        - action: rebuild
+          path: ./backend/package.json
+    depends_on:
+      ollama:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    environment:
+      VITE_CHUCK_API_MODE: mock
+      VITE_CHUCK_API_BASE_URL: http://localhost:3002
+    ports: ["5173:5173"]
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
+```
+
+**`compose.prod.yaml`** — productie-overrides (expliciet meegeven via Makefile):
+
+```yaml
+services:
+  backend:
+    build:
+      context: ./backend
+      target: production
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      CORS_ORIGINS: http://localhost:4173
+      OLLAMA_URL: http://ollama:11434
+    ports: ["3000:3000"]
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+      args:
+        VITE_CHUCK_API_MODE: mock
+        VITE_CHUCK_API_BASE_URL: http://localhost:3002
+    ports: ["4173:4173"]
+```
+
+## Makefile
+
+Alle veelgebruikte commando's zijn gebundeld in een `Makefile` in de root:
+
+| Commando    | Uitvoering                                                          | Toelichting                             |
+| ----------- | ------------------------------------------------------------------- | --------------------------------------- |
+| `make dev`  | `docker compose up --watch`                                         | Development stack met hot-reload        |
+| `make prod` | `docker compose -f compose.yaml -f compose.prod.yaml up --build`   | Productie-build                         |
+| `make down` | `docker compose down`                                               | Alle containers stoppen                 |
+| `make test` | `cd backend && pnpm test -- --verbose`                              | Backend unit tests draaien              |
 
 ## Environment variabelen
 
-```
-
-ANTHROPIC_API_KEY=sk-ant-...
-
-DB_HOST=postgres
-
-DB_PORT=5432
-
-DB_NAME=activityfirst
-
-DB_USER=postgres
-
-DB_PASSWORD=...
-
-OLLAMA_HOST=http://host.docker.internal:11434
-
-OLLAMA_MODEL=nomic-embed-text
+Vereiste variabelen staan gedocumenteerd in `.env.example` in de root. De backend valideert deze bij opstarten via `class-validator`.
 
 ```
+# Database
+POSTGRES_USER=your_local_lms_user
+POSTGRES_PASSWORD=your_local_lms_password
+POSTGRES_DB=your_local_lms_db
+
+# Backend
+PORT=3000
+NODE_ENV=development
+CORS_ORIGINS=http://localhost:5173
+OLLAMA_URL=http://ollama:11434
+```
+
+De backend accepteert de volgende waarden voor `NODE_ENV`: `development`, `production`, `test`. Overige waarden geven een validatiefout bij opstarten.
 
 ---
 
@@ -214,28 +260,19 @@ OLLAMA_MODEL=nomic-embed-text
 ## Opstarten
 
 ```bash
+# 1. Omgevingsvariabelen instellen
+cp .env.example .env
+# Vul POSTGRES_USER, POSTGRES_PASSWORD en POSTGRES_DB in
 
-# 1. Ollama starten op hostmachine
-
-ollama serve
-
-ollama pull nomic-embed-text
-
-
-
-# 2. Stack opstarten
-
-docker-compose up --build
-
-
+# 2. Development stack starten (hot-reload actief)
+make dev
 
 # 3. Database seeden
-
-docker-compose exec backend npm run seed:hboi
-
-docker-compose exec backend npm run seed:canvas
-
+docker compose exec backend pnpm run seed:hboi
+docker compose exec backend pnpm run seed:canvas
 ```
+
+Bij eerste start trekt de Ollama-container automatisch het `nomic-embed-text` model op. De backend wacht via een healthcheck-afhankelijkheid totdat dit model beschikbaar is.
 
 ## Testverslag
 
@@ -245,12 +282,13 @@ docker-compose exec backend npm run seed:canvas
 | ------------------------------------------ | --------- |
 | Docker Compose start alle services         | Geslaagd  |
 | PostgreSQL pgvector extensie actief        | Geslaagd  |
-| Backend bereikt Ollama op host             | Geslaagd  |
+| Ollama container bereikbaar via intern netwerk | Geslaagd  |
+| nomic-embed-text model automatisch geladen | Geslaagd  |
 | Embedding pipeline genereert vectors       | Geslaagd  |
 | Vector search geeft relevante chunks terug | Geslaagd  |
-| Chatbot genereert antwoord via Anthropic   | Geslaagd  |
 | SSE streaming werkt in browser             | Geslaagd  |
 | Activiteit aanmaken en ophalen via API     | Geslaagd  |
+| Hot-reload backend bij bestandswijziging   | Geslaagd  |
 
 ### Wat NIET getest is en waarom
 
@@ -271,81 +309,51 @@ docker-compose exec backend npm run seed:canvas
 ## Dagelijks gebruik
 
 ```bash
+# Development stack starten
+make dev
 
-# Stack starten
-
-ollama serve && docker-compose up
-
-
+# Productie-build starten
+make prod
 
 # Stack stoppen
-
-docker-compose down
-
+make down
 ```
 
 ## Scenario 1: Backend start niet op
 
-Oorzaak: meestal ontbrekende environment variabele of PostgreSQL nog niet klaar.
+Oorzaak: ontbrekende environment variabele of PostgreSQL/Ollama nog niet klaar.
 
 ```bash
-
 # Logs bekijken
-
-docker-compose logs backend
-
-
+docker compose logs backend
 
 # Controleer of alle variabelen aanwezig zijn
-
 cat .env
 
-
-
-# PostgreSQL status controleren
-
-docker-compose ps postgres
-
-
+# Status van afhankelijke services controleren
+docker compose ps postgres
+docker compose ps ollama
 
 # Backend opnieuw starten
-
-docker-compose restart backend
-
+docker compose restart backend
 ```
 
-## Scenario 2: Chatbot antwoordt niet
+## Scenario 2: Ollama niet bereikbaar of model ontbreekt
 
-Oorzaak 1: Anthropic API key ongeldig of verlopen.
-
-```bash
-
-# Controleer de key
-
-echo $ANTHROPIC_API_KEY
-
-
-
-# Nieuwe key instellen in .env en backend herstarten
-
-docker-compose restart backend
-
-```
-
-Oorzaak 2: Ollama niet bereikbaar.
+Oorzaak: container nog niet opgestart of model nog aan het downloaden.
 
 ```bash
+# Status controleren
+docker compose ps ollama
 
-# Controleer of Ollama draait op hostmachine
+# Logs bekijken (download-voortgang zichtbaar)
+docker compose logs ollama
 
+# Handmatig model controleren vanuit de container
+docker compose exec ollama ollama list
+
+# Health endpoint testen
 curl http://localhost:11434/api/tags
-
-
-
-# Ollama opnieuw starten
-
-ollama serve
-
 ```
 
 ## Scenario 3: Slechte chatbot-antwoorden na Canvas-update
@@ -353,19 +361,12 @@ ollama serve
 Canvas-pagina's zijn aangepast maar de vector database bevat nog oude chunks.
 
 ```bash
-
 # Herindexeer de Canvas-content
-
-docker-compose exec backend npm run seed:canvas
-
-
+docker compose exec backend pnpm run seed:canvas
 
 # Controleer aantal chunks in database
-
-docker-compose exec postgres psql -U postgres -d activityfirst \
-
--c "SELECT COUNT(*) FROM chunks;"
-
+docker compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB \
+  -c "SELECT COUNT(*) FROM chunks;"
 ```
 
 ## Scenario 4: Database reset
@@ -373,53 +374,37 @@ docker-compose exec postgres psql -U postgres -d activityfirst \
 Bij een corrupte database of volledige herstart.
 
 ```bash
-
 # Volumes verwijderen en opnieuw aanmaken
-
-docker-compose down -v
-
-docker-compose up --build
-
-
+make down
+docker compose down -v
+make dev
 
 # Opnieuw seeden
-
-docker-compose exec backend npm run seed:hboi
-
-docker-compose exec backend npm run seed:canvas
-
+docker compose exec backend pnpm run seed:hboi
+docker compose exec backend pnpm run seed:canvas
 ```
 
-## API-sleutels beheer
+## API-sleutels en secrets beheer
 
-- Anthropic API-sleutel staat in `.env` - nooit committen naar git
-
+- Alle secrets staan in `.env` — nooit committen naar git
 - `.env` staat in `.gitignore`
-
-- Bij roteren van de sleutel: `.env` aanpassen en `docker-compose restart backend`
-
-- Voor teamleden: `.env.example` bevat alle vereiste variabelen zonder waarden
+- `.env.example` bevat alle vereiste variabelen zonder waarden — dit bestand wél committen
+- Bij roteren van secrets: `.env` aanpassen en `docker compose restart backend`
 
 ## Monitoring (PoC)
 
 Geen geautomatiseerde monitoring voor de PoC. Handmatige check via:
 
 ```bash
-
-# Health check alle services
-
-docker-compose ps
-
-
+# Status alle services
+docker compose ps
 
 # Backend health endpoint
-
-curl http://localhost:3001/health
-
-
+curl http://localhost:3000/health
 
 # Database verbinding testen
+docker compose exec postgres pg_isready
 
-docker-compose exec postgres pg_isready
-
+# Ollama beschikbaarheid testen
+curl http://localhost:11434/api/tags
 ```
