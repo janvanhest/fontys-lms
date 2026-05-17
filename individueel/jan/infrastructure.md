@@ -291,7 +291,7 @@ pnpm add <package> --ignore-workspace
 | ------------------------------------------ | --------- |
 | Docker Compose start alle services         | Geslaagd  |
 | PostgreSQL pgvector extensie actief        | Geslaagd  |
-| Ollama container bereikbaar via intern netwerk | Geslaagd  |
+| Ollama container bereikbaar via het interne netwerk | Geslaagd  |
 | nomic-embed-text model automatisch geladen | Geslaagd  |
 | Embedding pipeline genereert vectors       | Geslaagd  |
 | Vector search geeft relevante chunks terug | Geslaagd  |
