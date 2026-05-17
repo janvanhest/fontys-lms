@@ -274,6 +274,15 @@ docker compose exec backend pnpm run seed:canvas
 
 Bij eerste start trekt de Ollama-container automatisch het `nomic-embed-text` model op. De backend wacht via een healthcheck-afhankelijkheid totdat dit model beschikbaar is.
 
+## Packages toevoegen aan de backend
+
+De backend heeft een eigen `pnpm-lock.yaml` die Docker gebruikt. pnpm pikt echter de root `pnpm-workspace.yaml` op, waardoor een gewone `pnpm add` de verkeerde lockfile bijwerkt. Gebruik altijd:
+
+```bash
+cd backend
+pnpm add <package> --ignore-workspace
+```
+
 ## Testverslag
 
 ### Wat is getest
