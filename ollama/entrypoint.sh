@@ -5,6 +5,13 @@ MODEL_NAME=${MODEL_NAME:-nomic-embed-text}
 MAX_WAIT=${MAX_WAIT_SECONDS:-120}
 SLEEP=${SLEEP_SECONDS:-2}
 
+case "$MAX_WAIT" in
+  ''|*[!0-9]*) echo "MAX_WAIT_SECONDS must be a positive integer, got: $MAX_WAIT" >&2; exit 1 ;;
+esac
+case "$SLEEP" in
+  ''|*[!0-9]*) echo "SLEEP_SECONDS must be a positive integer, got: $SLEEP" >&2; exit 1 ;;
+esac
+
 ollama serve &
 OLLAMA_PID=$!
 
