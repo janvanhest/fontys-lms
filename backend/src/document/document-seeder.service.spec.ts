@@ -126,14 +126,19 @@ describe('DocumentSeederService', () => {
     expect(mockDeleteExecute).toHaveBeenCalled();
   });
 
-  it('saves one DocumentEntity per chunk', async () => {
+  it('saves all chunks for a file in a single batched save call', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
     mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
 
     await service.onApplicationBootstrap();
 
-    // SAMPLE_MARKDOWN produces 3 chunks: intro + 2 sections
-    expect(mockRepository.save).toHaveBeenCalledTimes(3);
+    // SAMPLE_MARKDOWN produces 3 chunks: intro + 2 sections — saved in one batch
+    expect(mockRepository.save).toHaveBeenCalledTimes(1);
+    expect(mockRepository.save).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ content: expect.any(String) })]),
+    );
+    const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as unknown[];
+    expect(batch).toHaveLength(3);
   });
 
   it('sets chunkIndex to 0-based position within the file', async () => {
@@ -142,18 +147,11 @@ describe('DocumentSeederService', () => {
 
     await service.onApplicationBootstrap();
 
-    expect(mockRepository.save).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({
-        metadata: expect.objectContaining({ chunkIndex: 0 }),
-      }),
-    );
-    expect(mockRepository.save).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        metadata: expect.objectContaining({ chunkIndex: 1 }),
-      }),
-    );
+    const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
+      metadata: { chunkIndex: number };
+    }>;
+    expect(batch[0].metadata.chunkIndex).toBe(0);
+    expect(batch[1].metadata.chunkIndex).toBe(1);
   });
 
   it('saves chunk with embedding: null when embedText returns null', async () => {
@@ -163,9 +161,10 @@ describe('DocumentSeederService', () => {
 
     await service.onApplicationBootstrap();
 
-    expect(mockRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({ embedding: null }),
-    );
+    const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
+      embedding: number[] | null;
+    }>;
+    expect(batch.every((e) => e.embedding === null)).toBe(true);
   });
 
   it('stores correct metadata from frontmatter', async () => {
@@ -174,14 +173,31 @@ describe('DocumentSeederService', () => {
 
     await service.onApplicationBootstrap();
 
-    expect(mockRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        metadata: expect.objectContaining({
-          source: 'test-source',
-          title: 'Test Page',
-          url: 'https://example.com/page',
-        }),
-      }),
-    );
+    const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
+      metadata: { source: string; title: string; url: string };
+    }>;
+    expect(batch[0].metadata).toMatchObject({
+      source: 'test-source',
+      title: 'Test Page',
+      url: 'https://example.com/page',
+    });
+  });
+
+  it('skips files with missing frontmatter fields', async () => {
+    const missingTitle = `---\nsource: s\ntitle:\nurl: https://example.com\n---\n\n# Page\n\nContent.`;
+    mockReaddir.mockResolvedValue(['bad.md'] as never);
+    mockReadFile.mockResolvedValue(missingTitle as never);
+
+    await service.onApplicationBootstrap();
+
+    expect(mockRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('logs a warning and skips seeding when canvas_content directory is missing', async () => {
+    const enoent = Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    mockReaddir.mockRejectedValue(enoent);
+
+    await expect(service.onApplicationBootstrap()).resolves.not.toThrow();
+    expect(mockRepository.save).not.toHaveBeenCalled();
   });
 });

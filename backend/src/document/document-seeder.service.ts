@@ -66,8 +66,24 @@ export class DocumentSeederService implements OnApplicationBootstrap {
   }
 
   private async seed(): Promise<void> {
+    if (process.env.NODE_ENV === 'production') {
+      this.logger.warn('Skipping document seeding in production environment');
+      return;
+    }
+
     const contentDir = path.join(process.cwd(), '..', 'canvas_content');
-    const allFiles = await fs.readdir(contentDir);
+
+    let allFiles: string[];
+    try {
+      allFiles = await fs.readdir(contentDir);
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        this.logger.warn(`canvas_content directory not found at ${contentDir}, skipping seeding`);
+        return;
+      }
+      throw error;
+    }
+
     const mdFiles = allFiles.filter((f) => f.endsWith('.md'));
 
     await this.documentRepository.createQueryBuilder().delete().execute();
@@ -76,10 +92,23 @@ export class DocumentSeederService implements OnApplicationBootstrap {
     for (const file of mdFiles) {
       const raw = await fs.readFile(path.join(contentDir, file), 'utf-8');
       const { frontmatter, body } = parseFrontmatter(raw);
-      const chunks = chunkByH2(body, frontmatter.title);
 
+      const hasSource = frontmatter.source.trim().length > 0;
+      const hasTitle = frontmatter.title.trim().length > 0;
+      const hasUrl = frontmatter.url.trim().length > 0;
+
+      if (!hasSource || !hasTitle || !hasUrl) {
+        this.logger.warn(
+          `Skipping "${file}" due to missing frontmatter — ` +
+            `source: "${frontmatter.source}", title: "${frontmatter.title}", url: "${frontmatter.url}"`,
+        );
+        continue;
+      }
+
+      const chunks = chunkByH2(body, frontmatter.title);
       this.logger.log(`${file}: ${chunks.length} chunk(s)`);
 
+      const entities: Partial<DocumentEntity>[] = [];
       for (let i = 0; i < chunks.length; i++) {
         const { title, content } = chunks[i];
         const embedding = await this.embeddingService.embedText(content);
@@ -90,7 +119,7 @@ export class DocumentSeederService implements OnApplicationBootstrap {
           );
         }
 
-        await this.documentRepository.save({
+        entities.push({
           content,
           embedding,
           metadata: {
@@ -101,6 +130,8 @@ export class DocumentSeederService implements OnApplicationBootstrap {
           },
         });
       }
+
+      await this.documentRepository.save(entities);
     }
 
     this.logger.log('Seeding complete');
