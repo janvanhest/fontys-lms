@@ -1,6 +1,15 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
-import { IsIn, IsInt, IsString, IsUrl, Max, Min, ValidationError, validateSync } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsString,
+  IsUrl,
+  Max,
+  Min,
+  ValidationError,
+  validateSync,
+} from 'class-validator';
 
 class EnvironmentVariables {
   @IsIn(['development', 'production', 'test'])
