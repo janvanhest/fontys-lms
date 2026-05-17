@@ -29,6 +29,13 @@ class EnvironmentVariables {
     require_protocol: true,
   })
   OLLAMA_URL = 'http://ollama:11434';
+
+  @IsUrl({
+    require_tld: false,
+    require_protocol: true,
+    protocols: ['postgresql', 'postgres'],
+  })
+  DATABASE_URL!: string;
 }
 
 type FormattedValidationError = {
