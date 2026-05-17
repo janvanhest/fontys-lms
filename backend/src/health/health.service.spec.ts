@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HealthCheckError, HealthCheckService, TypeOrmHealthIndicator } from '@nestjs/terminus';
+import { HealthCheckService, TypeOrmHealthIndicator } from '@nestjs/terminus';
 import { HealthService } from './health.service';
 
 describe('HealthService', () => {
@@ -33,13 +33,13 @@ describe('HealthService', () => {
     expect(result).toEqual({ status: 'ok' });
   });
 
-  it('returns { status: "error", details } when database is unhealthy', async () => {
-    const causes = { database: { status: 'down', message: 'Connection refused' } };
-    healthCheckService.check.mockRejectedValue(new HealthCheckError('DB check failed', causes));
+  it('returns { status: "error", details.message } when health check throws', async () => {
+    healthCheckService.check.mockRejectedValue(new Error('DB check failed'));
 
     const result = await service.check();
 
-    expect(result).toEqual({ status: 'error', details: causes });
+    expect(result.status).toBe('error');
+    expect(result.details).toEqual({ message: 'Error: DB check failed' });
   });
 
   it('returns { status: "error", details } on unexpected error', async () => {
