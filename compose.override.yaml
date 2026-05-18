@@ -14,6 +14,7 @@ services:
     volumes:
       - backend-node-modules:/app/node_modules
       - backend-pnpm-store:/pnpm/store
+      - ./canvas_content:/canvas_content:ro
     develop:
       watch:
         - action: sync
