@@ -3,14 +3,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
 import { LayoutStoryProvider } from '@/storybook/LayoutStoryProvider'
 import { ChatTab } from './ChatTab'
-import { defaultMessages } from './chatMessages'
 
 const meta: Meta<typeof ChatTab> = {
   title: 'Tabs/ChatTab',
   component: ChatTab,
-  args: {
-    messages: defaultMessages,
-  },
 }
 
 export default meta
@@ -33,28 +29,17 @@ function ChatFrame({
 }
 
 export const Default: Story = {
-  render: (args) => (
+  render: () => (
     <ChatFrame>
-      <ChatTab {...args} />
-    </ChatFrame>
-  ),
-}
-
-export const EmptyConversation: Story = {
-  args: {
-    messages: [],
-  },
-  render: (args) => (
-    <ChatFrame>
-      <ChatTab {...args} />
+      <ChatTab />
     </ChatFrame>
   ),
 }
 
 export const SidePanelOpen: Story = {
-  render: (args) => (
+  render: () => (
     <ChatFrame sidePanelOpen>
-      <ChatTab {...args} />
+      <ChatTab />
     </ChatFrame>
   ),
 }

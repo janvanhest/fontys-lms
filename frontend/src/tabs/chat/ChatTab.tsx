@@ -1,22 +1,44 @@
-import AddIcon from '@mui/icons-material/Add'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl'
 import Avatar from '@mui/material/Avatar'
 import Box from '@mui/material/Box'
+import CircularProgress from '@mui/material/CircularProgress'
 import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useLayout } from '@/context/useLayout'
-import { defaultMessages, type ChatMessage } from './chatMessages'
+import { useChatStream } from '@/hooks/useChatStream'
 
 type ChatTabProps = {
-  messages?: ChatMessage[]
+  gesprekId?: string
 }
 
-export function ChatTab({ messages = defaultMessages }: ChatTabProps = {}) {
+export function ChatTab({ gesprekId }: ChatTabProps = {}) {
   const { sidePanelOpen, setSidePanelOpen, activeTab } = useLayout()
+  const { messages, isStreaming, statusText, sendMessage } = useChatStream(gesprekId)
+  const [input, setInput] = useState('')
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, statusText])
+
+  const handleSend = async () => {
+    const trimmed = input.trim()
+    if (!trimmed || isStreaming) return
+    setInput('')
+    await sendMessage(trimmed)
+  }
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      void handleSend()
+    }
+  }
 
   return (
     <Box
@@ -45,34 +67,23 @@ export function ChatTab({ messages = defaultMessages }: ChatTabProps = {}) {
             {activeTab === 'activities' ? 'Activities' : 'Chat'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Werk gesprek, activiteiten en vervolgstappen vanuit een enkele werkruimte uit.
+            {statusText ?? 'Stel een vraag over je challenge, activiteiten of cursusinhoud.'}
           </Typography>
         </Box>
 
         <IconButton
           color={sidePanelOpen ? 'primary' : 'default'}
-          onClick={() => {
-            setSidePanelOpen(!sidePanelOpen)
-          }}
+          onClick={() => setSidePanelOpen(!sidePanelOpen)}
           aria-label="Toggle activities panel"
         >
           <ChecklistRtlIcon />
         </IconButton>
       </Box>
 
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          px: { xs: 2, md: 3 },
-          py: 3,
-        }}
-      >
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
         <Stack spacing={2.5}>
           {messages.map((message) => {
             const isStudent = message.role === 'student'
-
             return (
               <Box
                 key={message.id}
@@ -84,12 +95,9 @@ export function ChatTab({ messages = defaultMessages }: ChatTabProps = {}) {
                   alignItems: 'flex-end',
                 }}
               >
-                {!isStudent ? (
-                  <Avatar sx={{ bgcolor: 'primary.main', width: 34, height: 34 }}>
-                    L
-                  </Avatar>
-                ) : null}
-
+                {!isStudent && (
+                  <Avatar sx={{ bgcolor: 'primary.main', width: 34, height: 34 }}>L</Avatar>
+                )}
                 <Paper
                   elevation={0}
                   sx={{
@@ -103,28 +111,21 @@ export function ChatTab({ messages = defaultMessages }: ChatTabProps = {}) {
                     color: 'text.primary',
                   }}
                 >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: 'block',
-                      mb: 0.75,
-                      color: 'text.secondary',
-                      letterSpacing: '0.04em',
-                    }}
-                  >
-                    {message.title}
-                  </Typography>
-                  <Typography variant="body1">{message.content}</Typography>
+                  {message.isStreaming ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                      {message.content}
+                    </Typography>
+                  )}
                 </Paper>
-
-                {isStudent ? (
-                  <Avatar sx={{ bgcolor: 'secondary.main', width: 34, height: 34 }}>
-                    S
-                  </Avatar>
-                ) : null}
+                {isStudent && (
+                  <Avatar sx={{ bgcolor: 'secondary.main', width: 34, height: 34 }}>S</Avatar>
+                )}
               </Box>
             )
           })}
+          <div ref={bottomRef} />
         </Stack>
       </Box>
 
@@ -143,13 +144,19 @@ export function ChatTab({ messages = defaultMessages }: ChatTabProps = {}) {
             multiline
             minRows={2}
             maxRows={6}
-            placeholder="Typ je bericht of notitie..."
+            placeholder="Typ je vraag..."
             size="small"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isStreaming}
           />
-          <IconButton color="default" aria-label="Add attachment">
-            <AddIcon />
-          </IconButton>
-          <IconButton color="primary" aria-label="Send message">
+          <IconButton
+            color="primary"
+            aria-label="Send message"
+            onClick={() => void handleSend()}
+            disabled={isStreaming || !input.trim()}
+          >
             <ArrowUpwardIcon />
           </IconButton>
         </Box>
