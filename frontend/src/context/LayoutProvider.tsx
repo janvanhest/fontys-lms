@@ -7,6 +7,7 @@ import {
 
 export function LayoutProvider({ children }: PropsWithChildren) {
   const [activeTab, setActiveTab] = useState<LayoutTab>('chat')
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
 
@@ -29,12 +30,14 @@ export function LayoutProvider({ children }: PropsWithChildren) {
     () => ({
       activeTab,
       selectTab,
+      selectedConversationId,
+      setSelectedConversationId,
       sidebarOpen,
       setSidebarOpen,
       sidePanelOpen,
       setSidePanelOpen,
     }),
-    [activeTab, selectTab, sidebarOpen, sidePanelOpen],
+    [activeTab, selectTab, selectedConversationId, sidebarOpen, sidePanelOpen],
   )
 
   return <LayoutContext value={value}>{children}</LayoutContext>
