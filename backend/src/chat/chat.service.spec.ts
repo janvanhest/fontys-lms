@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import Anthropic from '@anthropic-ai/sdk';
+import { Logger } from '@nestjs/common';
 import { ChatService, ChatSseEvent } from './chat.service';
 import { ConversationService } from './conversation.service';
 import { ConversationEntity } from './conversation.entity';
@@ -21,6 +22,7 @@ describe('ChatService', () => {
   let mockStudentTool: jest.Mocked<Pick<StudentContextTool, 'execute'>>;
   let mockRagTool: jest.Mocked<Pick<RagTool, 'execute'>>;
   let mockAnthropicCreate: jest.Mock;
+  let loggerWarnSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     mockConversationService = {
@@ -49,6 +51,11 @@ describe('ChatService', () => {
     (service as unknown as { anthropic: { messages: { create: jest.Mock } } }).anthropic = {
       messages: { create: mockAnthropicCreate },
     };
+    loggerWarnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+  });
+
+  afterEach(() => {
+    loggerWarnSpy.mockRestore();
   });
 
   async function collectEvents(dto: SendMessageDto, studentId = STUDENT_ID) {
@@ -109,6 +116,21 @@ describe('ChatService', () => {
     expect(mockRagTool.execute).toHaveBeenCalledWith('professional task');
   });
 
+  it('does not advertise the temporary student context tool to Anthropic', async () => {
+    mockAnthropicCreate.mockResolvedValue({
+      stop_reason: 'end_turn',
+      content: [{ type: 'text', text: 'Answer.' }],
+    });
+
+    await collectEvents({ message: 'How am I doing?' });
+
+    expect(mockAnthropicCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tools: [expect.objectContaining({ name: 'search_course_content' })],
+      }),
+    );
+  });
+
   it('stops after max 6 iterations and sends fallback final event', async () => {
     mockAnthropicCreate.mockResolvedValue({
       stop_reason: 'tool_use',
@@ -122,6 +144,9 @@ describe('ChatService', () => {
     const final = events.find((e) => e.event === 'final');
     expect(final).toBeDefined();
     expect(mockAnthropicCreate).toHaveBeenCalledTimes(6);
+    expect(loggerWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('tool loop iteration cap reached'),
+    );
   });
 
   it('creates new conversation when conversationId is absent', async () => {

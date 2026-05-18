@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { ConversationEntity } from './conversation.entity';
@@ -21,6 +21,8 @@ Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
 @Injectable()
 export class ChatService {
   private readonly anthropic: Anthropic;
+  private readonly logger = new Logger(ChatService.name);
+  private readonly studentContextEnabled = false;
 
   constructor(
     private readonly conversationService: ConversationService,
@@ -39,6 +41,7 @@ export class ChatService {
 
     const messages = this.buildMessageHistory(conversation, dto.message);
     let iterations = 0;
+    let lastStopReason: string | null = null;
 
     while (iterations < 6) {
       yield { event: 'status', data: iterations === 0 ? 'Nadenken...' : 'Tool uitvoeren...' };
@@ -46,10 +49,11 @@ export class ChatService {
       const response = await this.anthropic.messages.create({
         model: 'claude-opus-4-5',
         max_tokens: 2048,
-        system: SYSTEM_PROMPT,
+        system: this.buildSystemPrompt(),
         messages,
-        tools: [STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF],
+        tools: this.getAvailableTools(),
       });
+      lastStopReason = response.stop_reason;
 
       messages.push({ role: 'assistant', content: response.content });
 
@@ -74,10 +78,27 @@ export class ChatService {
       iterations++;
     }
 
+    this.logger.warn(
+      `tool loop iteration cap reached for conversationId=${conversation.id} stopReason=${lastStopReason ?? 'unknown'}`,
+    );
     const fallback =
       'Ik kon je vraag niet volledig beantwoorden binnen het maximale aantal stappen.';
     await this.conversationService.addMessage(conversation.id, 'assistant', fallback);
     yield { event: 'final', data: fallback };
+  }
+
+  private buildSystemPrompt(): string {
+    if (this.studentContextEnabled) return SYSTEM_PROMPT;
+
+    return `${SYSTEM_PROMPT}
+
+Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet beschikbaar. Baseer je dus niet op get_student_context tenzij dit later expliciet wordt aangezet.`;
+  }
+
+  private getAvailableTools() {
+    return this.studentContextEnabled
+      ? [STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF]
+      : [RAG_TOOL_DEF];
   }
 
   private async getOrCreateConversation(
@@ -120,7 +141,16 @@ export class ChatService {
 
       let result: string;
       if (block.name === 'get_student_context') {
-        result = await this.studentContextTool.execute(studentId);
+        if (!this.studentContextEnabled) {
+          this.logger.warn(`student context tool called while disabled for studentId=${studentId}`);
+          result = JSON.stringify({
+            available: false,
+            temporary: true,
+            notitie: 'Studentcontext is tijdelijk uitgeschakeld totdat echte studentdata beschikbaar is.',
+          });
+        } else {
+          result = await this.studentContextTool.execute(studentId);
+        }
       } else if (block.name === 'search_course_content') {
         result = await this.ragTool.execute((block.input as { query: string }).query);
       } else {
