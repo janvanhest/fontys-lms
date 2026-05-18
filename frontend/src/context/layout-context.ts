@@ -10,6 +10,8 @@ export type LayoutTab =
 export type LayoutContextValue = {
   activeTab: LayoutTab
   selectTab: (tab: LayoutTab) => void
+  selectedConversationId: string | null
+  setSelectedConversationId: (conversationId: string | null) => void
   sidebarOpen: boolean
   setSidebarOpen: (open: boolean) => void
   sidePanelOpen: boolean
