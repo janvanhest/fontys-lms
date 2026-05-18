@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { streamChatMessage } from '@/api/chat'
 
 export type Message = {
@@ -8,21 +8,37 @@ export type Message = {
   isStreaming?: boolean
 }
 
+let messageIdCounter = 0
+
+function generateMessageId(prefix: string): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}-${crypto.randomUUID()}`
+  }
+
+  messageIdCounter += 1
+  return `${prefix}-${Date.now()}-${messageIdCounter}`
+}
+
 export function useChatStream(conversationId?: string) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [statusText, setStatusText] = useState<string | null>(null)
+
+  useEffect(() => {
+    setMessages([])
+    setStatusText(null)
+  }, [conversationId])
 
   const sendMessage = useCallback(
     async (text: string) => {
       if (isStreaming) return
 
       const userMsg: Message = {
-        id: `user-${Date.now()}`,
+        id: generateMessageId('user'),
         role: 'student',
         content: text,
       }
-      const streamingId = `assistant-${Date.now()}`
+      const streamingId = generateMessageId('assistant')
       const streamingMsg: Message = {
         id: streamingId,
         role: 'assistant',
@@ -58,6 +74,19 @@ export function useChatStream(conversationId?: string) {
             setStatusText(null)
           }
         }
+      } catch {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === streamingId
+              ? {
+                  ...m,
+                  content: 'Error: de chatverbinding is onderbroken. Probeer het opnieuw.',
+                  isStreaming: false,
+                }
+              : m,
+          ),
+        )
+        setStatusText(null)
       } finally {
         setIsStreaming(false)
         setStatusText(null)
