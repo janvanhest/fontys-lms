@@ -65,6 +65,13 @@ docker compose -f compose.yaml -f compose.prod.yaml config # toont de samengevoe
 docker compose logs -f <service>                           # live logs van een service (backend, frontend, ...)
 ```
 
+Als je een oude lokale Postgres-volume hebt van vóór de pgvector-wijziging op `documents.embedding`, reset die dan eenmalig:
+
+```bash
+docker compose down -v
+docker compose up --watch
+```
+
 **Hoe werkt de split?**
 
 - `compose.yaml` — gedeelde services (postgres, mock-api)
