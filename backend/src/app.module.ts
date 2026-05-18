@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { ChatModule } from './chat/chat.module';
 import { DatabaseModule } from './database/database.module';
 import { DocumentModule } from './document/document.module';
 import { validate } from './env.validation';
@@ -17,6 +18,7 @@ import { StudentModule } from './student/student.module';
     StudentModule,
     HealthModule,
     DocumentModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
