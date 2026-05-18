@@ -19,6 +19,8 @@ export class StudentContextTool {
     // TODO: vervangen door echte TypeORM queries zodra Challenge/Activiteit entities beschikbaar zijn (E-02, E-03)
     return JSON.stringify({
       studentId,
+      available: false,
+      temporary: true,
       actieveChallenge: null,
       recenteActiviteiten: [],
       beroepstaakkoppelingen: [],

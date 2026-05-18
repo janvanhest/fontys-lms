@@ -23,4 +23,12 @@ describe('StudentContextTool', () => {
     const result = await tool.execute('any-id');
     expect(() => JSON.parse(result)).not.toThrow();
   });
+
+  it('markeert de response expliciet als tijdelijke placeholder', async () => {
+    const result = await tool.execute('student-uuid-42');
+
+    const parsed = JSON.parse(result) as Record<string, unknown>;
+    expect(parsed).toHaveProperty('temporary', true);
+    expect(parsed).toHaveProperty('available', false);
+  });
 });
