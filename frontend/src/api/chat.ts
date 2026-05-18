@@ -12,6 +12,42 @@ export type ChatSseEvent = {
   data: string
 }
 
+function parseSseEventBlock(block: string): ChatSseEvent | null {
+  const lines = block.split(/\r?\n/)
+  let eventType: ChatSseEvent['event'] | null = null
+  const dataLines: string[] = []
+
+  for (const line of lines) {
+    if (line.startsWith('event:')) {
+      const value = line.slice(6).trim()
+      if (
+        value === 'status' ||
+        value === 'tool_call' ||
+        value === 'tool_result' ||
+        value === 'final' ||
+        value === 'error'
+      ) {
+        eventType = value
+      }
+    } else if (line.startsWith('data:')) {
+      dataLines.push(line.slice(5).trim())
+    }
+  }
+
+  const data = dataLines.join('\n')
+  if (!data) return null
+
+  if (eventType) {
+    return { event: eventType, data }
+  }
+
+  try {
+    return JSON.parse(data) as ChatSseEvent
+  } catch {
+    return null
+  }
+}
+
 export async function fetchConversations(): Promise<ConversationSummary[]> {
   const res = await fetch(`${backendUrl}/chat/conversations`)
   if (!res.ok) throw new Error(`Failed to fetch conversations: ${res.status}`)
@@ -42,18 +78,21 @@ export async function* streamChatMessage(
     if (done) break
 
     buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n')
-    buffer = lines.pop() ?? ''
+    const blocks = buffer.split(/\r?\n\r?\n/)
+    buffer = blocks.pop() ?? ''
 
-    for (const line of lines) {
-      if (!line.startsWith('data:')) continue
-      const jsonStr = line.slice(5).trim()
-      if (!jsonStr) continue
-      try {
-        yield JSON.parse(jsonStr) as ChatSseEvent
-      } catch {
-        // skip invalid SSE line
+    for (const block of blocks) {
+      const event = parseSseEventBlock(block)
+      if (event) {
+        yield event
       }
+    }
+  }
+
+  if (buffer.trim()) {
+    const event = parseSseEventBlock(buffer)
+    if (event) {
+      yield event
     }
   }
 }
