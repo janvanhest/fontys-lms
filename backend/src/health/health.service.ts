@@ -11,10 +11,26 @@ export class HealthService {
 
   async check(): Promise<HealthCheckResponseDto> {
     try {
-      await this.health.check([() => this.db.pingCheck('database')]);
-      return { status: 'ok' };
-    } catch (error) {
-      return { status: 'error', details: { message: String(error) } };
+      return await this.health.check([() => this.db.pingCheck('database')]);
+    } catch (error: unknown) {
+      if (this.isHealthCheckResponse(error)) {
+        return error;
+      }
+
+      return {
+        status: 'error',
+        error: { message: error instanceof Error ? String(error) : String(error) },
+        details: { message: error instanceof Error ? String(error) : String(error) },
+      };
     }
+  }
+
+  private isHealthCheckResponse(error: unknown): error is HealthCheckResponseDto {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'status' in error &&
+      typeof (error as { status?: unknown }).status === 'string'
+    );
   }
 }

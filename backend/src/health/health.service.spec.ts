@@ -25,21 +25,37 @@ describe('HealthService', () => {
   it('returns { status: "ok" } when database is healthy', async () => {
     healthCheckService.check.mockResolvedValue({
       status: 'ok',
+      info: { database: { status: 'up' } },
+      error: {},
       details: { database: { status: 'up' } },
     } as never);
 
     const result = await service.check();
 
-    expect(result).toEqual({ status: 'ok' });
+    expect(result).toEqual({
+      status: 'ok',
+      info: { database: { status: 'up' } },
+      error: {},
+      details: { database: { status: 'up' } },
+    });
   });
 
-  it('returns { status: "error", details.message } when health check throws', async () => {
-    healthCheckService.check.mockRejectedValue(new Error('DB check failed'));
+  it('preserves structured terminus error details when health check throws', async () => {
+    healthCheckService.check.mockRejectedValue({
+      status: 'error',
+      info: {},
+      error: { database: { status: 'down', message: 'Connection refused' } },
+      details: { database: { status: 'down', message: 'Connection refused' } },
+    });
 
     const result = await service.check();
 
-    expect(result.status).toBe('error');
-    expect(result.details).toEqual({ message: 'Error: DB check failed' });
+    expect(result).toEqual({
+      status: 'error',
+      info: {},
+      error: { database: { status: 'down', message: 'Connection refused' } },
+      details: { database: { status: 'down', message: 'Connection refused' } },
+    });
   });
 
   it('returns { status: "error", details } on unexpected error', async () => {
@@ -49,5 +65,6 @@ describe('HealthService', () => {
 
     expect(result.status).toBe('error');
     expect(result.details).toBeDefined();
+    expect(result.error).toEqual({ message: 'Error: Unexpected' });
   });
 });
