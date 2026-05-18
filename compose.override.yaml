@@ -23,6 +23,8 @@ services:
           target: /app/src
         - action: rebuild
           path: ./backend/package.json
+        - action: rebuild
+          path: ./backend/pnpm-lock.yaml
     depends_on:
       ollama:
         condition: service_healthy
@@ -48,5 +50,7 @@ services:
           target: /app/src
         - action: rebuild
           path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/pnpm-lock.yaml
     depends_on:
       - mock-api
