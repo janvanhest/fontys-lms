@@ -1,6 +1,16 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
-import { IsIn, IsInt, IsString, Max, Min, ValidationError, validateSync } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsString,
+  IsUrl,
+  Matches,
+  Max,
+  Min,
+  ValidationError,
+  validateSync,
+} from 'class-validator';
 
 class EnvironmentVariables {
   @IsIn(['development', 'production', 'test'])
@@ -13,6 +23,20 @@ class EnvironmentVariables {
 
   @IsString()
   CORS_ORIGINS = 'http://localhost:5173';
+
+  // Must include protocol: http://host:port or https://host:port — bare hosts like ollama:11434 are rejected
+  @IsUrl({
+    require_tld: false,
+    require_protocol: true,
+  })
+  OLLAMA_URL = 'http://ollama:11434';
+
+  // Must be a full postgres connection string: postgresql:// or postgres://
+  @Matches(/^postgr(?:es|esql):\/\/.+/, {
+    message: 'DATABASE_URL must start with postgresql:// or postgres://',
+  })
+  @IsString()
+  DATABASE_URL!: string;
 }
 
 type FormattedValidationError = {
