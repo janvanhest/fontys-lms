@@ -15,7 +15,11 @@ export class DocumentEntity {
   @Column({ type: 'text' })
   content!: string;
 
-  @Column({ type: 'real', array: true, nullable: true })
+  @Column({
+    type: 'vector',
+    length: 768,
+    nullable: true,
+  })
   embedding!: number[] | null;
 
   @Column({ type: 'jsonb' })

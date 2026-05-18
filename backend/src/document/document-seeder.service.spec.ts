@@ -167,6 +167,19 @@ describe('DocumentSeederService', () => {
     expect(batch.every((e) => e.embedding === null)).toBe(true);
   });
 
+  it('preserves numeric embeddings for pgvector-backed persistence', async () => {
+    mockReaddir.mockResolvedValue(['01_test.md'] as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockEmbeddingService.embedText.mockResolvedValue([0.11, 0.22, 0.33]);
+
+    await service.onApplicationBootstrap();
+
+    const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
+      embedding: number[] | null;
+    }>;
+    expect(batch[0].embedding).toEqual([0.11, 0.22, 0.33]);
+  });
+
   it('stores correct metadata from frontmatter', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
     mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);

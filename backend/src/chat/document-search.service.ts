@@ -22,7 +22,7 @@ export class DocumentSearchService {
       `SELECT content
        FROM documents
        WHERE embedding IS NOT NULL
-       ORDER BY embedding <-> $1::real[]
+       ORDER BY embedding <=> $1::vector
        LIMIT $2`,
       [vectorLiteral, topK],
     );
