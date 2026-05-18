@@ -9,16 +9,19 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { studentInitials, studentProfileOptions } from '@/api/student'
 import { useLayout } from '@/context/useLayout'
 import { useChatStream } from '@/hooks/useChatStream'
 
 type ChatTabProps = {
-  gesprekId?: string
+  conversationId?: string
 }
 
-export function ChatTab({ gesprekId }: ChatTabProps = {}) {
+export function ChatTab({ conversationId }: ChatTabProps = {}) {
   const { sidePanelOpen, setSidePanelOpen, activeTab } = useLayout()
-  const { messages, isStreaming, statusText, sendMessage } = useChatStream(gesprekId)
+  const { messages, isStreaming, statusText, sendMessage } = useChatStream(conversationId)
+  const { data: student } = useQuery(studentProfileOptions)
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -120,7 +123,13 @@ export function ChatTab({ gesprekId }: ChatTabProps = {}) {
                   )}
                 </Paper>
                 {isStudent && (
-                  <Avatar sx={{ bgcolor: 'secondary.main', width: 34, height: 34 }}>S</Avatar>
+                  <Avatar
+                    src={student?.avatarUrl ?? undefined}
+                    alt={student?.displayName}
+                    sx={{ bgcolor: 'secondary.main', width: 34, height: 34 }}
+                  >
+                    {student ? studentInitials(student.displayName) : 'S'}
+                  </Avatar>
                 )}
               </Box>
             )

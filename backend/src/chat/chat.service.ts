@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
-import { GesprekEntity } from './gesprek.entity';
-import { GesprekService } from './gesprek.service';
+import { ConversationEntity } from './conversation.entity';
+import { ConversationService } from './conversation.service';
 import { RAG_TOOL_DEF, RagTool } from './rag.tool';
 import { STUDENT_CONTEXT_TOOL_DEF, StudentContextTool } from './student-context.tool';
 import { SendMessageDto } from './dto/send-message.dto';
@@ -23,7 +23,7 @@ export class ChatService {
   private readonly anthropic: Anthropic;
 
   constructor(
-    private readonly gesprekService: GesprekService,
+    private readonly conversationService: ConversationService,
     private readonly studentContextTool: StudentContextTool,
     private readonly ragTool: RagTool,
     private readonly configService: ConfigService,
@@ -33,11 +33,11 @@ export class ChatService {
     });
   }
 
-  async *streamAntwoord(dto: SendMessageDto, studentId: string): AsyncGenerator<ChatSseEvent> {
-    const gesprek = await this.getOrCreateGesprek(dto.gesprekId, studentId);
-    await this.gesprekService.voegBerichtToe(gesprek.id, 'student', dto.vraag);
+  async *streamResponse(dto: SendMessageDto, studentId: string): AsyncGenerator<ChatSseEvent> {
+    const conversation = await this.getOrCreateConversation(dto.conversationId, studentId);
+    await this.conversationService.addMessage(conversation.id, 'student', dto.message);
 
-    const messages = this.buildMessageHistory(gesprek, dto.vraag);
+    const messages = this.buildMessageHistory(conversation, dto.message);
     let iterations = 0;
 
     while (iterations < 6) {
@@ -58,7 +58,7 @@ export class ChatService {
           .filter((b): b is Anthropic.TextBlock => b.type === 'text')
           .map((b) => b.text)
           .join('');
-        await this.gesprekService.voegBerichtToe(gesprek.id, 'assistent', text);
+        await this.conversationService.addMessage(conversation.id, 'assistant', text);
         yield { event: 'final', data: text };
         return;
       }
@@ -76,30 +76,30 @@ export class ChatService {
 
     const fallback =
       'Ik kon je vraag niet volledig beantwoorden binnen het maximale aantal stappen.';
-    await this.gesprekService.voegBerichtToe(gesprek.id, 'assistent', fallback);
+    await this.conversationService.addMessage(conversation.id, 'assistant', fallback);
     yield { event: 'final', data: fallback };
   }
 
-  private async getOrCreateGesprek(
-    gesprekId: string | undefined,
+  private async getOrCreateConversation(
+    conversationId: string | undefined,
     studentId: string,
-  ): Promise<GesprekEntity> {
-    if (gesprekId) {
-      const existing = await this.gesprekService.vindGesprekMetBerichten(gesprekId);
+  ): Promise<ConversationEntity> {
+    if (conversationId) {
+      const existing = await this.conversationService.findConversationWithMessages(conversationId);
       if (existing) return existing;
     }
-    return this.gesprekService.maakNieuwGesprek(studentId);
+    return this.conversationService.createConversation(studentId);
   }
 
   private buildMessageHistory(
-    gesprek: GesprekEntity,
-    nieuweVraag: string,
+    conversation: ConversationEntity,
+    newMessage: string,
   ): Anthropic.MessageParam[] {
-    const history: Anthropic.MessageParam[] = (gesprek.berichten ?? []).map((b) => ({
-      role: b.rol === 'student' ? ('user' as const) : ('assistant' as const),
-      content: b.inhoud,
+    const history: Anthropic.MessageParam[] = (conversation.messages ?? []).map((m) => ({
+      role: m.role === 'student' ? ('user' as const) : ('assistant' as const),
+      content: m.content,
     }));
-    history.push({ role: 'user', content: nieuweVraag });
+    history.push({ role: 'user', content: newMessage });
     return history;
   }
 
@@ -124,7 +124,7 @@ export class ChatService {
       } else if (block.name === 'search_course_content') {
         result = await this.ragTool.execute((block.input as { query: string }).query);
       } else {
-        result = `Onbekende tool: ${block.name}`;
+        result = `Unknown tool: ${block.name}`;
       }
 
       events.push({ event: 'tool_result', data: JSON.stringify({ name: block.name }) });

@@ -8,23 +8,23 @@ import ListItemButton from '@mui/material/ListItemButton'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
-import { fetchGesprekken, type GesprekSummary } from '@/api/chat'
+import { fetchConversations, type ConversationSummary } from '@/api/chat'
 import { useLayout } from '@/context/useLayout'
 
 const sidebarWidth = 190
 
 export function Sidebar() {
   const { sidebarOpen } = useLayout()
-  const [gesprekken, setGesprekken] = useState<GesprekSummary[]>([])
+  const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sidebarOpen) return
     setLoading(true)
-    fetchGesprekken()
-      .then(setGesprekken)
-      .catch(() => setGesprekken([]))
+    fetchConversations()
+      .then(setConversations)
+      .catch(() => setConversations([]))
       .finally(() => setLoading(false))
   }, [sidebarOpen])
 
@@ -63,33 +63,33 @@ export function Sidebar() {
             <CircularProgress size={20} sx={{ alignSelf: 'center' }} />
           ) : (
             <List disablePadding sx={{ display: 'grid', gap: 1 }}>
-              {gesprekken.map((gesprek) => (
+              {conversations.map((conversation) => (
                 <ListItemButton
-                  key={gesprek.id}
-                  selected={gesprek.id === selectedId}
-                  onClick={() => setSelectedId(gesprek.id)}
+                  key={conversation.id}
+                  selected={conversation.id === selectedId}
+                  onClick={() => setSelectedId(conversation.id)}
                   sx={{
                     display: 'block',
                     borderRadius: 1.5,
                     border: '1px solid',
                     borderColor: 'divider',
                     bgcolor:
-                      gesprek.id === selectedId ? 'action.selected' : 'transparent',
+                      conversation.id === selectedId ? 'action.selected' : 'transparent',
                   }}
                 >
                   <Typography sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3 }}>
-                    Gesprek
+                    Conversation
                   </Typography>
                   <Chip
                     size="small"
-                    label={new Date(gesprek.aangemaaktOp).toLocaleDateString('nl-NL')}
+                    label={new Date(conversation.createdAt).toLocaleDateString('nl-NL')}
                     variant="outlined"
                     color="default"
                     sx={{ mt: 1 }}
                   />
                 </ListItemButton>
               ))}
-              {gesprekken.length === 0 && !loading && (
+              {conversations.length === 0 && !loading && (
                 <Typography variant="caption" color="text.secondary">
                   Nog geen gesprekken
                 </Typography>

@@ -1,10 +1,10 @@
 const backendUrl =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:3000'
 
-export type GesprekSummary = {
+export type ConversationSummary = {
   id: string
   studentId: string
-  aangemaaktOp: string
+  createdAt: string
 }
 
 export type ChatSseEvent = {
@@ -12,20 +12,20 @@ export type ChatSseEvent = {
   data: string
 }
 
-export async function fetchGesprekken(): Promise<GesprekSummary[]> {
-  const res = await fetch(`${backendUrl}/chat/gesprekken`)
-  if (!res.ok) throw new Error(`Gesprekken ophalen mislukt: ${res.status}`)
-  return res.json() as Promise<GesprekSummary[]>
+export async function fetchConversations(): Promise<ConversationSummary[]> {
+  const res = await fetch(`${backendUrl}/chat/conversations`)
+  if (!res.ok) throw new Error(`Failed to fetch conversations: ${res.status}`)
+  return res.json() as Promise<ConversationSummary[]>
 }
 
 export async function* streamChatMessage(
-  vraag: string,
-  gesprekId?: string,
+  message: string,
+  conversationId?: string,
 ): AsyncGenerator<ChatSseEvent> {
   const res = await fetch(`${backendUrl}/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ vraag, gesprekId }),
+    body: JSON.stringify({ message, conversationId }),
   })
 
   if (!res.ok || !res.body) {
@@ -52,7 +52,7 @@ export async function* streamChatMessage(
       try {
         yield JSON.parse(jsonStr) as ChatSseEvent
       } catch {
-        // ongeldige SSE lijn overslaan
+        // skip invalid SSE line
       }
     }
   }

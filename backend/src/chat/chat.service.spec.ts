@@ -2,31 +2,31 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import Anthropic from '@anthropic-ai/sdk';
 import { ChatService, ChatSseEvent } from './chat.service';
+import { ConversationService } from './conversation.service';
+import { ConversationEntity } from './conversation.entity';
 import { SendMessageDto } from './dto/send-message.dto';
-import { GesprekEntity } from './gesprek.entity';
-import { GesprekService } from './gesprek.service';
 import { RagTool } from './rag.tool';
 import { StudentContextTool } from './student-context.tool';
 
 const STUDENT_ID = 'student-uuid-001';
 
-const makeGesprek = (berichten: GesprekEntity['berichten'] = []): GesprekEntity =>
-  ({ id: 'g1', studentId: STUDENT_ID, berichten } as unknown as GesprekEntity);
+const makeConversation = (messages: ConversationEntity['messages'] = []): ConversationEntity =>
+  ({ id: 'c1', studentId: STUDENT_ID, messages } as unknown as ConversationEntity);
 
 describe('ChatService', () => {
   let service: ChatService;
-  let mockGesprekService: jest.Mocked<
-    Pick<GesprekService, 'maakNieuwGesprek' | 'vindGesprekMetBerichten' | 'voegBerichtToe'>
+  let mockConversationService: jest.Mocked<
+    Pick<ConversationService, 'createConversation' | 'findConversationWithMessages' | 'addMessage'>
   >;
   let mockStudentTool: jest.Mocked<Pick<StudentContextTool, 'execute'>>;
   let mockRagTool: jest.Mocked<Pick<RagTool, 'execute'>>;
   let mockAnthropicCreate: jest.Mock;
 
   beforeEach(async () => {
-    mockGesprekService = {
-      maakNieuwGesprek: jest.fn().mockResolvedValue(makeGesprek()),
-      vindGesprekMetBerichten: jest.fn().mockResolvedValue(makeGesprek()),
-      voegBerichtToe: jest.fn().mockResolvedValue({}),
+    mockConversationService = {
+      createConversation: jest.fn().mockResolvedValue(makeConversation()),
+      findConversationWithMessages: jest.fn().mockResolvedValue(makeConversation()),
+      addMessage: jest.fn().mockResolvedValue({}),
     };
     mockStudentTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockRagTool = { execute: jest.fn().mockResolvedValue('') };
@@ -35,7 +35,7 @@ describe('ChatService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ChatService,
-        { provide: GesprekService, useValue: mockGesprekService },
+        { provide: ConversationService, useValue: mockConversationService },
         { provide: StudentContextTool, useValue: mockStudentTool },
         { provide: RagTool, useValue: mockRagTool },
         {
@@ -53,36 +53,36 @@ describe('ChatService', () => {
 
   async function collectEvents(dto: SendMessageDto, studentId = STUDENT_ID) {
     const events: ChatSseEvent[] = [];
-    for await (const e of service.streamAntwoord(dto, studentId)) {
+    for await (const e of service.streamResponse(dto, studentId)) {
       events.push(e);
     }
     return events;
   }
 
-  it('stuurt status-event aan het begin', async () => {
+  it('sends status event at the start', async () => {
     mockAnthropicCreate.mockResolvedValue({
       stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Antwoord.' }],
+      content: [{ type: 'text', text: 'Answer.' }],
     });
 
-    const events = await collectEvents({ vraag: 'Hallo' });
+    const events = await collectEvents({ message: 'Hello' });
 
     expect(events[0].event).toBe('status');
   });
 
-  it('stuurt final-event met het antwoord bij end_turn', async () => {
+  it('sends final event with answer on end_turn', async () => {
     mockAnthropicCreate.mockResolvedValue({
       stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Het antwoord.' }],
+      content: [{ type: 'text', text: 'The answer.' }],
     });
 
-    const events = await collectEvents({ vraag: 'Wat is een beroepstaak?' });
+    const events = await collectEvents({ message: 'What is a professional task?' });
 
     const final = events.find((e) => e.event === 'final');
-    expect(final?.data).toBe('Het antwoord.');
+    expect(final?.data).toBe('The answer.');
   });
 
-  it('voert tool call uit en stuurt tool_call + tool_result events', async () => {
+  it('executes tool call and sends tool_call + tool_result events', async () => {
     mockAnthropicCreate
       .mockResolvedValueOnce({
         stop_reason: 'tool_use',
@@ -91,25 +91,25 @@ describe('ChatService', () => {
             type: 'tool_use',
             id: 'tc1',
             name: 'search_course_content',
-            input: { query: 'beroepstaak' },
+            input: { query: 'professional task' },
           },
         ],
       })
       .mockResolvedValueOnce({
         stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Gecombineerd antwoord.' }],
+        content: [{ type: 'text', text: 'Combined answer.' }],
       });
 
-    mockRagTool.execute.mockResolvedValue('RAG resultaat.');
+    mockRagTool.execute.mockResolvedValue('RAG result.');
 
-    const events = await collectEvents({ vraag: 'Wat is een beroepstaak?' });
+    const events = await collectEvents({ message: 'What is a professional task?' });
 
     expect(events.some((e) => e.event === 'tool_call')).toBe(true);
     expect(events.some((e) => e.event === 'tool_result')).toBe(true);
-    expect(mockRagTool.execute).toHaveBeenCalledWith('beroepstaak');
+    expect(mockRagTool.execute).toHaveBeenCalledWith('professional task');
   });
 
-  it('stopt na max 6 iteraties en stuurt fallback final-event', async () => {
+  it('stops after max 6 iterations and sends fallback final event', async () => {
     mockAnthropicCreate.mockResolvedValue({
       stop_reason: 'tool_use',
       content: [
@@ -117,32 +117,32 @@ describe('ChatService', () => {
       ],
     });
 
-    const events = await collectEvents({ vraag: 'Eindeloze lus?' });
+    const events = await collectEvents({ message: 'Infinite loop?' });
 
     const final = events.find((e) => e.event === 'final');
     expect(final).toBeDefined();
     expect(mockAnthropicCreate).toHaveBeenCalledTimes(6);
   });
 
-  it('maakt nieuw gesprek aan als gesprekId ontbreekt', async () => {
+  it('creates new conversation when conversationId is absent', async () => {
     mockAnthropicCreate.mockResolvedValue({
       stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Hoi.' }],
+      content: [{ type: 'text', text: 'Hi.' }],
     });
 
-    await collectEvents({ vraag: 'Hoi' }, STUDENT_ID);
+    await collectEvents({ message: 'Hi' }, STUDENT_ID);
 
-    expect(mockGesprekService.maakNieuwGesprek).toHaveBeenCalledWith(STUDENT_ID);
+    expect(mockConversationService.createConversation).toHaveBeenCalledWith(STUDENT_ID);
   });
 
-  it('laadt bestaand gesprek als gesprekId aanwezig is', async () => {
+  it('loads existing conversation when conversationId is present', async () => {
     mockAnthropicCreate.mockResolvedValue({
       stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Hoi.' }],
+      content: [{ type: 'text', text: 'Hi.' }],
     });
 
-    await collectEvents({ vraag: 'Vervolg', gesprekId: 'g-existing' });
+    await collectEvents({ message: 'Follow up', conversationId: 'c-existing' });
 
-    expect(mockGesprekService.vindGesprekMetBerichten).toHaveBeenCalledWith('g-existing');
+    expect(mockConversationService.findConversationWithMessages).toHaveBeenCalledWith('c-existing');
   });
 });

@@ -9,6 +9,7 @@ services:
       CORS_ORIGINS: http://localhost:5173
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       DATABASE_URL: ${DATABASE_URL}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     ports:
       - "3000:3000"
     volumes:

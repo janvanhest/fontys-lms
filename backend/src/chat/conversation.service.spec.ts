@@ -1,85 +1,85 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BerichtEntity } from './bericht.entity';
-import { GesprekEntity } from './gesprek.entity';
-import { GesprekService } from './gesprek.service';
+import { MessageEntity } from './message.entity';
+import { ConversationEntity } from './conversation.entity';
+import { ConversationService } from './conversation.service';
 
-describe('GesprekService', () => {
-  let service: GesprekService;
-  let gesprekRepo: jest.Mocked<Pick<Repository<GesprekEntity>, 'save' | 'find' | 'findOne'>>;
-  let berichtRepo: jest.Mocked<Pick<Repository<BerichtEntity>, 'save'>>;
+describe('ConversationService', () => {
+  let service: ConversationService;
+  let conversationRepo: jest.Mocked<Pick<Repository<ConversationEntity>, 'save' | 'find' | 'findOne'>>;
+  let messageRepo: jest.Mocked<Pick<Repository<MessageEntity>, 'save'>>;
 
   beforeEach(async () => {
-    gesprekRepo = {
+    conversationRepo = {
       save: jest.fn(),
       find: jest.fn(),
       findOne: jest.fn(),
     };
-    berichtRepo = {
+    messageRepo = {
       save: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        GesprekService,
-        { provide: getRepositoryToken(GesprekEntity), useValue: gesprekRepo },
-        { provide: getRepositoryToken(BerichtEntity), useValue: berichtRepo },
+        ConversationService,
+        { provide: getRepositoryToken(ConversationEntity), useValue: conversationRepo },
+        { provide: getRepositoryToken(MessageEntity), useValue: messageRepo },
       ],
     }).compile();
 
-    service = module.get<GesprekService>(GesprekService);
+    service = module.get<ConversationService>(ConversationService);
   });
 
-  it('maakNieuwGesprek slaat een gesprek op met studentId', async () => {
-    const saved = { id: 'uuid-1', studentId: 'student-uuid', berichten: [] } as GesprekEntity;
-    gesprekRepo.save.mockResolvedValue(saved);
+  it('createConversation saves a conversation with studentId', async () => {
+    const saved = { id: 'uuid-1', studentId: 'student-uuid', messages: [] } as ConversationEntity;
+    conversationRepo.save.mockResolvedValue(saved);
 
-    const result = await service.maakNieuwGesprek('student-uuid');
+    const result = await service.createConversation('student-uuid');
 
-    expect(gesprekRepo.save).toHaveBeenCalledWith(
+    expect(conversationRepo.save).toHaveBeenCalledWith(
       expect.objectContaining({ studentId: 'student-uuid' }),
     );
     expect(result.id).toBe('uuid-1');
   });
 
-  it('vindGesprekkenVanStudent geeft gesprekken gesorteerd op datum terug', async () => {
-    const gesprekken = [
-      { id: 'g1', studentId: 's1', aangemaaktOp: new Date('2026-05-17') },
-      { id: 'g2', studentId: 's1', aangemaaktOp: new Date('2026-05-18') },
-    ] as GesprekEntity[];
-    gesprekRepo.find.mockResolvedValue(gesprekken);
+  it('findConversationsByStudent returns conversations sorted by date', async () => {
+    const conversations = [
+      { id: 'c1', studentId: 's1', createdAt: new Date('2026-05-17') },
+      { id: 'c2', studentId: 's1', createdAt: new Date('2026-05-18') },
+    ] as ConversationEntity[];
+    conversationRepo.find.mockResolvedValue(conversations);
 
-    const result = await service.vindGesprekkenVanStudent('s1');
+    const result = await service.findConversationsByStudent('s1');
 
-    expect(gesprekRepo.find).toHaveBeenCalledWith(
+    expect(conversationRepo.find).toHaveBeenCalledWith(
       expect.objectContaining({ where: { studentId: 's1' } }),
     );
     expect(result).toHaveLength(2);
   });
 
-  it('vindGesprekMetBerichten geeft null terug als gesprek niet bestaat', async () => {
-    gesprekRepo.findOne.mockResolvedValue(null);
+  it('findConversationWithMessages returns null when conversation does not exist', async () => {
+    conversationRepo.findOne.mockResolvedValue(null);
 
-    const result = await service.vindGesprekMetBerichten('nonexistent');
+    const result = await service.findConversationWithMessages('nonexistent');
 
     expect(result).toBeNull();
   });
 
-  it('voegBerichtToe slaat een bericht op aan het gesprek', async () => {
-    const bericht = {
-      id: 'b1',
-      gesprekId: 'g1',
-      rol: 'student',
-      inhoud: 'Hallo',
-    } as BerichtEntity;
-    berichtRepo.save.mockResolvedValue(bericht);
+  it('addMessage saves a message to the conversation', async () => {
+    const message = {
+      id: 'm1',
+      conversationId: 'c1',
+      role: 'student',
+      content: 'Hello',
+    } as MessageEntity;
+    messageRepo.save.mockResolvedValue(message);
 
-    const result = await service.voegBerichtToe('g1', 'student', 'Hallo');
+    const result = await service.addMessage('c1', 'student', 'Hello');
 
-    expect(berichtRepo.save).toHaveBeenCalledWith(
-      expect.objectContaining({ gesprekId: 'g1', rol: 'student', inhoud: 'Hallo' }),
+    expect(messageRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({ conversationId: 'c1', role: 'student', content: 'Hello' }),
     );
-    expect(result.inhoud).toBe('Hallo');
+    expect(result.content).toBe('Hello');
   });
 });

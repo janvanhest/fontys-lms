@@ -42,8 +42,12 @@ describe('DocumentSearchService', () => {
     const result = await service.zoekRelevanteChunks('challenge beschrijving');
 
     expect(mockDataSource.query).toHaveBeenCalledWith(
-      expect.stringContaining('<->'),
-      expect.arrayContaining([expect.any(String), expect.any(Number)]),
+      expect.stringContaining('ORDER BY embedding <=> $1::vector'),
+      ['[0.1,0.2,0.3]', 5],
+    );
+    expect(mockDataSource.query).not.toHaveBeenCalledWith(
+      expect.stringContaining('real[]'),
+      expect.anything(),
     );
     expect(result).toContain('Eerste chunk.');
     expect(result).toContain('Tweede chunk.');

@@ -1,42 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BerichtEntity, BerichtRol } from './bericht.entity';
-import { GesprekEntity } from './gesprek.entity';
+import { MessageEntity, MessageRole } from './message.entity';
+import { ConversationEntity } from './conversation.entity';
 
 @Injectable()
-export class GesprekService {
+export class ConversationService {
   constructor(
-    @InjectRepository(GesprekEntity)
-    private readonly gesprekRepository: Repository<GesprekEntity>,
-    @InjectRepository(BerichtEntity)
-    private readonly berichtRepository: Repository<BerichtEntity>,
+    @InjectRepository(ConversationEntity)
+    private readonly conversationRepository: Repository<ConversationEntity>,
+    @InjectRepository(MessageEntity)
+    private readonly messageRepository: Repository<MessageEntity>,
   ) {}
 
-  async maakNieuwGesprek(studentId: string): Promise<GesprekEntity> {
-    return this.gesprekRepository.save({ studentId, berichten: [] });
+  async createConversation(studentId: string): Promise<ConversationEntity> {
+    return this.conversationRepository.save({ studentId, messages: [] });
   }
 
-  async vindGesprekkenVanStudent(studentId: string): Promise<GesprekEntity[]> {
-    return this.gesprekRepository.find({
+  async findConversationsByStudent(studentId: string): Promise<ConversationEntity[]> {
+    return this.conversationRepository.find({
       where: { studentId },
-      order: { aangemaaktOp: 'DESC' },
+      order: { createdAt: 'DESC' },
     });
   }
 
-  async vindGesprekMetBerichten(gesprekId: string): Promise<GesprekEntity | null> {
-    return this.gesprekRepository.findOne({
-      where: { id: gesprekId },
-      relations: ['berichten'],
-      order: { berichten: { timestamp: 'ASC' } },
+  async findConversationWithMessages(conversationId: string): Promise<ConversationEntity | null> {
+    return this.conversationRepository.findOne({
+      where: { id: conversationId },
+      relations: ['messages'],
+      order: { messages: { timestamp: 'ASC' } },
     });
   }
 
-  async voegBerichtToe(
-    gesprekId: string,
-    rol: BerichtRol,
-    inhoud: string,
-  ): Promise<BerichtEntity> {
-    return this.berichtRepository.save({ gesprekId, rol, inhoud });
+  async addMessage(
+    conversationId: string,
+    role: MessageRole,
+    content: string,
+  ): Promise<MessageEntity> {
+    return this.messageRepository.save({ conversationId, role, content });
   }
 }

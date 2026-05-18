@@ -3,29 +3,29 @@ import { streamChatMessage } from '@/api/chat'
 
 export type Message = {
   id: string
-  role: 'student' | 'assistent'
+  role: 'student' | 'assistant'
   content: string
   isStreaming?: boolean
 }
 
-export function useChatStream(gesprekId?: string) {
+export function useChatStream(conversationId?: string) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [statusText, setStatusText] = useState<string | null>(null)
 
   const sendMessage = useCallback(
-    async (vraag: string) => {
+    async (text: string) => {
       if (isStreaming) return
 
       const userMsg: Message = {
         id: `user-${Date.now()}`,
         role: 'student',
-        content: vraag,
+        content: text,
       }
       const streamingId = `assistant-${Date.now()}`
       const streamingMsg: Message = {
         id: streamingId,
-        role: 'assistent',
+        role: 'assistant',
         content: '',
         isStreaming: true,
       }
@@ -35,7 +35,7 @@ export function useChatStream(gesprekId?: string) {
       setStatusText(null)
 
       try {
-        for await (const sseEvent of streamChatMessage(vraag, gesprekId)) {
+        for await (const sseEvent of streamChatMessage(text, conversationId)) {
           if (sseEvent.event === 'status') {
             setStatusText(sseEvent.data)
           } else if (sseEvent.event === 'final') {
@@ -51,7 +51,7 @@ export function useChatStream(gesprekId?: string) {
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === streamingId
-                  ? { ...m, content: `Fout: ${sseEvent.data}`, isStreaming: false }
+                  ? { ...m, content: `Error: ${sseEvent.data}`, isStreaming: false }
                   : m,
               ),
             )
@@ -63,7 +63,7 @@ export function useChatStream(gesprekId?: string) {
         setStatusText(null)
       }
     },
-    [isStreaming, gesprekId],
+    [isStreaming, conversationId],
   )
 
   return { messages, isStreaming, statusText, sendMessage }
