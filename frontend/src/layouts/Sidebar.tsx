@@ -14,10 +14,9 @@ import { useLayout } from '@/context/useLayout'
 const sidebarWidth = 190
 
 export function Sidebar() {
-  const { sidebarOpen } = useLayout()
+  const { sidebarOpen, selectedConversationId, setSelectedConversationId, selectTab } = useLayout()
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sidebarOpen) return
@@ -48,7 +47,15 @@ export function Sidebar() {
         }}
       >
         <Stack spacing={2}>
-          <Button fullWidth variant="contained" startIcon={<AddIcon />}>
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setSelectedConversationId(null)
+              selectTab('chat')
+            }}
+          >
             Nieuw gesprek
           </Button>
 
@@ -66,15 +73,20 @@ export function Sidebar() {
               {conversations.map((conversation) => (
                 <ListItemButton
                   key={conversation.id}
-                  selected={conversation.id === selectedId}
-                  onClick={() => setSelectedId(conversation.id)}
+                  selected={conversation.id === selectedConversationId}
+                  onClick={() => {
+                    setSelectedConversationId(conversation.id)
+                    selectTab('chat')
+                  }}
                   sx={{
                     display: 'block',
                     borderRadius: 1.5,
                     border: '1px solid',
                     borderColor: 'divider',
                     bgcolor:
-                      conversation.id === selectedId ? 'action.selected' : 'transparent',
+                      conversation.id === selectedConversationId
+                        ? 'action.selected'
+                        : 'transparent',
                   }}
                 >
                   <Typography sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3 }}>
