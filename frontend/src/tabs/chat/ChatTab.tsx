@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 import { studentInitials, studentProfileOptions } from '@/api/student'
 import { useLayout } from '@/context/useLayout'
 import { useChatStream } from '@/hooks/useChatStream'
+import { ChatMarkdown } from './ChatMarkdown'
 
 type ChatTabProps = {
   conversationId?: string
@@ -116,10 +117,12 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
                 >
                   {message.isStreaming ? (
                     <CircularProgress size={16} />
-                  ) : (
+                  ) : isStudent ? (
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                       {message.content}
                     </Typography>
+                  ) : (
+                    <ChatMarkdown content={message.content} />
                   )}
                 </Paper>
                 {isStudent && (
