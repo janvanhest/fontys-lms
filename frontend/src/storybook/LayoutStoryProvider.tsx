@@ -18,6 +18,7 @@ export function LayoutStoryProvider({
   children,
 }: LayoutStoryProviderProps) {
   const [activeTab, setActiveTab] = useState(initialActiveTab)
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(initialSidebarOpen)
   const [sidePanelOpen, setSidePanelOpen] = useState(initialSidePanelOpen)
 
@@ -38,12 +39,14 @@ export function LayoutStoryProvider({
     () => ({
       activeTab,
       selectTab,
+      selectedConversationId,
+      setSelectedConversationId,
       sidebarOpen,
       setSidebarOpen,
       sidePanelOpen,
       setSidePanelOpen,
     }),
-    [activeTab, selectTab, sidebarOpen, sidePanelOpen],
+    [activeTab, selectTab, selectedConversationId, sidebarOpen, sidePanelOpen],
   )
 
   return <LayoutContext value={value}>{children}</LayoutContext>
