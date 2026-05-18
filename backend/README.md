@@ -124,6 +124,26 @@ De productiecontainer start met:
 node dist/main.js
 ```
 
+## PostgreSQL en pgvector
+
+Deze backend verwacht dat de `vector` extension actief is in PostgreSQL. Voor verse lokale databases gebeurt dat via [postgres/init.sql](../postgres/init.sql).
+
+Als je al een bestaande Docker volume had uit de periode waarin `documents.embedding` nog `real[]` was, dan heb je twee opties:
+
+```bash
+docker compose down -v
+docker compose up --watch
+```
+
+Of migreer de bestaande kolom handmatig:
+
+```bash
+docker compose exec -T postgres sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  < postgres/migrations/2026-05-18-documents-embedding-to-vector.sql
+```
+
+De handmatige migratie staat in [postgres/migrations/2026-05-18-documents-embedding-to-vector.sql](../postgres/migrations/2026-05-18-documents-embedding-to-vector.sql).
+
 ## Structuur
 
 ```text
