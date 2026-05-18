@@ -10,7 +10,14 @@ export class StudentController {
   @Get('me')
   @ApiOperation({ summary: 'Get current student profile' })
   @ApiOkResponse({ type: StudentResponseDto })
-  me(@CurrentStudent() student: Student): Student {
-    return student;
+  me(@CurrentStudent() student: Student): StudentResponseDto {
+    return {
+      id: student.id,
+      canvasUserId: student.canvasUserId,
+      displayName: student.displayName,
+      email: student.email,
+      avatarUrl: student.avatarUrl,
+      createdAt: student.createdAt,
+    };
   }
 }

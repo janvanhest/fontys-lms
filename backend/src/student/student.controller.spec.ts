@@ -12,7 +12,7 @@ describe('StudentController', () => {
     controller = module.get(StudentController);
   });
 
-  it('GET /student/me returns the student from request.user', () => {
+  it('GET /student/me returns a DTO-shaped student response', () => {
     const student = {
       id: 'uuid-1',
       canvasUserId: '31474',
@@ -22,6 +22,16 @@ describe('StudentController', () => {
       createdAt: new Date(),
     } as Student;
 
-    expect(controller.me(student)).toBe(student);
+    const result = controller.me(student);
+
+    expect(result).toEqual({
+      id: student.id,
+      canvasUserId: student.canvasUserId,
+      displayName: student.displayName,
+      email: student.email,
+      avatarUrl: student.avatarUrl,
+      createdAt: student.createdAt,
+    });
+    expect(result).not.toBe(student);
   });
 });
