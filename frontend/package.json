@@ -20,6 +20,7 @@
     "@mui/lab": "9.0.0-beta.2",
     "@mui/material": "^9.0.0",
     "@mui/x-chat": "9.0.0-alpha.5",
+    "@mui/x-chat-headless": "9.0.0-alpha.5",
     "@tanstack/react-query": "^5.100.9",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

@@ -3,20 +3,20 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeor
 @Entity()
 export class Student {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  canvasUserId: string;
+  canvasUserId!: string;
 
   @Column()
-  displayName: string;
+  displayName!: string;
 
   @Column()
-  email: string;
+  email!: string;
 
   @Column({ nullable: true, type: 'varchar' })
-  avatarUrl: string | null;
+  avatarUrl!: string | null;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

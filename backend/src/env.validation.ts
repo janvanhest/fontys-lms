@@ -8,6 +8,7 @@ import {
   Matches,
   Max,
   Min,
+  MinLength,
   ValidationError,
   validateSync,
 } from 'class-validator';
@@ -37,6 +38,10 @@ class EnvironmentVariables {
   })
   @IsString()
   DATABASE_URL!: string;
+
+  @MinLength(1)
+  @IsString()
+  ANTHROPIC_API_KEY!: string;
 }
 
 type FormattedValidationError = {

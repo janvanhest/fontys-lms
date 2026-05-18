@@ -2,20 +2,20 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class StudentResponseDto {
   @ApiProperty({ example: 'a1b2c3d4-...' })
-  id: string;
+  id!: string;
 
   @ApiProperty({ example: '31474' })
-  canvasUserId: string;
+  canvasUserId!: string;
 
   @ApiProperty({ example: 'Hest, Jan J.H. van' })
-  displayName: string;
+  displayName!: string;
 
   @ApiProperty({ example: 'jan.vanhest@student.fontys.nl' })
-  email: string;
+  email!: string;
 
   @ApiPropertyOptional({ example: 'https://avatars.githubusercontent.com/u/81753593?v=4' })
-  avatarUrl: string | null;
+  avatarUrl!: string | null;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 }

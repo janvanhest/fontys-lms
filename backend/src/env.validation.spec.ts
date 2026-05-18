@@ -2,6 +2,7 @@ import { validate } from './env.validation';
 
 const validBase = {
   DATABASE_URL: 'postgresql://user:pass@localhost:5432/lms',
+  ANTHROPIC_API_KEY: 'sk-ant-test-key',
 };
 
 describe('validate', () => {
@@ -74,5 +75,15 @@ describe('validate', () => {
     expect(() =>
       validate({ ...validBase, DATABASE_URL: 'postgresql://user:pass@db:5432/lms' }),
     ).not.toThrow();
+  });
+
+  it('throws when ANTHROPIC_API_KEY is missing', () => {
+    const { ANTHROPIC_API_KEY: _, ...withoutKey } = validBase;
+    expect(() => validate(withoutKey)).toThrow(/Environment validation failed/);
+    expect(() => validate(withoutKey)).toThrow(/"property": "ANTHROPIC_API_KEY"/);
+  });
+
+  it('accepts a valid ANTHROPIC_API_KEY', () => {
+    expect(() => validate({ ...validBase, ANTHROPIC_API_KEY: 'sk-ant-api03-abc123' })).not.toThrow();
   });
 });
