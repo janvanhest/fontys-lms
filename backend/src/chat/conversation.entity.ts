@@ -5,10 +5,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { BerichtEntity } from './bericht.entity';
+import { MessageEntity } from './message.entity';
 
-@Entity('gesprekken')
-export class GesprekEntity {
+@Entity('conversations')
+export class ConversationEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -16,8 +16,8 @@ export class GesprekEntity {
   studentId!: string;
 
   @CreateDateColumn()
-  aangemaaktOp!: Date;
+  createdAt!: Date;
 
-  @OneToMany(() => BerichtEntity, (bericht) => bericht.gesprek, { cascade: true })
-  berichten!: BerichtEntity[];
+  @OneToMany(() => MessageEntity, (message) => message.conversation, { cascade: true })
+  messages!: MessageEntity[];
 }

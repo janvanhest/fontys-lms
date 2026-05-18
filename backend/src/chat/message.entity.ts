@@ -5,28 +5,28 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { GesprekEntity } from './gesprek.entity';
+import { ConversationEntity } from './conversation.entity';
 
-export type BerichtRol = 'student' | 'assistent';
+export type MessageRole = 'student' | 'assistant';
 
-@Entity('berichten')
-export class BerichtEntity {
+@Entity('messages')
+export class MessageEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column({ type: 'uuid' })
-  gesprekId!: string;
+  conversationId!: string;
 
-  @ManyToOne(() => GesprekEntity, (gesprek) => gesprek.berichten, {
+  @ManyToOne(() => ConversationEntity, (conversation) => conversation.messages, {
     onDelete: 'CASCADE',
   })
-  gesprek!: GesprekEntity;
+  conversation!: ConversationEntity;
 
   @Column({ type: 'varchar' })
-  rol!: BerichtRol;
+  role!: MessageRole;
 
   @Column({ type: 'text' })
-  inhoud!: string;
+  content!: string;
 
   @CreateDateColumn()
   timestamp!: Date;
