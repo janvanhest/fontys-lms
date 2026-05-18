@@ -29,7 +29,7 @@ function renderActiveTab(activeTab: ReturnType<typeof useLayout>['activeTab']) {
 }
 
 export function AppLayout() {
-  const { activeTab } = useLayout()
+  const { activeTab, selectedConversationId } = useLayout()
 
   return (
     <Box
@@ -45,7 +45,11 @@ export function AppLayout() {
       <Box sx={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <Sidebar />
         <Box sx={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
-          {renderActiveTab(activeTab)}
+          {activeTab === 'chat' || activeTab === 'activities' ? (
+            <ChatTab conversationId={selectedConversationId ?? undefined} />
+          ) : (
+            renderActiveTab(activeTab)
+          )}
         </Box>
         <SidePanel />
       </Box>
