@@ -5,11 +5,40 @@ export type ConversationSummary = {
   id: string
   studentId: string
   createdAt: string
+  title?: string
+}
+
+export type ConversationMessage = {
+  id: string
+  role: 'student' | 'assistant'
+  content: string
+  timestamp: string
+  sources?: ChatSource[]
+}
+
+export type ConversationDetails = {
+  id: string
+  studentId: string
+  createdAt: string
+  title?: string
+  messages: ConversationMessage[]
 }
 
 export type ChatSseEvent = {
   event: 'status' | 'tool_call' | 'tool_result' | 'final' | 'error'
   data: string
+}
+
+export type ChatSource = {
+  kind: string
+  label: string
+  url: string | null
+}
+
+export type FinalChatPayload = {
+  text: string
+  conversationId?: string
+  sources?: ChatSource[]
 }
 
 function parseSseEventBlock(block: string): ChatSseEvent | null {
@@ -48,20 +77,79 @@ function parseSseEventBlock(block: string): ChatSseEvent | null {
   }
 }
 
+export function parseFinalChatPayload(data: string): FinalChatPayload {
+  try {
+    const parsed = JSON.parse(data) as unknown
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      typeof (parsed as { text?: unknown }).text === 'string'
+    ) {
+      const sources = Array.isArray((parsed as { sources?: unknown }).sources)
+        ? (parsed as { sources: ChatSource[] }).sources.filter(
+            (source) =>
+              source &&
+              typeof source.kind === 'string' &&
+              typeof source.label === 'string' &&
+              (typeof source.url === 'string' || source.url === null),
+          )
+        : undefined
+
+      return {
+        text: (parsed as { text: string }).text,
+        conversationId:
+          typeof (parsed as { conversationId?: unknown }).conversationId === 'string'
+            ? (parsed as { conversationId: string }).conversationId
+            : undefined,
+        sources: sources && sources.length > 0 ? sources : undefined,
+      }
+    }
+  } catch {
+    // Fall through to legacy plain-text payload handling.
+  }
+
+  return { text: data }
+}
+
 export async function fetchConversations(): Promise<ConversationSummary[]> {
   const res = await fetch(`${backendUrl}/chat/conversations`)
   if (!res.ok) throw new Error(`Failed to fetch conversations: ${res.status}`)
   return res.json() as Promise<ConversationSummary[]>
 }
 
+export async function fetchConversation(
+  conversationId: string,
+  signal?: AbortSignal,
+): Promise<ConversationDetails> {
+  const res = await fetch(`${backendUrl}/chat/conversations/${conversationId}`, { signal })
+  if (!res.ok) throw new Error(`Failed to fetch conversation: ${res.status}`)
+  return res.json() as Promise<ConversationDetails>
+}
+
+export async function updateConversationTitle(
+  conversationId: string,
+  title: string,
+): Promise<{ id: string; title: string }> {
+  const res = await fetch(`${backendUrl}/chat/conversations/${conversationId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title }),
+  })
+
+  if (!res.ok) throw new Error(`Failed to update conversation title: ${res.status}`)
+  return res.json() as Promise<{ id: string; title: string }>
+}
+
 export async function* streamChatMessage(
   message: string,
   conversationId?: string,
+  signal?: AbortSignal,
 ): AsyncGenerator<ChatSseEvent> {
   const res = await fetch(`${backendUrl}/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, conversationId }),
+    signal,
   })
 
   if (!res.ok || !res.body) {
