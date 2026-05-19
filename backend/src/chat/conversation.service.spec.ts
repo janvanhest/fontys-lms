@@ -1,13 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MessageEntity } from './message.entity';
-import { ConversationEntity } from './conversation.entity';
+import { MessageEntity } from './entities/message.entity';
+import { ConversationEntity } from './entities/conversation.entity';
 import { ConversationService } from './conversation.service';
 
 describe('ConversationService', () => {
   let service: ConversationService;
-  let conversationRepo: jest.Mocked<Pick<Repository<ConversationEntity>, 'save' | 'find' | 'findOne'>>;
+  let conversationRepo: jest.Mocked<
+    Pick<Repository<ConversationEntity>, 'save' | 'find' | 'findOne' | 'update'>
+  >;
   let messageRepo: jest.Mocked<Pick<Repository<MessageEntity>, 'save'>>;
 
   beforeEach(async () => {
@@ -15,6 +17,7 @@ describe('ConversationService', () => {
       save: jest.fn(),
       find: jest.fn(),
       findOne: jest.fn(),
+      update: jest.fn(),
     };
     messageRepo = {
       save: jest.fn(),
@@ -38,7 +41,12 @@ describe('ConversationService', () => {
     const result = await service.createConversation('student-uuid');
 
     expect(conversationRepo.save).toHaveBeenCalledWith(
-      expect.objectContaining({ studentId: 'student-uuid' }),
+      expect.objectContaining({
+        studentId: 'student-uuid',
+        title: null,
+        titleManuallyEdited: false,
+        titleRevisionCount: 0,
+      }),
     );
     expect(result.id).toBe('uuid-1');
   });
@@ -81,5 +89,19 @@ describe('ConversationService', () => {
       expect.objectContaining({ conversationId: 'c1', role: 'student', content: 'Hello' }),
     );
     expect(result.content).toBe('Hello');
+  });
+
+  it('updateConversationTitle trims the title and marks it as manually edited', async () => {
+    conversationRepo.update.mockResolvedValue({ affected: 1, generatedMaps: [], raw: [] });
+
+    await service.updateConversationTitle('c1', 'student-uuid', '  Semesterplan hulp  ');
+
+    expect(conversationRepo.update).toHaveBeenCalledWith(
+      { id: 'c1', studentId: 'student-uuid' },
+      {
+        title: 'Semesterplan hulp',
+        titleManuallyEdited: true,
+      },
+    );
   });
 });
