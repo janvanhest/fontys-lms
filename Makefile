@@ -1,7 +1,7 @@
 .PHONY: dev prod down test
 
 dev:
-	docker compose up --watch
+	docker compose up --build --watch
 
 prod:
 	docker compose -f compose.yaml -f compose.prod.yaml up --build

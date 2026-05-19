@@ -4,9 +4,17 @@ import {
   INestApplication,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
 import { configureApp, globalValidationPipeOptions } from './configure-app';
-import { EchoMessageDto } from './echo-message.dto';
+
+class TestDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  message!: string;
+}
 
 jest.mock('@nestjs/swagger', () => ({
   ApiProperty: () => () => undefined,
@@ -111,7 +119,7 @@ describe('configureApp', () => {
   describe('globalValidationPipeOptions', () => {
     const metadata: ArgumentMetadata = {
       type: 'body',
-      metatype: EchoMessageDto,
+      metatype: TestDto,
       data: '',
     };
 
@@ -119,7 +127,7 @@ describe('configureApp', () => {
       const pipe = new ValidationPipe(globalValidationPipeOptions);
 
       await expect(pipe.transform({ message: 'Hallo Fontys' }, metadata)).resolves.toBeInstanceOf(
-        EchoMessageDto,
+        TestDto,
       );
       await expect(pipe.transform({ message: 'Hallo Fontys' }, metadata)).resolves.toEqual({
         message: 'Hallo Fontys',

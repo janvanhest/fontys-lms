@@ -7,11 +7,14 @@ services:
       PORT: 3000
       NODE_ENV: development
       CORS_ORIGINS: http://localhost:5173
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      DATABASE_URL: ${DATABASE_URL}
     ports:
       - "3000:3000"
     volumes:
       - backend-node-modules:/app/node_modules
       - backend-pnpm-store:/pnpm/store
+      - ./canvas_content:/canvas_content:ro
     develop:
       watch:
         - action: sync
@@ -20,6 +23,8 @@ services:
         - action: rebuild
           path: ./backend/package.json
     depends_on:
+      ollama:
+        condition: service_healthy
       postgres:
         condition: service_healthy
 

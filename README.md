@@ -70,3 +70,12 @@ docker compose logs -f <service>                           # live logs van een s
 - `compose.yaml` — gedeelde services (postgres, mock-api)
 - `compose.override.yaml` — dev-configuratie, automatisch samengevoegd door Docker bij `docker compose up`
 - `compose.prod.yaml` — prod-configuratie, expliciet geladen via `make prod`
+
+## Packages toevoegen aan de backend
+
+De backend heeft een eigen `pnpm-lock.yaml` die Docker gebruikt. pnpm pikt echter de root `pnpm-workspace.yaml` op, waardoor een gewone `pnpm add` de verkeerde lockfile bijwerkt. Gebruik altijd:
+
+```bash
+cd backend
+pnpm add <package> --ignore-workspace
+```
