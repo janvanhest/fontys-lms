@@ -16,12 +16,12 @@ import {
 
 class EnvironmentVariables {
   @IsIn(['development', 'production', 'test'])
-  NODE_ENV = 'development';
+  NODE_ENV!: string;
 
   @IsInt()
   @Min(0)
   @Max(65535)
-  PORT = 3000;
+  PORT!: number;
 
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string'
@@ -39,7 +39,7 @@ class EnvironmentVariables {
         'Each CORS origin must include a protocol, e.g. http://host:port or https://host:port',
     },
   )
-  CORS_ORIGINS: string[] = ['http://localhost:5173'];
+  CORS_ORIGINS!: string[];
 
   // Must include protocol: http://host:port or https://host:port — bare hosts like ollama:11434 are rejected
   @IsUrl({
@@ -60,7 +60,7 @@ class EnvironmentVariables {
   ANTHROPIC_API_KEY!: string;
 
   @IsBoolean()
-  MOCK_AUTH = true;
+  MOCK_AUTH!: boolean;
 }
 
 type FormattedValidationError = {
