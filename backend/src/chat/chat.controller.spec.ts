@@ -7,8 +7,13 @@ import { ConversationService } from './conversation.service';
 
 describe('ChatController', () => {
   let controller: ChatController;
+  let conversationService: { updateConversationTitle: jest.Mock };
 
   beforeEach(async () => {
+    conversationService = {
+      updateConversationTitle: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ChatController],
       providers: [
@@ -21,7 +26,7 @@ describe('ChatController', () => {
             },
           },
         },
-        { provide: ConversationService, useValue: {} },
+        { provide: ConversationService, useValue: conversationService },
       ],
     }).compile();
 
@@ -39,5 +44,43 @@ describe('ChatController', () => {
       { type: 'status', data: 'Thinking...' },
       { type: 'final', data: 'Done.' },
     ]);
+  });
+
+  it('converts thrown chat errors into SSE error events', async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [ChatController],
+      providers: [
+        {
+          provide: ChatService,
+          useValue: {
+            async *streamResponse() {
+              throw new Error('Course search unavailable');
+            },
+          },
+        },
+        { provide: ConversationService, useValue: conversationService },
+      ],
+    }).compile();
+
+    controller = module.get<ChatController>(ChatController);
+    const student = { id: 'student-1' } as Student;
+
+    const events = await firstValueFrom(
+      controller.stream({ message: 'Hallo' }, student).pipe(toArray()),
+    );
+
+    expect(events).toEqual([{ type: 'error', data: 'Course search unavailable' }]);
+  });
+
+  it('forwards conversation title updates with the current student id', async () => {
+    const student = { id: 'student-1' } as Student;
+
+    await controller.updateConversationTitle('conversation-1', { title: 'Semesterplan hulp' }, student);
+
+    expect(conversationService.updateConversationTitle).toHaveBeenCalledWith(
+      'conversation-1',
+      'student-1',
+      'Semesterplan hulp',
+    );
   });
 });
