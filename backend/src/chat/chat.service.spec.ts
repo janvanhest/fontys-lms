@@ -320,6 +320,18 @@ describe('ChatService', () => {
         ],
       }),
     );
+    expect(mockConversationService.addMessage).toHaveBeenCalledWith(
+      'c1',
+      'assistant',
+      'Gebruik het stappenplan als leidraad.',
+      [
+        {
+          kind: 'canvas',
+          label: 'Canvas: Stappenplan',
+          url: 'https://canvas.example/stappenplan',
+        },
+      ],
+    );
   });
 
   it('deduplicates retrieved sources and limits them to the top 3', async () => {

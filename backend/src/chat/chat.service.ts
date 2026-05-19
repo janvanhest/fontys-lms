@@ -65,9 +65,13 @@ export class ChatService {
           .filter((b): b is Anthropic.TextBlock => b.type === 'text')
           .map((b) => b.text)
           .join('');
-        await this.conversationService.addMessage(conversation.id, 'assistant', text);
+        const finalSources = this.getFinalSources(usedSources);
+        await this.conversationService.addMessage(conversation.id, 'assistant', text, finalSources);
         await this.maybeUpdateConversationTitle(conversation, dto.message);
-        yield { event: 'final', data: this.serializeFinalPayload(conversation.id, text, usedSources) };
+        yield {
+          event: 'final',
+          data: this.serializeFinalPayload(conversation.id, text, finalSources),
+        };
         return;
       }
 
@@ -88,10 +92,16 @@ export class ChatService {
     );
     const fallback =
       'Ik kon je vraag niet volledig beantwoorden binnen het maximale aantal stappen.';
-    await this.conversationService.addMessage(conversation.id, 'assistant', fallback);
+    const finalSources = this.getFinalSources(usedSources);
+    await this.conversationService.addMessage(
+      conversation.id,
+      'assistant',
+      fallback,
+      finalSources,
+    );
     yield {
       event: 'final',
-      data: this.serializeFinalPayload(conversation.id, fallback, usedSources),
+      data: this.serializeFinalPayload(conversation.id, fallback, finalSources),
     };
   }
 
@@ -182,11 +192,14 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
     sources: ChatSource[],
   ): string {
     const payload: FinalChatPayload = { text, conversationId };
-    const uniqueSources = this.deduplicateSources(sources).slice(0, 3);
-    if (uniqueSources.length > 0) {
-      payload.sources = uniqueSources;
+    if (sources.length > 0) {
+      payload.sources = sources;
     }
     return JSON.stringify(payload);
+  }
+
+  private getFinalSources(sources: ChatSource[]): ChatSource[] {
+    return this.deduplicateSources(sources).slice(0, 3);
   }
 
   private deduplicateSources(sources: ChatSource[]): ChatSource[] {
