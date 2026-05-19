@@ -1,5 +1,6 @@
 import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Student } from '../../student/student.entity';
 import { StudentService } from '../../student/student.service';
@@ -30,6 +31,7 @@ describe('MockAuthGuard', () => {
         MockAuthGuard,
         { provide: StudentService, useFactory: mockStudentService },
         { provide: Reflector, useFactory: mockReflector },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(true) } },
       ],
     }).compile();
 
@@ -63,5 +65,24 @@ describe('MockAuthGuard', () => {
       avatarUrl: 'https://avatars.githubusercontent.com/u/81753593?v=4',
     });
     expect(request.user).toBe(student);
+  });
+
+  it('rejects protected routes when MOCK_AUTH is disabled', async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        MockAuthGuard,
+        { provide: StudentService, useFactory: mockStudentService },
+        { provide: Reflector, useFactory: mockReflector },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(false) } },
+      ],
+    }).compile();
+
+    guard = module.get(MockAuthGuard);
+    reflector = module.get(Reflector);
+    reflector.getAllAndOverride.mockReturnValue(false);
+
+    await expect(guard.canActivate(buildContext(false, {}))).rejects.toThrow(
+      'Mock auth is disabled',
+    );
   });
 });
