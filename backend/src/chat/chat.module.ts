@@ -1,25 +1,25 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmbeddingModule } from '../embedding/embedding.module';
-import { MessageEntity } from './message.entity';
+import { DocumentModule } from '../document/document.module';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
-import { DocumentSearchService } from './document-search.service';
-import { ConversationEntity } from './conversation.entity';
+import { ConversationEntity } from './entities/conversation.entity';
+import { MessageEntity } from './entities/message.entity';
 import { ConversationService } from './conversation.service';
-import { RagTool } from './rag.tool';
-import { StudentContextTool } from './student-context.tool';
+import { RagTool } from './tools/rag.tool';
+import { StudentContextTool } from './tools/student-context.tool';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ConversationEntity, MessageEntity]),
     EmbeddingModule,
+    DocumentModule,
   ],
   controllers: [ChatController],
   providers: [
     ChatService,
     ConversationService,
-    DocumentSearchService,
     StudentContextTool,
     RagTool,
   ],

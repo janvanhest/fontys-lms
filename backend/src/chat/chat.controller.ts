@@ -1,4 +1,4 @@
-import { Body, Controller, Get, MessageEvent, Param, Post, Sse } from '@nestjs/common';
+import { Body, Controller, Get, MessageEvent, Param, Patch, Post, Sse } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { CurrentStudent } from '../auth/decorators/current-student.decorator';
@@ -6,6 +6,7 @@ import { Student } from '../student/student.entity';
 import { ChatService, ChatSseEvent } from './chat.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ConversationService } from './conversation.service';
+import { UpdateConversationTitleDto } from './dto/update-conversation-title.dto';
 
 @ApiTags('chat')
 @Controller('chat')
@@ -51,5 +52,16 @@ export class ChatController {
   @ApiOperation({ summary: 'Conversation with messages by ID (FR-08)' })
   async getConversation(@Param('id') id: string) {
     return this.conversationService.findConversationWithMessages(id);
+  }
+
+  @Patch('conversations/:id')
+  @ApiOperation({ summary: 'Update a conversation title for the logged-in student' })
+  async updateConversationTitle(
+    @Param('id') id: string,
+    @Body() dto: UpdateConversationTitleDto,
+    @CurrentStudent() student: Student,
+  ) {
+    await this.conversationService.updateConversationTitle(id, student.id, dto.title);
+    return { id, title: dto.title.trim() };
   }
 }

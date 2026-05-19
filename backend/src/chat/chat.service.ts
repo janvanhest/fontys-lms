@@ -1,13 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
-import { ConversationEntity } from './conversation.entity';
+import { ConversationEntity } from './entities/conversation.entity';
 import { ConversationService } from './conversation.service';
-import { RAG_TOOL_DEF, RagTool } from './rag.tool';
-import { STUDENT_CONTEXT_TOOL_DEF, StudentContextTool } from './student-context.tool';
+import { RAG_TOOL_DEF, RagTool } from './tools/rag.tool';
+import { STUDENT_CONTEXT_TOOL_DEF, StudentContextTool } from './tools/student-context.tool';
 import { SendMessageDto } from './dto/send-message.dto';
+import { ChatSource } from '../document/document-search.service';
 
 export type ChatSseEvent = { event: string; data: string };
+type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
 
 const SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
 Je helpt studenten hun leervoortgang te begrijpen en te verbeteren.
@@ -40,6 +42,7 @@ export class ChatService {
     await this.conversationService.addMessage(conversation.id, 'student', dto.message);
 
     const messages = this.buildMessageHistory(conversation, dto.message);
+    const usedSources: ChatSource[] = [];
     let iterations = 0;
     let lastStopReason: string | null = null;
 
@@ -63,7 +66,8 @@ export class ChatService {
           .map((b) => b.text)
           .join('');
         await this.conversationService.addMessage(conversation.id, 'assistant', text);
-        yield { event: 'final', data: text };
+        await this.maybeUpdateConversationTitle(conversation, dto.message);
+        yield { event: 'final', data: this.serializeFinalPayload(conversation.id, text, usedSources) };
         return;
       }
 
@@ -72,6 +76,7 @@ export class ChatService {
         for (const event of toolResults.events) {
           yield event;
         }
+        usedSources.push(...toolResults.sources);
         messages.push({ role: 'user', content: toolResults.results });
       }
 
@@ -84,7 +89,10 @@ export class ChatService {
     const fallback =
       'Ik kon je vraag niet volledig beantwoorden binnen het maximale aantal stappen.';
     await this.conversationService.addMessage(conversation.id, 'assistant', fallback);
-    yield { event: 'final', data: fallback };
+    yield {
+      event: 'final',
+      data: this.serializeFinalPayload(conversation.id, fallback, usedSources),
+    };
   }
 
   private buildSystemPrompt(): string {
@@ -130,9 +138,11 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
   ): Promise<{
     events: ChatSseEvent[];
     results: Anthropic.ToolResultBlockParam[];
+    sources: ChatSource[];
   }> {
     const events: ChatSseEvent[] = [];
     const results: Anthropic.ToolResultBlockParam[] = [];
+    const sources: ChatSource[] = [];
 
     for (const block of content) {
       if (block.type !== 'tool_use') continue;
@@ -152,7 +162,9 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
           result = await this.studentContextTool.execute(studentId);
         }
       } else if (block.name === 'search_course_content') {
-        result = await this.ragTool.execute((block.input as { query: string }).query);
+        const retrieval = await this.ragTool.execute((block.input as { query: string }).query);
+        result = retrieval.content;
+        sources.push(...retrieval.sources);
       } else {
         result = `Unknown tool: ${block.name}`;
       }
@@ -161,6 +173,123 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
       results.push({ type: 'tool_result', tool_use_id: block.id, content: result });
     }
 
-    return { events, results };
+    return { events, results, sources };
+  }
+
+  private serializeFinalPayload(
+    conversationId: string,
+    text: string,
+    sources: ChatSource[],
+  ): string {
+    const payload: FinalChatPayload = { text, conversationId };
+    const uniqueSources = this.deduplicateSources(sources).slice(0, 3);
+    if (uniqueSources.length > 0) {
+      payload.sources = uniqueSources;
+    }
+    return JSON.stringify(payload);
+  }
+
+  private deduplicateSources(sources: ChatSource[]): ChatSource[] {
+    const seen = new Set<string>();
+    const unique: ChatSource[] = [];
+
+    for (const source of sources) {
+      const key = `${source.label}::${source.url ?? ''}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(source);
+    }
+
+    return unique;
+  }
+
+  private async maybeUpdateConversationTitle(
+    conversation: ConversationEntity,
+    latestStudentMessage: string,
+  ): Promise<void> {
+    if (conversation.titleManuallyEdited) return;
+
+    const nextRevision = this.getNextTitleRevision(conversation, latestStudentMessage);
+    if (nextRevision === null) return;
+
+    const title = this.generateConversationTitle(latestStudentMessage);
+    if (!title) return;
+
+    await this.conversationService.updateAutoConversationTitle(
+      conversation.id,
+      title,
+      nextRevision,
+    );
+  }
+
+  private getNextTitleRevision(
+    conversation: ConversationEntity,
+    latestStudentMessage: string,
+  ): number | null {
+    const revisionCount = conversation.titleRevisionCount ?? 0;
+    if (revisionCount === 0) {
+      return 1;
+    }
+
+    if (revisionCount >= 2) {
+      return null;
+    }
+
+    const studentMessages = [
+      ...(conversation.messages ?? []).filter((message) => message.role === 'student'),
+      { role: 'student', content: latestStudentMessage },
+    ];
+
+    return studentMessages.length >= 2 ? 2 : null;
+  }
+
+  private generateConversationTitle(message: string): string | null {
+    const cleaned = message
+      .replace(/[?!.,:;()[\]"]/g, ' ')
+      .split(/\s+/)
+      .map((word) => word.trim())
+      .filter((word) => word.length > 0);
+
+    const stopwords = new Set([
+      'aan',
+      'als',
+      'bij',
+      'de',
+      'dit',
+      'doen',
+      'een',
+      'en',
+      'er',
+      'gaan',
+      'hebben',
+      'helpen',
+      'het',
+      'hoe',
+      'hun',
+      'ik',
+      'in',
+      'je',
+      'kan',
+      'kun',
+      'kunnen',
+      'met',
+      'mijn',
+      'moet',
+      'ook',
+      'past',
+      'van',
+      'voor',
+      'wat',
+      'wil',
+      'weten',
+    ]);
+
+    const significantWords = cleaned.filter((word) => !stopwords.has(word.toLowerCase()));
+    const selectedWords = (significantWords.length > 0 ? significantWords : cleaned).slice(0, 4);
+    if (selectedWords.length === 0) return null;
+
+    return selectedWords
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 }
