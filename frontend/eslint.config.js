@@ -24,7 +24,7 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['.storybook/*.ts', '.storybook/*.tsx', '*.d.ts'],
+          allowDefaultProject: ['.storybook/*.ts', '.storybook/*.tsx', '*.d.ts', 'vitest.unit.config.ts'],
         },
       },
     },
