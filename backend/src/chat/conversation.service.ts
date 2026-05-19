@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MessageEntity, MessageRole } from './entities/message.entity';
+import { MessageEntity, MessageRole, MessageSource } from './entities/message.entity';
 import { ConversationEntity } from './entities/conversation.entity';
 
 @Injectable()
@@ -42,8 +42,14 @@ export class ConversationService {
     conversationId: string,
     role: MessageRole,
     content: string,
+    sources?: MessageSource[],
   ): Promise<MessageEntity> {
-    return this.messageRepository.save({ conversationId, role, content });
+    return this.messageRepository.save({
+      conversationId,
+      role,
+      content,
+      sources: sources && sources.length > 0 ? sources : null,
+    });
   }
 
   async updateConversationTitle(

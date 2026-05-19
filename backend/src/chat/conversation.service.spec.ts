@@ -91,6 +91,53 @@ describe('ConversationService', () => {
     expect(result.content).toBe('Hello');
   });
 
+  it('addMessage stores sources when provided for an assistant message', async () => {
+    const message = {
+      id: 'm2',
+      conversationId: 'c1',
+      role: 'assistant',
+      content: 'Gebruik dit stappenplan.',
+      sources: [
+        {
+          kind: 'canvas',
+          label: 'Canvas: Stappenplan',
+          url: 'https://canvas.example/stappenplan',
+        },
+      ],
+    } as MessageEntity;
+    messageRepo.save.mockResolvedValue(message);
+
+    const result = await service.addMessage('c1', 'assistant', 'Gebruik dit stappenplan.', [
+      {
+        kind: 'canvas',
+        label: 'Canvas: Stappenplan',
+        url: 'https://canvas.example/stappenplan',
+      },
+    ]);
+
+    expect(messageRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        conversationId: 'c1',
+        role: 'assistant',
+        content: 'Gebruik dit stappenplan.',
+        sources: [
+          {
+            kind: 'canvas',
+            label: 'Canvas: Stappenplan',
+            url: 'https://canvas.example/stappenplan',
+          },
+        ],
+      }),
+    );
+    expect(result.sources).toEqual([
+      {
+        kind: 'canvas',
+        label: 'Canvas: Stappenplan',
+        url: 'https://canvas.example/stappenplan',
+      },
+    ]);
+  });
+
   it('updateConversationTitle trims the title and marks it as manually edited', async () => {
     conversationRepo.update.mockResolvedValue({ affected: 1, generatedMaps: [], raw: [] });
 
