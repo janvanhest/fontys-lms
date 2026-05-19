@@ -41,6 +41,13 @@ export type FinalChatPayload = {
   sources?: ChatSource[];
 };
 
+export type UiChatMessage = {
+  id: string;
+  role: 'student' | 'assistant';
+  content: string;
+  sources?: ChatSource[];
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -106,6 +113,15 @@ export function parseFinalChatPayload(data: string): FinalChatPayload {
   }
 
   return { text: data };
+}
+
+export function mapConversationMessageToUiMessage(message: ConversationMessage): UiChatMessage {
+  return {
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    sources: message.sources,
+  };
 }
 
 export async function fetchConversations(): Promise<ConversationSummary[]> {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseFinalChatPayload } from './chat';
+import { mapConversationMessageToUiMessage, parseFinalChatPayload } from './chat';
 
 describe('parseFinalChatPayload', () => {
   it('returns text plus sources for structured final payloads', () => {
@@ -44,6 +44,35 @@ describe('parseFinalChatPayload', () => {
     ).toEqual({
       text: 'Antwoord.',
       conversationId: 'conversation-1',
+    });
+  });
+
+  it('preserves sources when mapping stored conversation messages back into UI state', () => {
+    expect(
+      mapConversationMessageToUiMessage({
+        id: 'message-1',
+        role: 'assistant',
+        content: 'Gebruik het stappenplan.',
+        timestamp: '2026-05-19T12:00:00.000Z',
+        sources: [
+          {
+            kind: 'canvas',
+            label: 'Canvas: Stappenplan',
+            url: 'https://canvas.example/stappenplan',
+          },
+        ],
+      }),
+    ).toEqual({
+      id: 'message-1',
+      role: 'assistant',
+      content: 'Gebruik het stappenplan.',
+      sources: [
+        {
+          kind: 'canvas',
+          label: 'Canvas: Stappenplan',
+          url: 'https://canvas.example/stappenplan',
+        },
+      ],
     });
   });
 });

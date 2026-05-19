@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   fetchConversation,
+  mapConversationMessageToUiMessage,
   parseFinalChatPayload,
   streamChatMessage,
   type ChatSource,
@@ -65,11 +66,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
         if (ignore || !isMountedRef.current) return;
 
         setMessages(
-          conversation.messages.map((message) => ({
-            id: message.id,
-            role: message.role,
-            content: message.content,
-          })),
+          conversation.messages.map(mapConversationMessageToUiMessage),
         );
         setStatusText(null);
       })
