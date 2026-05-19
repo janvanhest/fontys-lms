@@ -2,13 +2,14 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl'
 import Avatar from '@mui/material/Avatar'
 import Box from '@mui/material/Box'
+import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
 import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { studentInitials, studentProfileOptions } from '@/api/student'
 import { useLayout } from '@/context/useLayout'
@@ -20,8 +21,16 @@ type ChatTabProps = {
 }
 
 export function ChatTab({ conversationId }: ChatTabProps = {}) {
-  const { sidePanelOpen, setSidePanelOpen, activeTab } = useLayout()
-  const { messages, isStreaming, statusText, sendMessage } = useChatStream(conversationId)
+  const { sidePanelOpen, setSidePanelOpen, activeTab, setSelectedConversationId } = useLayout()
+  const handleConversationEstablished = useCallback(
+    (nextConversationId: string) => {
+      if (conversationId === nextConversationId) return
+      setSelectedConversationId(nextConversationId)
+    },
+    [conversationId, setSelectedConversationId],
+  )
+  const { messages, isStreaming, isLoadingHistory, statusText, sendMessage } =
+    useChatStream(conversationId, { onConversationEstablished: handleConversationEstablished })
   const { data: student } = useQuery(studentProfileOptions)
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -71,7 +80,10 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
             {activeTab === 'activities' ? 'Activities' : 'Chat'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {statusText ?? 'Stel een vraag over je challenge, activiteiten of cursusinhoud.'}
+            {statusText ??
+              (isLoadingHistory
+                ? 'Gesprek laden...'
+                : 'Stel een vraag over je challenge, activiteiten of cursusinhoud.')}
           </Typography>
         </Box>
 
@@ -122,7 +134,54 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
                       {message.content}
                     </Typography>
                   ) : (
-                    <ChatMarkdown content={message.content} />
+                    <Box>
+                      <ChatMarkdown content={message.content} />
+                      {message.sources && message.sources.length > 0 ? (
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          useFlexGap
+                          sx={{ mt: 1.5, flexWrap: 'wrap' }}
+                        >
+                          {message.sources.map((source) => {
+                            const chip = (
+                              <Chip
+                                key={`${message.id}-${source.label}-${source.url ?? 'no-url'}`}
+                                label={source.label}
+                                size="small"
+                                variant="outlined"
+                                clickable={Boolean(source.url)}
+                                sx={{
+                                  borderColor: 'divider',
+                                  bgcolor: 'grey.50',
+                                  fontSize: '0.75rem',
+                                  '& .MuiChip-label': {
+                                    px: 1.25,
+                                  },
+                                }}
+                              />
+                            )
+
+                            if (!source.url) {
+                              return chip
+                            }
+
+                            return (
+                              <Box
+                                key={`${message.id}-${source.label}-${source.url}`}
+                                component="a"
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                sx={{ textDecoration: 'none' }}
+                              >
+                                {chip}
+                              </Box>
+                            )
+                          })}
+                        </Stack>
+                      ) : null}
+                    </Box>
                   )}
                 </Paper>
                 {isStudent && (
@@ -161,13 +220,13 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isStreaming}
+            disabled={isStreaming || isLoadingHistory}
           />
           <IconButton
             color="primary"
             aria-label="Send message"
             onClick={() => void handleSend()}
-            disabled={isStreaming || !input.trim()}
+            disabled={isStreaming || isLoadingHistory || !input.trim()}
           >
             <ArrowUpwardIcon />
           </IconButton>

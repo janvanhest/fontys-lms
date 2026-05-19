@@ -1,6 +1,8 @@
 import Box from '@mui/material/Box'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { studentProfileOptions, type StudentProfile } from '@/api/student'
 import { LayoutStoryProvider } from '@/storybook/LayoutStoryProvider'
 import { ChatTab } from './ChatTab'
 
@@ -19,12 +21,26 @@ function ChatFrame({
   sidePanelOpen?: boolean
   children: ReactNode
 }) {
+  const queryClient = new QueryClient()
+  const student: StudentProfile = {
+    id: 'student-1',
+    canvasUserId: '31474',
+    displayName: 'Hest, Jan J.H. van',
+    email: 'jan.vanhest@student.fontys.nl',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/81753593?v=4',
+    createdAt: '2026-05-19T00:00:00.000Z',
+  }
+
+  queryClient.setQueryData(studentProfileOptions.queryKey, student)
+
   return (
-    <LayoutStoryProvider sidePanelOpen={sidePanelOpen}>
-      <Box sx={{ height: 640, display: 'flex', flexDirection: 'column' }}>
-        {children}
-      </Box>
-    </LayoutStoryProvider>
+    <QueryClientProvider client={queryClient}>
+      <LayoutStoryProvider sidePanelOpen={sidePanelOpen}>
+        <Box sx={{ height: 640, display: 'flex', flexDirection: 'column' }}>
+          {children}
+        </Box>
+      </LayoutStoryProvider>
+    </QueryClientProvider>
   )
 }
 
