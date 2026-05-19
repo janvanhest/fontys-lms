@@ -3,6 +3,7 @@ import { validate } from './env.validation';
 const validBase = {
   DATABASE_URL: 'postgresql://user:pass@localhost:5432/lms',
   ANTHROPIC_API_KEY: 'sk-ant-test-key',
+  OLLAMA_URL: 'http://ollama:11434',
 };
 
 describe('validate', () => {
@@ -11,7 +12,7 @@ describe('validate', () => {
 
     expect(config.NODE_ENV).toBe('development');
     expect(config.PORT).toBe(3000);
-    expect(config.CORS_ORIGINS).toBe('http://localhost:5173');
+    expect(config.CORS_ORIGINS).toEqual(['http://localhost:5173']);
     expect(config.OLLAMA_URL).toBe('http://ollama:11434');
   });
 
@@ -25,7 +26,16 @@ describe('validate', () => {
 
     expect(config.NODE_ENV).toBe('test');
     expect(config.PORT).toBe(4000);
-    expect(config.CORS_ORIGINS).toBe('http://localhost:5173,https://frontend.example.com');
+    expect(config.CORS_ORIGINS).toEqual(['http://localhost:5173', 'https://frontend.example.com']);
+  });
+
+  it('rejects CORS_ORIGINS without protocol', () => {
+    expect(() => validate({ ...validBase, CORS_ORIGINS: 'localhost:5173' })).toThrow(
+      /Environment validation failed/,
+    );
+    expect(() => validate({ ...validBase, CORS_ORIGINS: 'localhost:5173' })).toThrow(
+      /"property": "CORS_ORIGINS"/,
+    );
   });
 
   it('rejects unsupported node environments', () => {
