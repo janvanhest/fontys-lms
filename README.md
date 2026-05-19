@@ -48,7 +48,7 @@ cp .env.example .env   # pas credentials aan waar nodig
 
 | Commando | Alternatief zonder Make | Beschrijving |
 |---|---|---|
-| `make dev` | `docker compose up --watch` | Start alle services met hot reload |
+| `make dev` | `docker compose up --watch` | Start alle development services met hot reload |
 | `make prod` | `docker compose -f compose.yaml -f compose.prod.yaml up --build` | Bouwt en start de productie-images |
 | `make down` | `docker compose down` | Stopt alle containers |
 | `make test` | `cd backend && pnpm test -- --verbose` | Draait de backend unit tests met beschrijvende output |
@@ -65,12 +65,18 @@ docker compose -f compose.yaml -f compose.prod.yaml config # toont de samengevoe
 docker compose logs -f <service>                           # live logs van een service (backend, frontend, ...)
 ```
 
-Als je een oude lokale Postgres-volume hebt van vóór de pgvector-wijziging op `documents.embedding`, reset die dan eenmalig:
+Als je een oud lokaal Postgres-volume hebt van vóór de pgvector-wijziging op `documents.embedding`, reset die dan eenmalig:
 
 ```bash
 docker compose down -v
 docker compose up --watch
 ```
+
+De development stack exposeert standaard:
+
+- de frontend dev server op `http://localhost:5173`
+- Storybook op `http://localhost:6006`
+- de mock API op `http://localhost:3002`
 
 **Hoe werkt de split?**
 
