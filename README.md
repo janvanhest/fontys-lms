@@ -78,6 +78,8 @@ De development stack exposeert standaard:
 - Storybook op `http://localhost:6006`
 - de mock API op `http://localhost:3002`
 
+De backend draait TypeORM-migraties automatisch bij het opstarten. Daardoor werkt zowel een bestaande lokale database als een volledig lege database van een collega zonder extra handmatige setup voor de chat-tabellen.
+
 **Hoe werkt de split?**
 
 - `compose.yaml` — gedeelde services (postgres, mock-api)
