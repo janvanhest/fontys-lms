@@ -84,15 +84,22 @@ pnpm --version # Verwacht: 10.33.2
 
 ## Storybook
 
-Gebruik Storybook om componenten los van de applicatie te bekijken en te ontwikkelen. Start eerst de normale frontend-setup, en start daarna Storybook in een aparte terminalsessie.
+Gebruik Storybook om componenten los van de applicatie te bekijken en te ontwikkelen. In de development-setup draait Storybook mee via Docker Compose.
 
 ```bash
-nvm use
-corepack enable
-pnpm install
+docker compose up --watch
+```
 
-pnpm dev        # Start de app op http://localhost:5173
-pnpm storybook  # Start Storybook op http://localhost:6006
+Dat start:
+
+- de Vite dev server op `http://localhost:5173`
+- Storybook op `http://localhost:6006`
+- de mock API op `http://localhost:3002`
+
+Als je Storybook toch lokaal wilt draaien binnen `frontend/`:
+
+```bash
+pnpm storybook
 ```
 
 ## Structuur
