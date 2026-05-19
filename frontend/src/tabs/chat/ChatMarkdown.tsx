@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-import { useEffect, useMemo, useState } from 'react';
+import { Children, useMemo, useState, type ReactNode } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -11,15 +11,22 @@ type ChatMarkdownProps = {
 };
 
 export function ChatMarkdown({ content }: ChatMarkdownProps) {
+  return <ChatMarkdownContent key={content} content={content} />;
+}
+
+function extractText(children: ReactNode): string {
+  return Children.toArray(children)
+    .filter((child): child is string | number => typeof child === 'string' || typeof child === 'number')
+    .map((child) => String(child))
+    .join('');
+}
+
+function ChatMarkdownContent({ content }: ChatMarkdownProps) {
   const [expanded, setExpanded] = useState(false);
   const isLongContent = useMemo(
     () => content.length > 1400 || content.split('\n').length > 18,
     [content],
   );
-
-  useEffect(() => {
-    setExpanded(false);
-  }, [content]);
 
   return (
     <Box
@@ -160,7 +167,7 @@ export function ChatMarkdown({ content }: ChatMarkdownProps) {
                       lineHeight: 1.55,
                     }}
                   >
-                    {String(children).replace(/\n$/, '')}
+                    {extractText(children).replace(/\n$/, '')}
                   </Box>
                 );
               }

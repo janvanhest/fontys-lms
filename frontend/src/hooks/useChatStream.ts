@@ -26,15 +26,18 @@ function generateMessageId(prefix: string): string {
   }
 
   messageIdCounter += 1;
-  return `${prefix}-${Date.now()}-${messageIdCounter}`;
+  return `${prefix}-${String(Date.now())}-${String(messageIdCounter)}`;
 }
 
 export function useChatStream(conversationId?: string, options: UseChatStreamOptions = {}) {
   const { onConversationEstablished } = options;
+  const hasConversation = Boolean(conversationId);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [statusText, setStatusText] = useState<string | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(hasConversation);
+  const [statusText, setStatusText] = useState<string | null>(
+    hasConversation ? 'Gesprek laden...' : null,
+  );
   const streamAbortRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
 
@@ -51,18 +54,11 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
     streamAbortRef.current?.abort();
 
     if (!conversationId) {
-      setMessages([]);
-      setStatusText(null);
-      setIsLoadingHistory(false);
       return;
     }
 
     const controller = new AbortController();
     let ignore = false;
-
-    setMessages([]);
-    setStatusText('Gesprek laden...');
-    setIsLoadingHistory(true);
 
     void fetchConversation(conversationId, controller.signal)
       .then((conversation) => {
@@ -122,81 +118,84 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
       try {
         for await (const sseEvent of streamChatMessage(text, conversationId, controller.signal)) {
-          if (sseEvent.event === 'status') {
-            if (!isMountedRef.current) return;
-            setStatusText(sseEvent.data);
-          } else if (sseEvent.event === 'tool_call') {
-            if (!isMountedRef.current) return;
-            try {
-              const payload = JSON.parse(sseEvent.data) as { name?: string };
-              setStatusText(
-                payload.name === 'search_course_content'
-                  ? 'Bronnen raadplegen...'
-                  : 'Extra context ophalen...',
+          if (!isMountedRef.current) return;
+
+          switch (sseEvent.event) {
+            case 'status':
+              setStatusText(sseEvent.data);
+              break;
+            case 'tool_call':
+              try {
+                const payload = JSON.parse(sseEvent.data) as { name?: string };
+                setStatusText(
+                  payload.name === 'search_course_content'
+                    ? 'Bronnen raadplegen...'
+                    : 'Extra context ophalen...',
+                );
+              } catch {
+                setStatusText('Bronnen raadplegen...');
+              }
+              break;
+            case 'tool_result':
+              setStatusText('Antwoord opstellen...');
+              break;
+            case 'final': {
+              const finalPayload = parseFinalChatPayload(sseEvent.data);
+              if (finalPayload.conversationId) {
+                onConversationEstablished?.(finalPayload.conversationId);
+              }
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === streamingId
+                    ? {
+                        ...m,
+                        content: finalPayload.text,
+                        sources: finalPayload.sources,
+                        isStreaming: false,
+                      }
+                    : m,
+                ),
               );
-            } catch {
-              setStatusText('Bronnen raadplegen...');
+              setStatusText(null);
+              break;
             }
-          } else if (sseEvent.event === 'tool_result') {
-            if (!isMountedRef.current) return;
-            setStatusText('Antwoord opstellen...');
-          } else if (sseEvent.event === 'final') {
-            if (!isMountedRef.current) return;
-            const finalPayload = parseFinalChatPayload(sseEvent.data);
-            if (finalPayload.conversationId) {
-              onConversationEstablished?.(finalPayload.conversationId);
-            }
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === streamingId
-                  ? {
-                      ...m,
-                      content: finalPayload.text,
-                      sources: finalPayload.sources,
-                      isStreaming: false,
-                    }
-                  : m,
-              ),
-            );
-            setStatusText(null);
-          } else if (sseEvent.event === 'error') {
-            if (!isMountedRef.current) return;
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === streamingId
-                  ? { ...m, content: `Error: ${sseEvent.data}`, isStreaming: false }
-                  : m,
-              ),
-            );
-            setStatusText(null);
+            case 'error':
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === streamingId
+                    ? { ...m, content: `Error: ${sseEvent.data}`, isStreaming: false }
+                    : m,
+                ),
+              );
+              setStatusText(null);
+              break;
           }
         }
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-          return;
+          // Ignore aborted streams; cleanup happens in finally.
+        } else if (isMountedRef.current) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === streamingId
+                ? {
+                    ...m,
+                    content: 'Error: de chatverbinding is onderbroken. Probeer het opnieuw.',
+                    isStreaming: false,
+                  }
+                : m,
+            ),
+          );
+          setStatusText(null);
         }
-        if (!isMountedRef.current) return;
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === streamingId
-              ? {
-                  ...m,
-                  content: 'Error: de chatverbinding is onderbroken. Probeer het opnieuw.',
-                  isStreaming: false,
-                }
-              : m,
-          ),
-        );
-        setStatusText(null);
       } finally {
         if (streamAbortRef.current === controller) {
           streamAbortRef.current = null;
         }
-        if (!isMountedRef.current) return;
-
-        setIsStreaming(false);
-        setStatusText(null);
+        if (isMountedRef.current) {
+          setIsStreaming(false);
+          setStatusText(null);
+        }
       }
     },
     [isStreaming, isLoadingHistory, conversationId, onConversationEstablished],

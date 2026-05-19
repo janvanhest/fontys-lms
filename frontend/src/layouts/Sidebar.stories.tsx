@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useEffect, type PropsWithChildren } from 'react';
 import { LayoutStoryProvider } from '@/storybook/LayoutStoryProvider';
 import { Sidebar } from './Sidebar';
 
@@ -27,57 +26,48 @@ const conversations = [
   },
 ];
 
-function MockSidebarFetch({ children }: PropsWithChildren) {
-  const originalFetch = globalThis.fetch;
-
-  globalThis.fetch = async (input: RequestInfo | URL) => {
-    const url =
-      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-    if (url.endsWith('/chat/conversations')) {
-      return new Response(JSON.stringify(conversations), {
+globalThis.fetch = (input: RequestInfo | URL) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  if (url.endsWith('/chat/conversations')) {
+    return Promise.resolve(
+      new Response(JSON.stringify(conversations), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      });
-    }
+      }),
+    );
+  }
 
-    if (
-      url.endsWith('/chat/conversations/conversation-1') ||
-      url.endsWith('/chat/conversations/conversation-2')
-    ) {
-      return new Response(JSON.stringify({ id: 'conversation-1' }), {
+  if (
+    url.endsWith('/chat/conversations/conversation-1') ||
+    url.endsWith('/chat/conversations/conversation-2')
+  ) {
+    return Promise.resolve(
+      new Response(JSON.stringify({ id: 'conversation-1' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      });
-    }
+      }),
+    );
+  }
 
-    if (url.includes('/chat/conversations/') && url.includes('conversation-')) {
-      return new Response(JSON.stringify({ id: 'conversation-1', title: 'Semesterplan hulp' }), {
+  if (url.includes('/chat/conversations/') && url.includes('conversation-')) {
+    return Promise.resolve(
+      new Response(JSON.stringify({ id: 'conversation-1', title: 'Semesterplan hulp' }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      });
-    }
+      }),
+    );
+  }
 
-    throw new Error(`Unhandled fetch in story: ${url}`);
-  };
-
-  useEffect(() => {
-    return () => {
-      globalThis.fetch = originalFetch;
-    };
-  }, [originalFetch]);
-
-  return <>{children}</>;
-}
+  return Promise.reject(new Error(`Unhandled fetch in story: ${url}`));
+};
 
 function SidebarFrame({ sidebarOpen }: { sidebarOpen: boolean }) {
   return (
-    <MockSidebarFetch>
-      <LayoutStoryProvider sidebarOpen={sidebarOpen}>
-        <Box sx={{ height: 520, display: 'flex', bgcolor: 'background.default' }}>
-          <Sidebar />
-        </Box>
-      </LayoutStoryProvider>
-    </MockSidebarFetch>
+    <LayoutStoryProvider sidebarOpen={sidebarOpen}>
+      <Box sx={{ height: 520, display: 'flex', bgcolor: 'background.default' }}>
+        <Sidebar />
+      </Box>
+    </LayoutStoryProvider>
   );
 }
 

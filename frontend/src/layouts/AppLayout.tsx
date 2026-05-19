@@ -46,7 +46,10 @@ export function AppLayout() {
         <Sidebar />
         <Box sx={{ flex: 1, minWidth: 0, overflowY: 'auto' }}>
           {activeTab === 'chat' || activeTab === 'activities' ? (
-            <ChatTab conversationId={selectedConversationId ?? undefined} />
+            <ChatTab
+              key={selectedConversationId ?? 'new-conversation'}
+              conversationId={selectedConversationId ?? undefined}
+            />
           ) : (
             renderActiveTab(activeTab)
           )}

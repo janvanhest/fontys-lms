@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { expect, waitFor } from 'storybook/test';
 import type { StudentProfile } from '@/api/student';
 import { LayoutStoryProvider } from '@/storybook/LayoutStoryProvider';
@@ -55,56 +54,47 @@ const conversationDetails = {
   ],
 };
 
-function MockFetchBoundary({ children }: React.PropsWithChildren) {
-  const originalFetch = globalThis.fetch;
+globalThis.fetch = (input: RequestInfo | URL) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
-  globalThis.fetch = async (input: RequestInfo | URL) => {
-    const url =
-      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-
-    if (url.endsWith('/student/me')) {
-      return new Response(JSON.stringify(mockStudent), {
+  if (url.endsWith('/student/me')) {
+    return Promise.resolve(
+      new Response(JSON.stringify(mockStudent), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      });
-    }
+      }),
+    );
+  }
 
-    if (url.endsWith('/chat/conversations')) {
-      return new Response(JSON.stringify(conversations), {
+  if (url.endsWith('/chat/conversations')) {
+    return Promise.resolve(
+      new Response(JSON.stringify(conversations), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      });
-    }
+      }),
+    );
+  }
 
-    if (url.endsWith('/chat/conversations/conversation-1')) {
-      return new Response(JSON.stringify(conversationDetails), {
+  if (url.endsWith('/chat/conversations/conversation-1')) {
+    return Promise.resolve(
+      new Response(JSON.stringify(conversationDetails), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
-      });
-    }
+      }),
+    );
+  }
 
-    throw new Error(`Unhandled fetch in story: ${url}`);
-  };
-
-  useEffect(() => {
-    return () => {
-      globalThis.fetch = originalFetch;
-    };
-  }, [originalFetch]);
-
-  return <>{children}</>;
-}
+  return Promise.reject(new Error(`Unhandled fetch in story: ${url}`));
+};
 
 function withAppProviders() {
   const qc = new QueryClient();
 
   return (Story: React.ComponentType) => (
     <QueryClientProvider client={qc}>
-      <MockFetchBoundary>
-        <LayoutStoryProvider>
-          <Story />
-        </LayoutStoryProvider>
-      </MockFetchBoundary>
+      <LayoutStoryProvider>
+        <Story />
+      </LayoutStoryProvider>
     </QueryClientProvider>
   );
 }

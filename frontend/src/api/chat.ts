@@ -41,6 +41,10 @@ export type FinalChatPayload = {
   sources?: ChatSource[];
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 function parseSseEventBlock(block: string): ChatSseEvent | null {
   const lines = block.split(/\r?\n/);
   let eventType: ChatSseEvent['event'] | null = null;
@@ -80,15 +84,11 @@ function parseSseEventBlock(block: string): ChatSseEvent | null {
 export function parseFinalChatPayload(data: string): FinalChatPayload {
   try {
     const parsed = JSON.parse(data) as unknown;
-    if (
-      parsed &&
-      typeof parsed === 'object' &&
-      typeof (parsed as { text?: unknown }).text === 'string'
-    ) {
-      const sources = Array.isArray((parsed as { sources?: unknown }).sources)
-        ? (parsed as { sources: ChatSource[] }).sources.filter(
-            (source) =>
-              source &&
+    if (isRecord(parsed) && typeof parsed.text === 'string') {
+      const sources = Array.isArray(parsed.sources)
+        ? parsed.sources.filter(
+            (source): source is ChatSource =>
+              isRecord(source) &&
               typeof source.kind === 'string' &&
               typeof source.label === 'string' &&
               (typeof source.url === 'string' || source.url === null),
@@ -96,12 +96,9 @@ export function parseFinalChatPayload(data: string): FinalChatPayload {
         : undefined;
 
       return {
-        text: (parsed as { text: string }).text,
-        conversationId:
-          typeof (parsed as { conversationId?: unknown }).conversationId === 'string'
-            ? (parsed as { conversationId: string }).conversationId
-            : undefined,
-        sources: sources && sources.length > 0 ? sources : undefined,
+        text: parsed.text,
+        conversationId: typeof parsed.conversationId === 'string' ? parsed.conversationId : undefined,
+        sources: sources?.length ? sources : undefined,
       };
     }
   } catch {
@@ -113,7 +110,7 @@ export function parseFinalChatPayload(data: string): FinalChatPayload {
 
 export async function fetchConversations(): Promise<ConversationSummary[]> {
   const res = await fetch(`${backendUrl}/chat/conversations`);
-  if (!res.ok) throw new Error(`Failed to fetch conversations: ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to fetch conversations: ${String(res.status)}`);
   return res.json() as Promise<ConversationSummary[]>;
 }
 
@@ -122,7 +119,7 @@ export async function fetchConversation(
   signal?: AbortSignal,
 ): Promise<ConversationDetails> {
   const res = await fetch(`${backendUrl}/chat/conversations/${conversationId}`, { signal });
-  if (!res.ok) throw new Error(`Failed to fetch conversation: ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to fetch conversation: ${String(res.status)}`);
   return res.json() as Promise<ConversationDetails>;
 }
 
@@ -136,7 +133,7 @@ export async function updateConversationTitle(
     body: JSON.stringify({ title }),
   });
 
-  if (!res.ok) throw new Error(`Failed to update conversation title: ${res.status}`);
+  if (!res.ok) throw new Error(`Failed to update conversation title: ${String(res.status)}`);
   return res.json() as Promise<{ id: string; title: string }>;
 }
 
@@ -153,7 +150,7 @@ export async function* streamChatMessage(
   });
 
   if (!res.ok || !res.body) {
-    yield { event: 'error', data: `HTTP ${res.status}` };
+    yield { event: 'error', data: `HTTP ${String(res.status)}` };
     return;
   }
 
@@ -161,7 +158,7 @@ export async function* streamChatMessage(
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
+  for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
 
@@ -171,7 +168,7 @@ export async function* streamChatMessage(
 
     for (const block of blocks) {
       const event = parseSseEventBlock(block);
-      if (event) {
+      if (event !== null) {
         yield event;
       }
     }
@@ -179,7 +176,7 @@ export async function* streamChatMessage(
 
   if (buffer.trim()) {
     const event = parseSseEventBlock(buffer);
-    if (event) {
+    if (event !== null) {
       yield event;
     }
   }

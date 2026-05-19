@@ -25,7 +25,9 @@ export function Sidebar() {
 
   const refreshConversations = useCallback((showLoader = false) => {
     if (showLoader) {
-      setLoading(true);
+      queueMicrotask(() => {
+        setLoading(true);
+      });
     }
     fetchConversations()
       .then(setConversations)
@@ -208,7 +210,7 @@ export function Sidebar() {
                   />
                 </ListItemButton>
               ))}
-              {conversations.length === 0 && !loading && (
+              {conversations.length === 0 && (
                 <Typography variant="caption" color="text.secondary">
                   Nog geen gesprekken
                 </Typography>
