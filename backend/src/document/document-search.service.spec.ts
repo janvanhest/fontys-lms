@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import { EmbeddingService } from '../embedding/embedding.service';
-import { DocumentSearchService } from './document-search.service';
+import {
+  DocumentSearchService,
+  DocumentSearchUnavailableError,
+} from './document-search.service';
 
 describe('DocumentSearchService', () => {
   let service: DocumentSearchService;
@@ -23,20 +26,30 @@ describe('DocumentSearchService', () => {
     service = module.get<DocumentSearchService>(DocumentSearchService);
   });
 
-  it('geeft lege string terug als embedText null is', async () => {
+  it('throws a specific error when embeddings are unavailable', async () => {
     mockEmbeddingService.embedText.mockResolvedValue(null);
 
-    const result = await service.zoekRelevanteChunks('test query');
-
-    expect(result).toBe('');
+    await expect(service.zoekRelevanteChunks('test query')).rejects.toBeInstanceOf(
+      DocumentSearchUnavailableError,
+    );
     expect(mockDataSource.query).not.toHaveBeenCalled();
   });
 
-  it('voert pgvector query uit en combineert content', async () => {
+  it('voert pgvector query uit en retourneert content plus bronmetadata', async () => {
     mockEmbeddingService.embedText.mockResolvedValue([0.1, 0.2, 0.3]);
     mockDataSource.query.mockResolvedValue([
-      { content: 'Eerste chunk.' },
-      { content: 'Tweede chunk.' },
+      {
+        content: 'Eerste chunk.',
+        source: 'canvas',
+        title: 'Stappenplan',
+        url: 'https://canvas.example/stappenplan',
+      },
+      {
+        content: 'Tweede chunk.',
+        source: 'canvas',
+        title: 'Portflow',
+        url: 'https://canvas.example/portflow',
+      },
     ]);
 
     const result = await service.zoekRelevanteChunks('challenge beschrijving');
@@ -49,16 +62,38 @@ describe('DocumentSearchService', () => {
       expect.stringContaining('real[]'),
       expect.anything(),
     );
-    expect(result).toContain('Eerste chunk.');
-    expect(result).toContain('Tweede chunk.');
+    expect(result).toEqual({
+      content: 'Eerste chunk.\n\n---\n\nTweede chunk.',
+      sources: [
+        {
+          kind: 'canvas',
+          label: 'Canvas: Stappenplan',
+          url: 'https://canvas.example/stappenplan',
+        },
+        {
+          kind: 'canvas',
+          label: 'Canvas: Portflow',
+          url: 'https://canvas.example/portflow',
+        },
+      ],
+    });
   });
 
-  it('geeft lege string terug als query geen resultaten heeft', async () => {
+  it('geeft leeg resultaat terug als query geen resultaten heeft', async () => {
     mockEmbeddingService.embedText.mockResolvedValue([0.1, 0.2]);
     mockDataSource.query.mockResolvedValue([]);
 
     const result = await service.zoekRelevanteChunks('onbekend onderwerp');
 
-    expect(result).toBe('');
+    expect(result).toEqual({ content: '', sources: [] });
+  });
+
+  it('throws a specific error when the vector query fails', async () => {
+    mockEmbeddingService.embedText.mockResolvedValue([0.1, 0.2, 0.3]);
+    mockDataSource.query.mockRejectedValue(new Error('database down'));
+
+    await expect(service.zoekRelevanteChunks('challenge beschrijving')).rejects.toBeInstanceOf(
+      DocumentSearchUnavailableError,
+    );
   });
 });
