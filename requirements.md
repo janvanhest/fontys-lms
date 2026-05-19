@@ -73,10 +73,10 @@ Het systeem stelt een student in staat een vraag te stellen aan de chatbot, die 
 
 ### **FR-05a — Studentprofiel via mock-authenticatie (PoC)**
 
-Het systeem injecteert bij elke request een hardcoded studentprofiel via een MockAuthGuard, zodat de PoC zonder Canvas-koppeling kan draaien.  
+Het systeem injecteert bij elk request een hardcoded studentprofiel via een MockAuthGuard, zodat de PoC zonder Canvas-koppeling kan draaien.  
 **Acceptatiecriteria:**
 
-- MockAuthGuard injecteert naam, email en student-id bij elke request
+- MockAuthGuard injecteert naam, email en student-id bij elk request
 - Een student hoeft niet apart in te loggen
 - De guard heeft dezelfde interface als de productie LtiAuthGuard zodat de swap later zonder andere codewijzigingen kan
 
