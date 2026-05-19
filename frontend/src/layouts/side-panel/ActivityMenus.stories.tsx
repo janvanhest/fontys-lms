@@ -1,14 +1,14 @@
-import { useState, type ComponentProps, type MouseEvent } from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Stack from '@mui/material/Stack'
-import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
-import { ActivityMenus } from './ActivityMenus'
-import { initialActivities } from './constants'
-import type { OpenSubmenu } from './types'
+import { useState, type ComponentProps, type MouseEvent } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
+import { ActivityMenus } from './ActivityMenus';
+import { initialActivities } from './constants';
+import type { OpenSubmenu } from './types';
 
-const MENU_ACTIVITY_ID = initialActivities[0].id
+const MENU_ACTIVITY_ID = initialActivities[0].id;
 
 const meta: Meta<typeof ActivityMenus> = {
   title: 'SidePanel/ActivityMenus',
@@ -25,37 +25,34 @@ const meta: Meta<typeof ActivityMenus> = {
     onTypeChange: fn(),
     onStatusChange: fn(),
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof ActivityMenus>
+export default meta;
+type Story = StoryObj<typeof ActivityMenus>;
 
 function MenuStory({
   initialOpenSubmenu,
   args,
 }: {
-  initialOpenSubmenu: OpenSubmenu
-  args: ComponentProps<typeof ActivityMenus>
+  initialOpenSubmenu: OpenSubmenu;
+  args: ComponentProps<typeof ActivityMenus>;
 }) {
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLButtonElement | null>(null)
-  const [submenuAnchorEl, setSubmenuAnchorEl] = useState<HTMLButtonElement | null>(null)
-  const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>(initialOpenSubmenu)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [submenuAnchorEl, setSubmenuAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>(initialOpenSubmenu);
 
   const closeMenus = () => {
-    setMenuAnchorEl(null)
-    setSubmenuAnchorEl(null)
-    setOpenSubmenu(null)
-    args.onCloseMenus()
-  }
+    setMenuAnchorEl(null);
+    setSubmenuAnchorEl(null);
+    setOpenSubmenu(null);
+    args.onCloseMenus();
+  };
 
-  const openSubmenuMenu = (
-    event: MouseEvent<HTMLElement>,
-    submenu: Exclude<OpenSubmenu, null>,
-  ) => {
-    setSubmenuAnchorEl(event.currentTarget as HTMLButtonElement)
-    setOpenSubmenu(submenu)
-    args.onOpenSubmenu(event, submenu)
-  }
+  const openSubmenuMenu = (event: MouseEvent<HTMLElement>, submenu: Exclude<OpenSubmenu, null>) => {
+    setSubmenuAnchorEl(event.currentTarget as HTMLButtonElement);
+    setOpenSubmenu(submenu);
+    args.onOpenSubmenu(event, submenu);
+  };
 
   return (
     <Box sx={{ height: 360, p: 4 }}>
@@ -64,7 +61,7 @@ function MenuStory({
           ref={setMenuAnchorEl}
           variant="contained"
           onClick={(event) => {
-            setMenuAnchorEl(event.currentTarget)
+            setMenuAnchorEl(event.currentTarget);
           }}
         >
           Main menu anchor
@@ -73,7 +70,7 @@ function MenuStory({
           ref={setSubmenuAnchorEl}
           variant="outlined"
           onClick={(event) => {
-            setSubmenuAnchorEl(event.currentTarget)
+            setSubmenuAnchorEl(event.currentTarget);
           }}
         >
           Submenu anchor
@@ -88,22 +85,22 @@ function MenuStory({
         onCloseMenus={closeMenus}
         onOpenSubmenu={openSubmenuMenu}
         onCloseSubmenu={() => {
-          setOpenSubmenu(null)
-          args.onCloseSubmenu()
+          setOpenSubmenu(null);
+          args.onCloseSubmenu();
         }}
       />
     </Box>
-  )
+  );
 }
 
 export const MainMenuOpen: Story = {
   render: (args) => <MenuStory args={args} initialOpenSubmenu={null} />,
-}
+};
 
 export const TypeSubmenuOpen: Story = {
   render: (args) => <MenuStory args={args} initialOpenSubmenu="type" />,
-}
+};
 
 export const StatusSubmenuOpen: Story = {
   render: (args) => <MenuStory args={args} initialOpenSubmenu="status" />,
-}
+};

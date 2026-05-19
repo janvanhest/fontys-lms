@@ -1,13 +1,13 @@
-import { lazy, Suspense } from 'react'
-import CssBaseline from '@mui/material/CssBaseline'
-import { ThemeProvider } from '@mui/material/styles'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense } from 'react';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-const queryClient = new QueryClient()
-import { AppLayout } from '@/layouts/AppLayout'
-import { NotFoundPage } from '@/pages/NotFoundPage'
-import muiTheme from '@/themes/muiTheme'
+const queryClient = new QueryClient();
+import { AppLayout } from '@/layouts/AppLayout';
+import { NotFoundPage } from '@/pages/NotFoundPage';
+import muiTheme from '@/themes/muiTheme';
 
 const StorybookDemoPage = import.meta.env.DEV
   ? lazy(() =>
@@ -15,30 +15,30 @@ const StorybookDemoPage = import.meta.env.DEV
         default: module.StorybookDemoPage,
       })),
     )
-  : () => null
+  : () => null;
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-    <ThemeProvider theme={muiTheme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<AppLayout />} />
-          <Route
-            path="/storybook-demo"
-            element={
-              <Suspense fallback={null}>
-                <StorybookDemoPage />
-              </Suspense>
-            }
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+      <ThemeProvider theme={muiTheme}>
+        <CssBaseline />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<AppLayout />} />
+            <Route
+              path="/storybook-demo"
+              element={
+                <Suspense fallback={null}>
+                  <StorybookDemoPage />
+                </Suspense>
+              }
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;

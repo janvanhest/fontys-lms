@@ -1,91 +1,87 @@
 /* eslint-disable max-lines */
-import { createTheme } from "@mui/material/styles";
+import { createTheme } from '@mui/material/styles';
 
 export const fontysColors = {
   paars: {
-    50: "#f3eaf3",
-    200: "#c49ac4",
-    300: "#aa7aaa",
-    main: "#663366",
-    dark: "#4d264d",
-    900: "#331a33",
+    50: '#f3eaf3',
+    200: '#c49ac4',
+    300: '#aa7aaa',
+    main: '#663366',
+    dark: '#4d264d',
+    900: '#331a33',
   },
   magenta: {
-    50: "#fff0f5",
-    main: "#CC0066",
-    dark: "#990050",
+    50: '#fff0f5',
+    main: '#CC0066',
+    dark: '#990050',
   },
   blauw: {
-    50: "#e6eef8",
-    main: "#0055A2",
-    dark: "#003d77",
+    50: '#e6eef8',
+    main: '#0055A2',
+    dark: '#003d77',
   },
-  oranje: "#E87722",
-  groen: "#4A8C3F",
-  geel: "#F0C630",
+  oranje: '#E87722',
+  groen: '#4A8C3F',
+  geel: '#F0C630',
 } as const;
 
 const typography = {
-  fontFamily: ["Roboto", "Arial", "sans-serif"].join(","),
+  fontFamily: ['Roboto', 'Arial', 'sans-serif'].join(','),
   h1: {
-    fontSize: "2.25rem",
+    fontSize: '2.25rem',
     fontWeight: 700,
-    letterSpacing: "-0.5px",
+    letterSpacing: '-0.5px',
     lineHeight: 1.2,
   },
   h2: {
-    fontSize: "1.75rem",
+    fontSize: '1.75rem',
     fontWeight: 700,
     lineHeight: 1.3,
   },
   h3: {
-    fontSize: "1.375rem",
+    fontSize: '1.375rem',
     fontWeight: 600,
     lineHeight: 1.4,
   },
   h4: {
-    fontSize: "1.125rem",
+    fontSize: '1.125rem',
     fontWeight: 600,
   },
   h5: {
-    fontSize: "1rem",
+    fontSize: '1rem',
     fontWeight: 600,
   },
   h6: {
-    fontSize: "0.875rem",
+    fontSize: '0.875rem',
     fontWeight: 600,
   },
   body1: {
-    fontSize: "0.9375rem",
+    fontSize: '0.9375rem',
     lineHeight: 1.6,
   },
   body2: {
-    fontSize: "0.8125rem",
+    fontSize: '0.8125rem',
     lineHeight: 1.5,
   },
   button: {
     fontWeight: 600,
-    textTransform: "none" as const,
-    letterSpacing: "0.01em",
+    textTransform: 'none' as const,
+    letterSpacing: '0.01em',
   },
   caption: {
-    fontSize: "0.75rem",
+    fontSize: '0.75rem',
   },
   subtitle1: {
-    fontSize: "1rem",
+    fontSize: '1rem',
     fontWeight: 500,
   },
   subtitle2: {
-    fontSize: "0.875rem",
+    fontSize: '0.875rem',
     fontWeight: 500,
   },
 };
 
-function makeComponents(
-  primaryMain: string,
-  primaryDark: string,
-  primaryLightBg: string,
-) {
+function makeComponents(primaryMain: string, primaryDark: string, primaryLightBg: string) {
   return {
     MuiButton: {
       defaultProps: {
@@ -94,26 +90,26 @@ function makeComponents(
       styleOverrides: {
         root: {
           borderRadius: 4,
-          padding: "8px 20px",
+          padding: '8px 20px',
           fontWeight: 600,
-          textTransform: "none" as const,
-          "&.MuiButton-containedPrimary": {
+          textTransform: 'none' as const,
+          '&.MuiButton-containedPrimary': {
             backgroundColor: primaryMain,
-            "&:hover": {
+            '&:hover': {
               backgroundColor: primaryDark,
             },
           },
-          "&.MuiButton-outlinedPrimary": {
+          '&.MuiButton-outlinedPrimary': {
             borderColor: primaryMain,
             color: primaryMain,
-            "&:hover": {
+            '&:hover': {
               backgroundColor: primaryLightBg,
               borderColor: primaryDark,
             },
           },
-          "&.MuiButton-textPrimary": {
+          '&.MuiButton-textPrimary': {
             color: primaryMain,
-            "&:hover": {
+            '&:hover': {
               backgroundColor: primaryLightBg,
             },
           },
@@ -140,7 +136,7 @@ function makeComponents(
       styleOverrides: {
         root: {
           color: primaryMain,
-          "&:hover": {
+          '&:hover': {
             color: primaryDark,
           },
         },
@@ -150,21 +146,21 @@ function makeComponents(
       styleOverrides: {
         root: {
           borderRadius: 8,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
         },
       },
     },
     MuiTextField: {
       defaultProps: {
-        variant: "outlined" as const,
-        size: "medium" as const,
+        variant: 'outlined' as const,
+        size: 'medium' as const,
       },
       styleOverrides: {
         root: {
-          "& .MuiOutlinedInput-root.Mui-focused fieldset": {
+          '& .MuiOutlinedInput-root.Mui-focused fieldset': {
             borderColor: primaryMain,
           },
-          "& label.Mui-focused": {
+          '& label.Mui-focused': {
             color: primaryMain,
           },
         },
@@ -174,7 +170,7 @@ function makeComponents(
       styleOverrides: {
         root: {
           color: primaryMain,
-          "&.Mui-checked": {
+          '&.Mui-checked': {
             color: primaryMain,
           },
         },
@@ -183,7 +179,7 @@ function makeComponents(
     MuiRadio: {
       styleOverrides: {
         root: {
-          "&.Mui-checked": {
+          '&.Mui-checked': {
             color: primaryMain,
           },
         },
@@ -192,9 +188,9 @@ function makeComponents(
     MuiSwitch: {
       styleOverrides: {
         switchBase: {
-          "&.Mui-checked": {
+          '&.Mui-checked': {
             color: primaryMain,
-            "& + .MuiSwitch-track": {
+            '& + .MuiSwitch-track': {
               backgroundColor: primaryMain,
             },
           },
@@ -211,7 +207,7 @@ function makeComponents(
     MuiTab: {
       styleOverrides: {
         root: {
-          textTransform: "none" as const,
+          textTransform: 'none' as const,
           fontWeight: 500,
         },
       },
@@ -219,9 +215,9 @@ function makeComponents(
     MuiFab: {
       styleOverrides: {
         root: {
-          "&.MuiFab-primary": {
+          '&.MuiFab-primary': {
             backgroundColor: primaryMain,
-            "&:hover": {
+            '&:hover': {
               backgroundColor: primaryDark,
             },
           },
@@ -231,7 +227,7 @@ function makeComponents(
     MuiBadge: {
       styleOverrides: {
         badge: {
-          "&.MuiBadge-colorPrimary": {
+          '&.MuiBadge-colorPrimary': {
             backgroundColor: primaryMain,
           },
         },
@@ -240,7 +236,7 @@ function makeComponents(
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundImage: "none",
+          backgroundImage: 'none',
         },
       },
     },
@@ -253,17 +249,17 @@ export const fontysDefaultTheme = createTheme({
       light: fontysColors.paars[300],
       main: fontysColors.paars.main,
       dark: fontysColors.paars.dark,
-      contrastText: "#fff",
+      contrastText: '#fff',
     },
     secondary: {
       main: fontysColors.magenta.main,
       dark: fontysColors.magenta.dark,
-      contrastText: "#fff",
+      contrastText: '#fff',
     },
     info: {
       main: fontysColors.blauw.main,
       dark: fontysColors.blauw.dark,
-      contrastText: "#fff",
+      contrastText: '#fff',
     },
     warning: {
       main: fontysColors.oranje,
@@ -272,15 +268,15 @@ export const fontysDefaultTheme = createTheme({
       main: fontysColors.groen,
     },
     error: {
-      main: "#d32f2f",
+      main: '#d32f2f',
     },
     background: {
-      default: "#f9f7f9",
-      paper: "#ffffff",
+      default: '#f9f7f9',
+      paper: '#ffffff',
     },
     text: {
-      primary: "#1a1a1a",
-      secondary: "#5f5f5f",
+      primary: '#1a1a1a',
+      secondary: '#5f5f5f',
     },
   },
   typography,
@@ -297,19 +293,19 @@ export const fontysDefaultTheme = createTheme({
 export const fontysOranjeTheme = createTheme({
   palette: {
     primary: {
-      light: "#f5a559",
-      main: "#E87722",
-      dark: "#b85a10",
-      contrastText: "#fff",
+      light: '#f5a559',
+      main: '#E87722',
+      dark: '#b85a10',
+      contrastText: '#fff',
     },
     secondary: {
       main: fontysColors.paars.main,
       dark: fontysColors.paars.dark,
-      contrastText: "#fff",
+      contrastText: '#fff',
     },
     info: {
       main: fontysColors.blauw.main,
-      contrastText: "#fff",
+      contrastText: '#fff',
     },
     warning: {
       main: fontysColors.geel,
@@ -318,22 +314,22 @@ export const fontysOranjeTheme = createTheme({
       main: fontysColors.groen,
     },
     error: {
-      main: "#d32f2f",
+      main: '#d32f2f',
     },
     background: {
-      default: "#fffaf5",
-      paper: "#ffffff",
+      default: '#fffaf5',
+      paper: '#ffffff',
     },
     text: {
-      primary: "#1a1a1a",
-      secondary: "#5f5f5f",
+      primary: '#1a1a1a',
+      secondary: '#5f5f5f',
     },
   },
   typography,
   shape: {
     borderRadius: 4,
   },
-  components: makeComponents("#E87722", "#b85a10", "#fff3e6"),
+  components: makeComponents('#E87722', '#b85a10', '#fff3e6'),
 });
 
 export default fontysDefaultTheme;

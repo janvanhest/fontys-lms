@@ -10,8 +10,7 @@ export interface StudentProfile {
 }
 
 const apiBase =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-  'http://localhost:3000';
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:3000';
 
 export const studentProfileOptions = queryOptions({
   queryKey: ['student', 'me'],

@@ -1,22 +1,28 @@
-import { useState } from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Container from '@mui/material/Container'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import { Link } from 'react-router-dom'
-import { chuckNorrisApiSource } from '@/api/chuckNorris'
-import { ChuckNorrisWidget } from '@/components/ChuckNorrisWidget'
-import { useChuckNorrisCategories } from '@/hooks/useChuckNorrisCategories'
-import { useChuckNorrisJoke } from '@/hooks/useChuckNorrisJoke'
+import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { Link } from 'react-router-dom';
+import { chuckNorrisApiSource } from '@/api/chuckNorris';
+import { ChuckNorrisWidget } from '@/components/ChuckNorrisWidget';
+import { useChuckNorrisCategories } from '@/hooks/useChuckNorrisCategories';
+import { useChuckNorrisJoke } from '@/hooks/useChuckNorrisJoke';
 
 export function StorybookDemoPage() {
-  const [category, setCategory] = useState<string | null>(null)
-  const [count, setCount] = useState(1)
+  const [category, setCategory] = useState<string | null>(null);
+  const [count, setCount] = useState(1);
 
-  const { data: categories } = useChuckNorrisCategories()
-  const { data: joke, isPending, isRefetching, isError, error, refetch } =
-    useChuckNorrisJoke(category)
+  const { data: categories } = useChuckNorrisCategories();
+  const {
+    data: joke,
+    isPending,
+    isRefetching,
+    isError,
+    error,
+    refetch,
+  } = useChuckNorrisJoke(category);
 
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
@@ -49,16 +55,16 @@ export function StorybookDemoPage() {
             errorMessage={error?.message}
             count={count}
             onRefetch={() => {
-              setCount((currentCount) => currentCount + 1)
-              void refetch()
+              setCount((currentCount) => currentCount + 1);
+              void refetch();
             }}
             onCategoryChange={(nextCategory) => {
-              setCategory(nextCategory)
-              setCount(1)
+              setCategory(nextCategory);
+              setCount(1);
             }}
           />
         </Box>
       </Stack>
     </Container>
-  )
+  );
 }

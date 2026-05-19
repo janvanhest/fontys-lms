@@ -1,24 +1,24 @@
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import Box from '@mui/material/Box'
-import Divider from '@mui/material/Divider'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import Typography from '@mui/material/Typography'
-import { statusMeta, statusOptions, subtypeOptions } from './constants'
-import type { ActivityItem, ActivityStatus, ActivityType, OpenSubmenu } from './types'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import { statusMeta, statusOptions, subtypeOptions } from './constants';
+import type { ActivityItem, ActivityStatus, ActivityType, OpenSubmenu } from './types';
 
 type ActivityMenusProps = {
-  activities: ActivityItem[]
-  menuActivityId: string | null
-  menuAnchorEl: HTMLElement | null
-  submenuAnchorEl: HTMLElement | null
-  openSubmenu: OpenSubmenu
-  onCloseMenus: () => void
-  onOpenSubmenu: (event: React.MouseEvent<HTMLElement>, submenu: 'type' | 'status') => void
-  onCloseSubmenu: () => void
-  onTypeChange: (nextType: ActivityType) => void
-  onStatusChange: (status: ActivityStatus) => void
-}
+  activities: ActivityItem[];
+  menuActivityId: string | null;
+  menuAnchorEl: HTMLElement | null;
+  submenuAnchorEl: HTMLElement | null;
+  openSubmenu: OpenSubmenu;
+  onCloseMenus: () => void;
+  onOpenSubmenu: (event: React.MouseEvent<HTMLElement>, submenu: 'type' | 'status') => void;
+  onCloseSubmenu: () => void;
+  onTypeChange: (nextType: ActivityType) => void;
+  onStatusChange: (status: ActivityStatus) => void;
+};
 
 export function ActivityMenus({
   activities,
@@ -32,7 +32,7 @@ export function ActivityMenus({
   onTypeChange,
   onStatusChange,
 }: ActivityMenusProps) {
-  const activity = activities.find((item) => item.id === menuActivityId)
+  const activity = activities.find((item) => item.id === menuActivityId);
 
   return (
     <>
@@ -50,7 +50,7 @@ export function ActivityMenus({
         <MenuItem onClick={onCloseMenus}>Bewerk</MenuItem>
         <MenuItem
           onClick={(event) => {
-            onOpenSubmenu(event, 'type')
+            onOpenSubmenu(event, 'type');
           }}
         >
           <SubmenuLabel label="Verander soort" />
@@ -58,7 +58,7 @@ export function ActivityMenus({
         <Divider />
         <MenuItem
           onClick={(event) => {
-            onOpenSubmenu(event, 'status')
+            onOpenSubmenu(event, 'status');
           }}
         >
           <SubmenuLabel label="Markeer als..." />
@@ -77,7 +77,7 @@ export function ActivityMenus({
               <MenuItem
                 key={option.value}
                 onClick={() => {
-                  onTypeChange(option.value)
+                  onTypeChange(option.value);
                 }}
               >
                 {option.label}
@@ -91,7 +91,7 @@ export function ActivityMenus({
                 key={status}
                 selected={activity?.status === status}
                 onClick={() => {
-                  onStatusChange(status)
+                  onStatusChange(status);
                 }}
               >
                 <Box
@@ -110,7 +110,7 @@ export function ActivityMenus({
           : null}
       </Menu>
     </>
-  )
+  );
 }
 
 function SubmenuLabel({ label }: { label: string }) {
@@ -127,5 +127,5 @@ function SubmenuLabel({ label }: { label: string }) {
       <Typography variant="inherit">{label}</Typography>
       <ChevronRightIcon fontSize="small" />
     </Box>
-  )
+  );
 }

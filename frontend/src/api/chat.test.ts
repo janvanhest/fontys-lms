@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { parseFinalChatPayload } from './chat'
+import { describe, expect, it } from 'vitest';
+import { parseFinalChatPayload } from './chat';
 
 describe('parseFinalChatPayload', () => {
   it('returns text plus sources for structured final payloads', () => {
@@ -14,7 +14,7 @@ describe('parseFinalChatPayload', () => {
           },
         ],
       }),
-    )
+    );
 
     expect(result).toEqual({
       text: 'Gebruik het stappenplan.',
@@ -26,12 +26,12 @@ describe('parseFinalChatPayload', () => {
           url: 'https://canvas.example/stappenplan',
         },
       ],
-    })
-  })
+    });
+  });
 
   it('falls back to plain text for legacy final payloads', () => {
-    expect(parseFinalChatPayload('Oud antwoord.')).toEqual({ text: 'Oud antwoord.' })
-  })
+    expect(parseFinalChatPayload('Oud antwoord.')).toEqual({ text: 'Oud antwoord.' });
+  });
 
   it('parses a conversation id when the final payload provides one', () => {
     expect(
@@ -44,6 +44,6 @@ describe('parseFinalChatPayload', () => {
     ).toEqual({
       text: 'Antwoord.',
       conversationId: 'conversation-1',
-    })
-  })
-})
+    });
+  });
+});

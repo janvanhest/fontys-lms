@@ -1,27 +1,27 @@
-import type { KeyboardEvent, MouseEvent } from 'react'
-import Box from '@mui/material/Box'
-import Divider from '@mui/material/Divider'
-import Typography from '@mui/material/Typography'
-import { alpha } from '@mui/material/styles'
-import Timeline from '@mui/lab/Timeline'
-import TimelineConnector from '@mui/lab/TimelineConnector'
-import TimelineContent from '@mui/lab/TimelineContent'
-import TimelineDot from '@mui/lab/TimelineDot'
-import TimelineItem from '@mui/lab/TimelineItem'
-import TimelineSeparator from '@mui/lab/TimelineSeparator'
-import { ActivityCard } from './ActivityCard'
-import { getTypeLabel, statusMeta } from './constants'
-import type { ActivityGroupSection } from './types'
+import type { KeyboardEvent, MouseEvent } from 'react';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
+import Timeline from '@mui/lab/Timeline';
+import TimelineConnector from '@mui/lab/TimelineConnector';
+import TimelineContent from '@mui/lab/TimelineContent';
+import TimelineDot from '@mui/lab/TimelineDot';
+import TimelineItem from '@mui/lab/TimelineItem';
+import TimelineSeparator from '@mui/lab/TimelineSeparator';
+import { ActivityCard } from './ActivityCard';
+import { getTypeLabel, statusMeta } from './constants';
+import type { ActivityGroupSection } from './types';
 
 type ActivityTimelineProps = {
-  groups: ActivityGroupSection[]
-  selectedActivityId: string | null
-  menuActivityId: string | null
-  menuAnchorEl: HTMLElement | null
-  onSelectActivity: (activityId: string) => void
-  onCardKeyDown: (event: KeyboardEvent<HTMLDivElement>, activityId: string) => void
-  onOpenMenu: (event: MouseEvent<HTMLButtonElement>, activityId: string) => void
-}
+  groups: ActivityGroupSection[];
+  selectedActivityId: string | null;
+  menuActivityId: string | null;
+  menuAnchorEl: HTMLElement | null;
+  onSelectActivity: (activityId: string) => void;
+  onCardKeyDown: (event: KeyboardEvent<HTMLDivElement>, activityId: string) => void;
+  onOpenMenu: (event: MouseEvent<HTMLButtonElement>, activityId: string) => void;
+};
 
 export function ActivityTimeline({
   groups,
@@ -45,7 +45,10 @@ export function ActivityTimeline({
             gap: 1,
           }}
         >
-          <Typography variant="caption" sx={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <Typography
+            variant="caption"
+            sx={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}
+          >
             {group.label}
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -65,8 +68,8 @@ export function ActivityTimeline({
         }}
       >
         {group.items.map((activity, index) => {
-          const isSelected = selectedActivityId === activity.id
-          const status = statusMeta[activity.status]
+          const isSelected = selectedActivityId === activity.id;
+          const status = statusMeta[activity.status];
 
           return (
             <TimelineItem
@@ -113,9 +116,9 @@ export function ActivityTimeline({
                 />
               </TimelineContent>
             </TimelineItem>
-          )
+          );
         })}
       </Timeline>
     </Box>
-  ))
+  ));
 }

@@ -1,25 +1,25 @@
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Link from '@mui/material/Link'
-import Typography from '@mui/material/Typography'
-import { useEffect, useMemo, useState } from 'react'
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import { useEffect, useMemo, useState } from 'react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 type ChatMarkdownProps = {
-  content: string
-}
+  content: string;
+};
 
 export function ChatMarkdown({ content }: ChatMarkdownProps) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(false);
   const isLongContent = useMemo(
     () => content.length > 1400 || content.split('\n').length > 18,
     [content],
-  )
+  );
 
   useEffect(() => {
-    setExpanded(false)
-  }, [content])
+    setExpanded(false);
+  }, [content]);
 
   return (
     <Box
@@ -140,7 +140,7 @@ export function ChatMarkdown({ content }: ChatMarkdownProps) {
               </Link>
             ),
             code: ({ children, className }) => {
-              const isBlock = typeof className === 'string' && className.length > 0
+              const isBlock = typeof className === 'string' && className.length > 0;
 
               if (isBlock) {
                 return (
@@ -162,7 +162,7 @@ export function ChatMarkdown({ content }: ChatMarkdownProps) {
                   >
                     {String(children).replace(/\n$/, '')}
                   </Box>
-                )
+                );
               }
 
               return (
@@ -179,7 +179,7 @@ export function ChatMarkdown({ content }: ChatMarkdownProps) {
                 >
                   {children}
                 </Box>
-              )
+              );
             },
             pre: ({ children }) => <Box sx={{ my: 1.5 }}>{children}</Box>,
           }}
@@ -210,5 +210,5 @@ export function ChatMarkdown({ content }: ChatMarkdownProps) {
         </Button>
       )}
     </Box>
-  )
+  );
 }

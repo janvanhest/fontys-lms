@@ -1,104 +1,104 @@
-import AddIcon from '@mui/icons-material/Add'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Chip from '@mui/material/Chip'
-import CircularProgress from '@mui/material/CircularProgress'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import { useCallback, useEffect, useState, type KeyboardEvent } from 'react'
-import {
-  fetchConversations,
-  type ConversationSummary,
-  updateConversationTitle,
-} from '@/api/chat'
-import { useLayout } from '@/context/useLayout'
-import { formatConversationTitle, normalizeConversationTitleInput } from './sidebarTitle'
+import AddIcon from '@mui/icons-material/Add';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useCallback, useEffect, useState, type KeyboardEvent } from 'react';
+import { fetchConversations, type ConversationSummary, updateConversationTitle } from '@/api/chat';
+import { useLayout } from '@/context/useLayout';
+import { formatConversationTitle, normalizeConversationTitleInput } from './sidebarTitle';
 
-const sidebarWidth = 190
+const sidebarWidth = 190;
 
 export function Sidebar() {
-  const { sidebarOpen, selectedConversationId, setSelectedConversationId, selectTab } = useLayout()
-  const [conversations, setConversations] = useState<ConversationSummary[]>([])
-  const [loading, setLoading] = useState(false)
-  const [editingConversationId, setEditingConversationId] = useState<string | null>(null)
-  const [editingTitle, setEditingTitle] = useState('')
-  const [savingConversationId, setSavingConversationId] = useState<string | null>(null)
+  const { sidebarOpen, selectedConversationId, setSelectedConversationId, selectTab } = useLayout();
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
+  const [savingConversationId, setSavingConversationId] = useState<string | null>(null);
 
   const refreshConversations = useCallback((showLoader = false) => {
     if (showLoader) {
-      setLoading(true)
+      setLoading(true);
     }
     fetchConversations()
       .then(setConversations)
       .catch(() => setConversations([]))
       .finally(() => {
         if (showLoader) {
-          setLoading(false)
+          setLoading(false);
         }
-      })
-  }, [])
+      });
+  }, []);
 
   useEffect(() => {
-    if (!sidebarOpen) return
-    refreshConversations(true)
+    if (!sidebarOpen) return;
+    refreshConversations(true);
 
-    const intervalId = window.setInterval(() => refreshConversations(false), 5000)
-    return () => window.clearInterval(intervalId)
-  }, [sidebarOpen, selectedConversationId, refreshConversations])
+    const intervalId = window.setInterval(() => refreshConversations(false), 5000);
+    return () => window.clearInterval(intervalId);
+  }, [sidebarOpen, selectedConversationId, refreshConversations]);
 
   const startEditing = useCallback((conversation: ConversationSummary) => {
-    setEditingConversationId(conversation.id)
-    setEditingTitle(conversation.title ?? '')
-  }, [])
+    setEditingConversationId(conversation.id);
+    setEditingTitle(conversation.title ?? '');
+  }, []);
 
   const cancelEditing = useCallback(() => {
-    setEditingConversationId(null)
-    setEditingTitle('')
-  }, [])
+    setEditingConversationId(null);
+    setEditingTitle('');
+  }, []);
 
   const saveTitle = useCallback(
     async (conversation: ConversationSummary) => {
-      const normalizedTitle = normalizeConversationTitleInput(editingTitle)
+      const normalizedTitle = normalizeConversationTitleInput(editingTitle);
       if (!normalizedTitle) {
-        cancelEditing()
-        return
+        cancelEditing();
+        return;
       }
 
-      const previousTitle = conversation.title
-      setSavingConversationId(conversation.id)
+      const previousTitle = conversation.title;
+      setSavingConversationId(conversation.id);
       setConversations((prev) =>
-        prev.map((item) => (item.id === conversation.id ? { ...item, title: normalizedTitle } : item)),
-      )
+        prev.map((item) =>
+          item.id === conversation.id ? { ...item, title: normalizedTitle } : item,
+        ),
+      );
 
       try {
-        await updateConversationTitle(conversation.id, normalizedTitle)
-        cancelEditing()
+        await updateConversationTitle(conversation.id, normalizedTitle);
+        cancelEditing();
       } catch {
         setConversations((prev) =>
-          prev.map((item) => (item.id === conversation.id ? { ...item, title: previousTitle } : item)),
-        )
+          prev.map((item) =>
+            item.id === conversation.id ? { ...item, title: previousTitle } : item,
+          ),
+        );
       } finally {
-        setSavingConversationId(null)
+        setSavingConversationId(null);
       }
     },
     [cancelEditing, editingTitle],
-  )
+  );
 
   const handleEditKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>, conversation: ConversationSummary) => {
       if (event.key === 'Enter') {
-        event.preventDefault()
-        void saveTitle(conversation)
+        event.preventDefault();
+        void saveTitle(conversation);
       } else if (event.key === 'Escape') {
-        event.preventDefault()
-        cancelEditing()
+        event.preventDefault();
+        cancelEditing();
       }
     },
     [cancelEditing, saveTitle],
-  )
+  );
 
   return (
     <Box
@@ -125,17 +125,14 @@ export function Sidebar() {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => {
-              setSelectedConversationId(null)
-              selectTab('chat')
+              setSelectedConversationId(null);
+              selectTab('chat');
             }}
           >
             Nieuw gesprek
           </Button>
 
-          <Typography
-            variant="overline"
-            sx={{ color: 'text.secondary', letterSpacing: '0.12em' }}
-          >
+          <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.12em' }}>
             Gesprekken
           </Typography>
 
@@ -148,8 +145,8 @@ export function Sidebar() {
                   key={conversation.id}
                   selected={conversation.id === selectedConversationId}
                   onClick={() => {
-                    setSelectedConversationId(conversation.id)
-                    selectTab('chat')
+                    setSelectedConversationId(conversation.id);
+                    selectTab('chat');
                   }}
                   sx={{
                     display: 'block',
@@ -178,13 +175,13 @@ export function Sidebar() {
                     <Typography
                       sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text' }}
                       onClick={(event) => {
-                        if (conversation.id !== selectedConversationId) return
-                        event.stopPropagation()
-                        startEditing(conversation)
+                        if (conversation.id !== selectedConversationId) return;
+                        event.stopPropagation();
+                        startEditing(conversation);
                       }}
                       onDoubleClick={(event) => {
-                        event.stopPropagation()
-                        startEditing(conversation)
+                        event.stopPropagation();
+                        startEditing(conversation);
                       }}
                     >
                       {formatConversationTitle(conversation)}
@@ -209,5 +206,5 @@ export function Sidebar() {
         </Stack>
       </Box>
     </Box>
-  )
+  );
 }

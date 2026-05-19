@@ -1,35 +1,35 @@
-import Box from '@mui/material/Box'
-import { useLayout } from '@/context/useLayout'
-import { ChatTab } from '@/tabs/chat/ChatTab'
-import { ChallengeTab } from '@/tabs/ChallengeTab'
-import { CompetentiesTab } from '@/tabs/CompetentiesTab'
-import { StappenplanTab } from '@/tabs/StappenplanTab'
-import { Sidebar } from './Sidebar'
-import { SidePanel } from './SidePanel'
-import { Topbar } from './Topbar'
+import Box from '@mui/material/Box';
+import { useLayout } from '@/context/useLayout';
+import { ChatTab } from '@/tabs/chat/ChatTab';
+import { ChallengeTab } from '@/tabs/ChallengeTab';
+import { CompetentiesTab } from '@/tabs/CompetentiesTab';
+import { StappenplanTab } from '@/tabs/StappenplanTab';
+import { Sidebar } from './Sidebar';
+import { SidePanel } from './SidePanel';
+import { Topbar } from './Topbar';
 
 function assertUnreachable(tab: never): never {
-  throw new Error(`Unexpected activeTab value: ${String(tab)}`)
+  throw new Error(`Unexpected activeTab value: ${String(tab)}`);
 }
 
 function renderActiveTab(activeTab: ReturnType<typeof useLayout>['activeTab']) {
   switch (activeTab) {
     case 'chat':
     case 'activities':
-      return <ChatTab />
+      return <ChatTab />;
     case 'challenge':
-      return <ChallengeTab />
+      return <ChallengeTab />;
     case 'competenties':
-      return <CompetentiesTab />
+      return <CompetentiesTab />;
     case 'stappenplan':
-      return <StappenplanTab />
+      return <StappenplanTab />;
     default:
-      return assertUnreachable(activeTab)
+      return assertUnreachable(activeTab);
   }
 }
 
 export function AppLayout() {
-  const { activeTab, selectedConversationId } = useLayout()
+  const { activeTab, selectedConversationId } = useLayout();
 
   return (
     <Box
@@ -54,5 +54,5 @@ export function AppLayout() {
         <SidePanel />
       </Box>
     </Box>
-  )
+  );
 }

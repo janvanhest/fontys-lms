@@ -1,57 +1,59 @@
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
-import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl'
-import Avatar from '@mui/material/Avatar'
-import Box from '@mui/material/Box'
-import Chip from '@mui/material/Chip'
-import CircularProgress from '@mui/material/CircularProgress'
-import IconButton from '@mui/material/IconButton'
-import Paper from '@mui/material/Paper'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { studentInitials, studentProfileOptions } from '@/api/student'
-import { useLayout } from '@/context/useLayout'
-import { useChatStream } from '@/hooks/useChatStream'
-import { ChatMarkdown } from './ChatMarkdown'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { studentInitials, studentProfileOptions } from '@/api/student';
+import { useLayout } from '@/context/useLayout';
+import { useChatStream } from '@/hooks/useChatStream';
+import { ChatMarkdown } from './ChatMarkdown';
 
 type ChatTabProps = {
-  conversationId?: string
-}
+  conversationId?: string;
+};
 
 export function ChatTab({ conversationId }: ChatTabProps = {}) {
-  const { sidePanelOpen, setSidePanelOpen, activeTab, setSelectedConversationId } = useLayout()
+  const { sidePanelOpen, setSidePanelOpen, activeTab, setSelectedConversationId } = useLayout();
   const handleConversationEstablished = useCallback(
     (nextConversationId: string) => {
-      if (conversationId === nextConversationId) return
-      setSelectedConversationId(nextConversationId)
+      if (conversationId === nextConversationId) return;
+      setSelectedConversationId(nextConversationId);
     },
     [conversationId, setSelectedConversationId],
-  )
-  const { messages, isStreaming, isLoadingHistory, statusText, sendMessage } =
-    useChatStream(conversationId, { onConversationEstablished: handleConversationEstablished })
-  const { data: student } = useQuery(studentProfileOptions)
-  const [input, setInput] = useState('')
-  const bottomRef = useRef<HTMLDivElement>(null)
+  );
+  const { messages, isStreaming, isLoadingHistory, statusText, sendMessage } = useChatStream(
+    conversationId,
+    { onConversationEstablished: handleConversationEstablished },
+  );
+  const { data: student } = useQuery(studentProfileOptions);
+  const [input, setInput] = useState('');
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, statusText])
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, statusText]);
 
   const handleSend = async () => {
-    const trimmed = input.trim()
-    if (!trimmed || isStreaming) return
-    setInput('')
-    await sendMessage(trimmed)
-  }
+    const trimmed = input.trim();
+    if (!trimmed || isStreaming) return;
+    setInput('');
+    await sendMessage(trimmed);
+  };
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      void handleSend()
+      e.preventDefault();
+      void handleSend();
     }
-  }
+  };
 
   return (
     <Box
@@ -99,7 +101,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
       <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
         <Stack spacing={2.5}>
           {messages.map((message) => {
-            const isStudent = message.role === 'student'
+            const isStudent = message.role === 'student';
             return (
               <Box
                 key={message.id}
@@ -160,10 +162,10 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
                                   },
                                 }}
                               />
-                            )
+                            );
 
                             if (!source.url) {
-                              return chip
+                              return chip;
                             }
 
                             return (
@@ -177,7 +179,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
                               >
                                 {chip}
                               </Box>
-                            )
+                            );
                           })}
                         </Stack>
                       ) : null}
@@ -194,7 +196,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
                   </Avatar>
                 )}
               </Box>
-            )
+            );
           })}
           <div ref={bottomRef} />
         </Stack>
@@ -233,5 +235,5 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
         </Box>
       </Box>
     </Box>
-  )
+  );
 }
