@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import {
+  IsBoolean,
   IsIn,
   IsInt,
   IsString,
@@ -33,7 +34,7 @@ class EnvironmentVariables {
   OLLAMA_URL = 'http://ollama:11434';
 
   // Must be a full postgres connection string: postgresql:// or postgres://
-  @Matches(/^postgr(?:es|esql):\/\/.+/, {
+  @Matches(/^postgres(ql)?:\/\/.+/, {
     message: 'DATABASE_URL must start with postgresql:// or postgres://',
   })
   @IsString()
@@ -42,6 +43,9 @@ class EnvironmentVariables {
   @MinLength(1)
   @IsString()
   ANTHROPIC_API_KEY!: string;
+
+  @IsBoolean()
+  MOCK_AUTH = true;
 }
 
 type FormattedValidationError = {
@@ -76,11 +80,30 @@ function normalizePort(value: unknown): unknown {
   return value;
 }
 
+function normalizeBoolean(value: unknown): unknown {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+  }
+
+  return value;
+}
+
 export function validate(config: Record<string, unknown>): EnvironmentVariables {
   const normalizedPort = normalizePort(config.PORT);
+  const normalizedMockAuth = normalizeBoolean(config.MOCK_AUTH);
   const normalizedConfig = {
     ...config,
     ...(config.PORT !== undefined ? { PORT: normalizedPort } : {}),
+    ...(config.MOCK_AUTH !== undefined ? { MOCK_AUTH: normalizedMockAuth } : {}),
   };
   const validatedConfig = plainToInstance(EnvironmentVariables, normalizedConfig);
   const errors = validateSync(validatedConfig, {

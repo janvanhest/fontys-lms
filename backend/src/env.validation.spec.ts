@@ -77,6 +77,12 @@ describe('validate', () => {
     ).not.toThrow();
   });
 
+  it('accepts postgres:// DATABASE_URL values too', () => {
+    expect(() =>
+      validate({ ...validBase, DATABASE_URL: 'postgres://user:pass@db:5432/lms' }),
+    ).not.toThrow();
+  });
+
   it('throws when ANTHROPIC_API_KEY is missing', () => {
     const { ANTHROPIC_API_KEY: _, ...withoutKey } = validBase;
     expect(() => validate(withoutKey)).toThrow(/Environment validation failed/);
