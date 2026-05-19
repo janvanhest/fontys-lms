@@ -13,7 +13,7 @@ function buildGroups(activities: ActivityItem[] = initialActivities): ActivityGr
       ...groupMeta[groupKey],
       items: activities.filter((a) => a.groupKey === groupKey),
     }))
-    .filter((group) => group.items.length > 0) as ActivityGroupSection[];
+    .filter((group) => group.items.length > 0);
 }
 
 const ALL_GROUPS = buildGroups();

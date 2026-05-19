@@ -203,7 +203,7 @@ export function ChatMarkdown({ content }: ChatMarkdownProps) {
       {isLongContent && (
         <Button
           size="small"
-          onClick={() => setExpanded((prev) => !prev)}
+          onClick={() => { setExpanded((prev) => !prev); }}
           sx={{ mt: 1, px: 0, minWidth: 0, alignSelf: 'flex-start' }}
         >
           {expanded ? 'Minder tonen' : 'Meer tonen'}

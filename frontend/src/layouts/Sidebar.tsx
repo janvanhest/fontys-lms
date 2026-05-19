@@ -29,7 +29,9 @@ export function Sidebar() {
     }
     fetchConversations()
       .then(setConversations)
-      .catch(() => setConversations([]))
+      .catch(() => {
+        setConversations([]);
+      })
       .finally(() => {
         if (showLoader) {
           setLoading(false);
@@ -41,8 +43,12 @@ export function Sidebar() {
     if (!sidebarOpen) return;
     refreshConversations(true);
 
-    const intervalId = window.setInterval(() => refreshConversations(false), 5000);
-    return () => window.clearInterval(intervalId);
+    const intervalId = window.setInterval(() => {
+      refreshConversations(false);
+    }, 5000);
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, [sidebarOpen, selectedConversationId, refreshConversations]);
 
   const startEditing = useCallback((conversation: ConversationSummary) => {
@@ -166,10 +172,16 @@ export function Sidebar() {
                       value={editingTitle}
                       autoFocus
                       disabled={savingConversationId === conversation.id}
-                      onClick={(event) => event.stopPropagation()}
-                      onChange={(event) => setEditingTitle(event.target.value)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                      }}
+                      onChange={(event) => {
+                        setEditingTitle(event.target.value);
+                      }}
                       onBlur={() => void saveTitle(conversation)}
-                      onKeyDown={(event) => handleEditKeyDown(event, conversation)}
+                      onKeyDown={(event) => {
+                        handleEditKeyDown(event, conversation);
+                      }}
                     />
                   ) : (
                     <Typography

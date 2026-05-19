@@ -91,7 +91,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
 
         <IconButton
           color={sidePanelOpen ? 'primary' : 'default'}
-          onClick={() => setSidePanelOpen(!sidePanelOpen)}
+          onClick={() => { setSidePanelOpen(!sidePanelOpen); }}
           aria-label="Toggle activities panel"
         >
           <ChecklistRtlIcon />
@@ -220,7 +220,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
             placeholder="Typ je vraag..."
             size="small"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => { setInput(e.target.value); }}
             onKeyDown={handleKeyDown}
             disabled={isStreaming || isLoadingHistory}
           />

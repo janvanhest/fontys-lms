@@ -184,7 +184,7 @@ export function SidePanel({
           {selectedActivity ? (
             <ActivityDetails
               activity={selectedActivity}
-              onClose={() => setSelectedActivityId(null)}
+              onClose={() => { setSelectedActivityId(null); }}
             />
           ) : null}
         </Collapse>
