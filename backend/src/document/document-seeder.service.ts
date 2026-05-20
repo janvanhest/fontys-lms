@@ -55,6 +55,8 @@ export function chunkByH2(body: string, pageTitle: string): Chunk[] {
 @Injectable()
 export class DocumentSeederService implements OnApplicationBootstrap {
   private readonly logger = new Logger(DocumentSeederService.name);
+  private readonly seedHashDir = path.join(process.cwd(), '.cache', 'document-seeder');
+  private readonly seedHashFile = path.join(this.seedHashDir, 'canvas-content.seed-hash');
 
   constructor(
     @InjectRepository(DocumentEntity)
@@ -92,10 +94,9 @@ export class DocumentSeederService implements OnApplicationBootstrap {
     );
     const currentHash = crypto.createHash('sha256').update(fileContents.join('\0')).digest('hex');
 
-    const hashFile = path.join(contentDir, '.seed-hash');
     let previousHash = '';
     try {
-      previousHash = (await fs.readFile(hashFile, 'utf-8')).trim();
+      previousHash = (await fs.readFile(this.seedHashFile, 'utf-8')).trim();
     } catch {
       // No hash file yet — first boot.
     }
@@ -153,7 +154,8 @@ export class DocumentSeederService implements OnApplicationBootstrap {
       await this.documentRepository.save(entities);
     }
 
-    await fs.writeFile(hashFile, currentHash, 'utf-8');
+    await fs.mkdir(this.seedHashDir, { recursive: true });
+    await fs.writeFile(this.seedHashFile, currentHash, 'utf-8');
     this.logger.log('Seeding complete');
   }
 }

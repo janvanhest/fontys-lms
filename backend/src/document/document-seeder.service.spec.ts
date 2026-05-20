@@ -10,6 +10,8 @@ import { DocumentSeederService, chunkByH2, parseFrontmatter } from './document-s
 
 const mockReaddir = fs.readdir as jest.MockedFunction<typeof fs.readdir>;
 const mockReadFile = fs.readFile as jest.MockedFunction<typeof fs.readFile>;
+const mockMkdir = fs.mkdir as jest.MockedFunction<typeof fs.mkdir>;
+const mockWriteFile = fs.writeFile as jest.MockedFunction<typeof fs.writeFile>;
 
 const SAMPLE_MARKDOWN = `---
 source: test-source
@@ -109,6 +111,9 @@ describe('DocumentSeederService', () => {
     }).compile();
 
     service = module.get<DocumentSeederService>(DocumentSeederService);
+
+    mockMkdir.mockResolvedValue(undefined);
+    mockWriteFile.mockResolvedValue(undefined);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -212,5 +217,27 @@ describe('DocumentSeederService', () => {
 
     await expect(service.onApplicationBootstrap()).resolves.not.toThrow();
     expect(mockRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('stores the seed hash in a writable backend cache directory', async () => {
+    mockReaddir.mockResolvedValue(['01_test.md'] as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
+
+    await service.onApplicationBootstrap();
+
+    expect(mockMkdir).toHaveBeenCalledWith(
+      expect.stringContaining('/.cache/document-seeder'),
+      expect.objectContaining({ recursive: true }),
+    );
+    expect(mockWriteFile).toHaveBeenCalledWith(
+      expect.stringContaining('/.cache/document-seeder/canvas-content.seed-hash'),
+      expect.any(String),
+      'utf-8',
+    );
+    expect(mockWriteFile).not.toHaveBeenCalledWith(
+      expect.stringContaining('/canvas_content/.seed-hash'),
+      expect.any(String),
+      'utf-8',
+    );
   });
 });
