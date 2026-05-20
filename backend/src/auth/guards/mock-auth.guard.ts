@@ -27,7 +27,7 @@ export class MockAuthGuard implements CanActivate {
     private readonly studentService: StudentService,
     private readonly configService: ConfigService,
   ) {
-    this.enabled = this.configService.get<boolean>('MOCK_AUTH', true);
+    this.enabled = this.configService.get<boolean>('MOCK_AUTH', false);
 
     if (this.enabled) {
       this.logger.warn(

@@ -44,5 +44,6 @@ describe('DevController', () => {
     expect(activityService.seed).toHaveBeenCalledWith(STUDENT_ID);
     expect(result).toHaveLength(1);
     expect(result[0].title).toBe('Context helder krijgen');
+    expect(result[0]).not.toHaveProperty('studentId');
   });
 });
