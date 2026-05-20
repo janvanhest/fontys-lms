@@ -116,10 +116,12 @@ export class ActivityService {
   ) {}
 
   findAll(studentId: string): Promise<Activity[]> {
-    return this.repo.find({
-      where: { studentId },
-      order: { deadline: { direction: 'ASC', nulls: 'LAST' }, position: 'ASC' },
-    });
+    return this.repo
+      .createQueryBuilder('activity')
+      .where('activity.studentId = :studentId', { studentId })
+      .orderBy('activity.deadline', 'ASC', 'NULLS LAST')
+      .addOrderBy('activity.position', 'ASC')
+      .getMany();
   }
 
   async findOne(id: string, studentId: string): Promise<Activity> {
@@ -150,17 +152,6 @@ export class ActivityService {
     await this.repo.delete(id);
   }
 
-  /**
-   * Seeds a student's activities with a predefined set of template activities. Existing activities for the student are removed before the seed data is inserted.
-   *
-   * This method is typically used to initialize or reset a student's activity list to a known baseline.
-   *
-   * Args:
-   *   studentId: The identifier of the student whose activities should be replaced with the seed data.
-   *
-   * Returns:
-   *   A promise that resolves with the list of newly created activities for the student.
-   */
   async seed(studentId: string): Promise<Activity[]> {
     await this.repo.delete({ studentId });
     const activities = SEED_ACTIVITIES.map((data) => this.repo.create({ ...data, studentId }));

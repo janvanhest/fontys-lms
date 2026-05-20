@@ -29,15 +29,15 @@ const makeActivity = (overrides: Partial<Activity> = {}): Activity =>
 
 describe('ActivityService', () => {
   let service: ActivityService;
-  let repo: jest.Mocked<Pick<Repository<Activity>, 'find' | 'findOne' | 'create' | 'save' | 'delete'>>;
+  let repo: jest.Mocked<Pick<Repository<Activity>, 'findOne' | 'create' | 'save' | 'delete' | 'createQueryBuilder'>>;
 
   beforeEach(async () => {
     repo = {
-      find: jest.fn(),
       findOne: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
+      createQueryBuilder: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -53,14 +53,20 @@ describe('ActivityService', () => {
   describe('findAll', () => {
     it('returns activities for the student sorted by deadline then position', async () => {
       const activities = [makeActivity({ id: 'a1' }), makeActivity({ id: 'a2' })];
-      repo.find.mockResolvedValue(activities);
+      const mockQb = {
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(activities),
+      };
+      repo.createQueryBuilder.mockReturnValue(mockQb as any);
 
       const result = await service.findAll(STUDENT_A);
 
-      expect(repo.find).toHaveBeenCalledWith({
-        where: { studentId: STUDENT_A },
-        order: { deadline: { direction: 'ASC', nulls: 'LAST' }, position: 'ASC' },
-      });
+      expect(repo.createQueryBuilder).toHaveBeenCalledWith('activity');
+      expect(mockQb.where).toHaveBeenCalledWith('activity.studentId = :studentId', { studentId: STUDENT_A });
+      expect(mockQb.orderBy).toHaveBeenCalledWith('activity.deadline', 'ASC', 'NULLS LAST');
+      expect(mockQb.addOrderBy).toHaveBeenCalledWith('activity.position', 'ASC');
       expect(result).toEqual(activities);
     });
   });
