@@ -52,6 +52,7 @@ describe('ActivityController', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(service.findAll).toHaveBeenCalledWith(STUDENT_ID);
     expect(result).toHaveLength(1);
+    expect(result[0]).not.toHaveProperty('studentId');
   });
 
   it('findOne roept service.findOne aan met id en studentId', async () => {
@@ -60,6 +61,7 @@ describe('ActivityController', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(service.findOne).toHaveBeenCalledWith('act-1', STUDENT_ID);
     expect(result.id).toBe('act-1');
+    expect(result).not.toHaveProperty('studentId');
   });
 
   it('create roept service.create aan met studentId en dto', async () => {
@@ -69,6 +71,7 @@ describe('ActivityController', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(service.create).toHaveBeenCalledWith(STUDENT_ID, dto);
     expect(result.title).toBe('Nieuw');
+    expect(result).not.toHaveProperty('studentId');
   });
 
   it('update roept service.update aan', async () => {
@@ -78,6 +81,7 @@ describe('ActivityController', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(service.update).toHaveBeenCalledWith('act-1', STUDENT_ID, dto);
     expect(result.status).toBe('bezig');
+    expect(result).not.toHaveProperty('studentId');
   });
 
   it('remove roept service.remove aan', async () => {

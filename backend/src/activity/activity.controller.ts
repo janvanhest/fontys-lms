@@ -15,6 +15,7 @@ import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nes
 import { CurrentStudent } from '../auth/decorators/current-student.decorator';
 import { Student } from '../student/student.entity';
 import { ActivityService } from './activity.service';
+import { toActivityResponseDto, toActivityResponseDtos } from './dto/activity-response.mapper';
 import { ActivityResponseDto } from './dto/activity-response.dto';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
@@ -29,7 +30,7 @@ export class ActivityController {
   @ApiOperation({ summary: 'Alle activiteiten van de ingelogde student' })
   @ApiOkResponse({ type: [ActivityResponseDto] })
   findAll(@CurrentStudent() student: Student): Promise<ActivityResponseDto[]> {
-    return this.activityService.findAll(student.id);
+    return this.activityService.findAll(student.id).then(toActivityResponseDtos);
   }
 
   @Get(':id')
@@ -39,7 +40,7 @@ export class ActivityController {
     @Param('id') id: string,
     @CurrentStudent() student: Student,
   ): Promise<ActivityResponseDto> {
-    return this.activityService.findOne(id, student.id);
+    return this.activityService.findOne(id, student.id).then(toActivityResponseDto);
   }
 
   @Post()
@@ -49,7 +50,7 @@ export class ActivityController {
     @Body() dto: CreateActivityDto,
     @CurrentStudent() student: Student,
   ): Promise<ActivityResponseDto> {
-    return this.activityService.create(student.id, dto);
+    return this.activityService.create(student.id, dto).then(toActivityResponseDto);
   }
 
   @Patch(':id')
@@ -60,7 +61,7 @@ export class ActivityController {
     @Body() dto: UpdateActivityDto,
     @CurrentStudent() student: Student,
   ): Promise<ActivityResponseDto> {
-    return this.activityService.update(id, student.id, dto);
+    return this.activityService.update(id, student.id, dto).then(toActivityResponseDto);
   }
 
   @Delete(':id')
