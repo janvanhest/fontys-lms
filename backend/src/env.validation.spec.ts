@@ -14,6 +14,7 @@ describe('validate', () => {
     expect(config.PORT).toBe(3000);
     expect(config.CORS_ORIGINS).toEqual(['http://localhost:5173']);
     expect(config.OLLAMA_URL).toBe('http://ollama:11434');
+    expect(config.MOCK_AUTH).toBe(false);
   });
 
   it('accepts explicit env values', () => {
@@ -106,5 +107,11 @@ describe('validate', () => {
     expect(() =>
       validate({ ...validBase, ANTHROPIC_API_KEY: 'sk-ant-api03-abc123' }),
     ).not.toThrow();
+  });
+
+  it('accepts explicit MOCK_AUTH=true', () => {
+    const config = validate({ ...validBase, MOCK_AUTH: 'true' });
+
+    expect(config.MOCK_AUTH).toBe(true);
   });
 });

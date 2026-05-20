@@ -120,7 +120,7 @@ export function validate(config: Record<string, unknown>): EnvironmentVariables 
     NODE_ENV: 'development',
     PORT: 3000,
     CORS_ORIGINS: 'http://localhost:5173',
-    MOCK_AUTH: true,
+    MOCK_AUTH: false,
     ...config,
   };
 
