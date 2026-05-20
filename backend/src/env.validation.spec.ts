@@ -96,6 +96,7 @@ describe('validate', () => {
   });
 
   it('throws when ANTHROPIC_API_KEY is missing', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { ANTHROPIC_API_KEY: _, ...withoutKey } = validBase;
     expect(() => validate(withoutKey)).toThrow(/Environment validation failed/);
     expect(() => validate(withoutKey)).toThrow(/"property": "ANTHROPIC_API_KEY"/);

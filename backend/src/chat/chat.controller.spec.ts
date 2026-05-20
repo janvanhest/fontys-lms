@@ -20,7 +20,7 @@ describe('ChatController', () => {
         {
           provide: ChatService,
           useValue: {
-            async *streamResponse() {
+            *streamResponse() {
               yield { event: 'status', data: 'Thinking...' };
               yield { event: 'final', data: 'Done.' };
             },
@@ -53,7 +53,8 @@ describe('ChatController', () => {
         {
           provide: ChatService,
           useValue: {
-            async *streamResponse() {
+            // eslint-disable-next-line require-yield
+            *streamResponse() {
               throw new Error('Course search unavailable');
             },
           },
@@ -97,7 +98,7 @@ describe('ChatController', () => {
     const module2: TestingModule = await Test.createTestingModule({
       controllers: [ChatController],
       providers: [
-        { provide: ChatService, useValue: { async *streamResponse() {} } },
+        { provide: ChatService, useValue: { *streamResponse() {} } },
         {
           provide: ConversationService,
           useValue: { findConversationWithMessages, updateConversationTitle: jest.fn() },

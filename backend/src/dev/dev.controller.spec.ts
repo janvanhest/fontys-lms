@@ -4,7 +4,7 @@ import { ActivityService } from '../activity/activity.service';
 import { Activity } from '../activity/activity.entity';
 
 const STUDENT_ID = 'student-uuid';
-const mockStudent = { id: STUDENT_ID } as any;
+const mockStudent = { id: STUDENT_ID };
 
 const makeActivity = (): Activity => ({
   id: 'act-1',

@@ -129,8 +129,10 @@ describe('DocumentSeederService', () => {
     // SAMPLE_MARKDOWN produces 3 chunks: intro + 2 sections — saved in one batch
     expect(mockRepository.save).toHaveBeenCalledTimes(1);
     expect(mockRepository.save).toHaveBeenCalledWith(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       expect.arrayContaining([expect.objectContaining({ content: expect.any(String) })]),
     );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as unknown[];
     expect(batch).toHaveLength(3);
   });
@@ -141,6 +143,7 @@ describe('DocumentSeederService', () => {
 
     await service.onApplicationBootstrap();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
       metadata: { chunkIndex: number };
     }>;
@@ -155,6 +158,7 @@ describe('DocumentSeederService', () => {
 
     await service.onApplicationBootstrap();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
       embedding: number[] | null;
     }>;
@@ -168,6 +172,7 @@ describe('DocumentSeederService', () => {
 
     await service.onApplicationBootstrap();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
       embedding: number[] | null;
     }>;
@@ -180,6 +185,7 @@ describe('DocumentSeederService', () => {
 
     await service.onApplicationBootstrap();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
       metadata: { source: string; title: string; url: string };
     }>;

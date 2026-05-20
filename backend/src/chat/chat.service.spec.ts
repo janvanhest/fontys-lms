@@ -1,6 +1,5 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import Anthropic from '@anthropic-ai/sdk';
 import { Logger } from '@nestjs/common';
 import { ChatService, ChatSseEvent } from './chat.service';
 import { ConversationService } from './conversation.service';

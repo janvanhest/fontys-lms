@@ -90,10 +90,7 @@ export class DocumentSeederService implements OnApplicationBootstrap {
     const fileContents = await Promise.all(
       mdFiles.sort().map((f) => fs.readFile(path.join(contentDir, f), 'utf-8')),
     );
-    const currentHash = crypto
-      .createHash('sha256')
-      .update(fileContents.join('\0'))
-      .digest('hex');
+    const currentHash = crypto.createHash('sha256').update(fileContents.join('\0')).digest('hex');
 
     const hashFile = path.join(contentDir, '.seed-hash');
     let previousHash = '';
