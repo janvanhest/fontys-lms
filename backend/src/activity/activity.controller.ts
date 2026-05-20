@@ -69,11 +69,4 @@ export class ActivityController {
   ): Promise<void> {
     return this.activityService.remove(id, student.id);
   }
-
-  @Post('seed')
-  @ApiOperation({ summary: 'Mockdata laden voor de ingelogde student (demo only)' })
-  @ApiOkResponse({ type: [ActivityResponseDto] })
-  seed(@CurrentStudent() student: Student): Promise<ActivityResponseDto[]> {
-    return this.activityService.seed(student.id);
-  }
 }

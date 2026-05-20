@@ -36,7 +36,6 @@ describe('ActivityController', () => {
       create: jest.fn(),
       update: jest.fn(),
       remove: jest.fn(),
-      seed: jest.fn(),
     } as unknown as jest.Mocked<ActivityService>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -81,12 +80,5 @@ describe('ActivityController', () => {
     service.remove.mockResolvedValue(undefined);
     await controller.remove('act-1', mockStudent);
     expect(service.remove).toHaveBeenCalledWith('act-1', STUDENT_ID);
-  });
-
-  it('seed roept service.seed aan en retourneert activiteiten', async () => {
-    service.seed.mockResolvedValue([makeActivity(), makeActivity({ id: 'act-2' })]);
-    const result = await controller.seed(mockStudent);
-    expect(service.seed).toHaveBeenCalledWith(STUDENT_ID);
-    expect(result).toHaveLength(2);
   });
 });
