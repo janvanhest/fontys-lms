@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -24,6 +25,7 @@ export class Activity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @Exclude()
   @Column({ type: 'uuid' })
   studentId!: string;
 
