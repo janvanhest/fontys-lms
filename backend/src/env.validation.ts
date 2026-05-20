@@ -116,12 +116,20 @@ function normalizeBoolean(value: unknown): boolean | string | undefined {
 }
 
 export function validate(config: Record<string, unknown>): EnvironmentVariables {
-  const normalizedPort = normalizePort(config.PORT);
-  const normalizedMockAuth = normalizeBoolean(config.MOCK_AUTH);
-  const normalizedConfig = {
+  const withDefaults: Record<string, unknown> = {
+    NODE_ENV: 'development',
+    PORT: 3000,
+    CORS_ORIGINS: 'http://localhost:5173',
+    MOCK_AUTH: true,
     ...config,
-    ...(config.PORT !== undefined ? { PORT: normalizedPort } : {}),
-    ...(config.MOCK_AUTH !== undefined ? { MOCK_AUTH: normalizedMockAuth } : {}),
+  };
+
+  const normalizedPort = normalizePort(withDefaults.PORT);
+  const normalizedMockAuth = normalizeBoolean(withDefaults.MOCK_AUTH);
+  const normalizedConfig = {
+    ...withDefaults,
+    ...(withDefaults.PORT !== undefined ? { PORT: normalizedPort } : {}),
+    ...(withDefaults.MOCK_AUTH !== undefined ? { MOCK_AUTH: normalizedMockAuth } : {}),
   };
   const validatedConfig = plainToInstance(EnvironmentVariables, normalizedConfig);
   const errors = validateSync(validatedConfig, {
