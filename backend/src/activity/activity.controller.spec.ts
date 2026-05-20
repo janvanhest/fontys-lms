@@ -50,6 +50,7 @@ describe('ActivityController', () => {
     const result = await controller.findAll(mockStudent);
     expect(service.findAll).toHaveBeenCalledWith(STUDENT_ID);
     expect(result).toHaveLength(1);
+    expect((result[0] as any).studentId).toBeUndefined();
   });
 
   it('findOne roept service.findOne aan met id en studentId', async () => {
@@ -57,6 +58,7 @@ describe('ActivityController', () => {
     const result = await controller.findOne('act-1', mockStudent);
     expect(service.findOne).toHaveBeenCalledWith('act-1', STUDENT_ID);
     expect(result.id).toBe('act-1');
+    expect((result as any).studentId).toBeUndefined();
   });
 
   it('create roept service.create aan met studentId en dto', async () => {
@@ -65,6 +67,7 @@ describe('ActivityController', () => {
     const result = await controller.create(dto, mockStudent);
     expect(service.create).toHaveBeenCalledWith(STUDENT_ID, dto);
     expect(result.title).toBe('Nieuw');
+    expect((result as any).studentId).toBeUndefined();
   });
 
   it('update roept service.update aan', async () => {
@@ -73,6 +76,7 @@ describe('ActivityController', () => {
     const result = await controller.update('act-1', dto, mockStudent);
     expect(service.update).toHaveBeenCalledWith('act-1', STUDENT_ID, dto);
     expect(result.status).toBe('bezig');
+    expect((result as any).studentId).toBeUndefined();
   });
 
   it('remove roept service.remove aan', async () => {
