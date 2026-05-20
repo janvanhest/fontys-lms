@@ -18,7 +18,9 @@ export class CreateActivitiesTable20260520000100 implements MigrationInterface {
         "competencyLabel" character varying,
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
         "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
-        CONSTRAINT "PK_activities_id" PRIMARY KEY ("id")
+        CONSTRAINT "PK_activities_id" PRIMARY KEY ("id"),
+        CONSTRAINT "CHK_activities_status" CHECK ("status" IN ('open', 'bezig', 'feedback', 'afgerond')),
+        CONSTRAINT "CHK_activities_type" CHECK ("type" IN ('opdracht', 'workshop', 'competentie', 'eigen activiteit', 'challenge', 'coaching', 'sprint review', 'semesterplan', 'posterpresentatie', 'overdracht'))
       )
     `);
 
