@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Repository } from 'typeorm';
@@ -86,6 +87,27 @@ export class DocumentSeederService implements OnApplicationBootstrap {
 
     const mdFiles = allFiles.filter((f) => f.endsWith('.md'));
 
+    const fileContents = await Promise.all(
+      mdFiles.sort().map((f) => fs.readFile(path.join(contentDir, f), 'utf-8')),
+    );
+    const currentHash = crypto
+      .createHash('sha256')
+      .update(fileContents.join('\0'))
+      .digest('hex');
+
+    const hashFile = path.join(contentDir, '.seed-hash');
+    let previousHash = '';
+    try {
+      previousHash = (await fs.readFile(hashFile, 'utf-8')).trim();
+    } catch {
+      // No hash file yet — first boot.
+    }
+
+    if (currentHash === previousHash) {
+      this.logger.log('canvas_content unchanged, skipping document re-seeding');
+      return;
+    }
+
     await this.documentRepository.createQueryBuilder().delete().execute();
     this.logger.log(`Cleared documents table. Seeding ${mdFiles.length} files from ${contentDir}`);
 
@@ -134,6 +156,7 @@ export class DocumentSeederService implements OnApplicationBootstrap {
       await this.documentRepository.save(entities);
     }
 
+    await fs.writeFile(hashFile, currentHash, 'utf-8');
     this.logger.log('Seeding complete');
   }
 }
