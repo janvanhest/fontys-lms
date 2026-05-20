@@ -9,11 +9,12 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import type { Activity } from '@/types/activity';
+import { formatDeadlineLabel } from '@/utils/activity-grouping';
 import { getActionLabel, getTypeLabel, statusMeta } from './constants';
-import type { ActivityItem } from './types';
 
 type ActivityDetailsProps = {
-  activity: ActivityItem;
+  activity: Activity;
   onClose: () => void;
 };
 
@@ -29,14 +30,7 @@ export function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
         bgcolor: alpha('#1976d2', 0.015),
       }}
     >
-      <Box
-        sx={{
-          minHeight: 260,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.5,
-        }}
-      >
+      <Box sx={{ minHeight: 260, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         <Box
           sx={{
             display: 'flex',
@@ -49,9 +43,7 @@ export function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
           <IconButton
             size="small"
             aria-label="Sluit detailweergave"
-            onClick={() => {
-              onClose();
-            }}
+            onClick={() => { onClose(); }}
           >
             <CloseIcon fontSize="small" />
           </IconButton>
@@ -61,32 +53,35 @@ export function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
           {activity.title}
         </Typography>
 
-        <Typography variant="body2" color="text.secondary">
-          {activity.description}
-        </Typography>
+        {activity.description ? (
+          <Typography variant="body2" color="text.secondary">
+            {activity.description}
+          </Typography>
+        ) : null}
 
         <Stack spacing={1}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <TodayOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-            <Typography variant="body2">Deadline: {activity.deadlineLabel}</Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FlagOutlinedIcon
-              sx={{
-                fontSize: 18,
-                color: statusMeta[activity.status].color,
-              }}
-            />
-            <Typography variant="body2">Status: {statusMeta[activity.status].label}</Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <SchoolOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
             <Typography variant="body2">
-              Gekoppelde competentie: {activity.competencyLabel}
+              Deadline: {formatDeadlineLabel(activity.deadline)}
             </Typography>
           </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <FlagOutlinedIcon sx={{ fontSize: 18, color: statusMeta[activity.status].color }} />
+            <Typography variant="body2">
+              Status: {statusMeta[activity.status].label}
+            </Typography>
+          </Box>
+
+          {activity.competencyLabel ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <SchoolOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <Typography variant="body2">
+                Gekoppelde competentie: {activity.competencyLabel}
+              </Typography>
+            </Box>
+          ) : null}
         </Stack>
 
         <Button sx={{ mt: 'auto' }} variant="contained" fullWidth>

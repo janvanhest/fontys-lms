@@ -5,10 +5,11 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { statusMeta, statusOptions, subtypeOptions } from './constants';
-import type { ActivityItem, ActivityStatus, ActivityType, OpenSubmenu } from './types';
+import type { ActivityStatus, ActivityType, OpenSubmenu } from './types';
+import type { Activity } from '@/types/activity';
 
 type ActivityMenusProps = {
-  activities: ActivityItem[];
+  activities: Activity[];
   menuActivityId: string | null;
   menuAnchorEl: HTMLElement | null;
   submenuAnchorEl: HTMLElement | null;
