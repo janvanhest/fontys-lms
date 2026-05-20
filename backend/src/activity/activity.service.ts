@@ -154,8 +154,11 @@ export class ActivityService {
   }
 
   async seed(studentId: string): Promise<Activity[]> {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('ActivityService.seed() is not allowed in production');
+    }
     await this.repo.delete({ studentId });
     const activities = SEED_ACTIVITIES.map((data) => this.repo.create({ ...data, studentId }));
-    return Promise.all(activities.map((a) => this.repo.save(a)));
+    return this.repo.save(activities);
   }
 }
