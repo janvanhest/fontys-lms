@@ -6,6 +6,7 @@ import { ActivityModule } from './activity/activity.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { DatabaseModule } from './database/database.module';
+import { DevModule } from './dev/dev.module';
 import { DocumentModule } from './document/document.module';
 import { validate } from './env.validation';
 import { HealthModule } from './health/health.module';
@@ -21,6 +22,7 @@ import { StudentModule } from './student/student.module';
     DocumentModule,
     ChatModule,
     ActivityModule,
+    ...(process.env.NODE_ENV !== 'production' ? [DevModule] : []),
   ],
   controllers: [AppController],
   providers: [AppService],
