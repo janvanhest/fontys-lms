@@ -26,6 +26,12 @@ export class DevSeederService implements OnModuleInit {
     }
 
     const student = await this.studentService.findOrCreate(MOCK_STUDENT);
+    const existing = await this.activityService.findAll(student.id);
+    if (existing.length > 0) {
+      this.logger.log(`Activities al aanwezig voor mock student, seeding overgeslagen`);
+      return;
+    }
+
     await this.activityService.seed(student.id);
     this.logger.log(`Activities geseed voor mock student (${MOCK_STUDENT.displayName})`);
   }
