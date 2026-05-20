@@ -1,4 +1,4 @@
-import type { ActivityItem, ActivityStatus, ActivityType, GroupKey } from './types';
+import type { ActivityStatus, ActivityType, GroupKey } from './types';
 
 export const panelWidth = 320;
 
@@ -43,84 +43,6 @@ export const subtypeOptions = [
 export type SubtypeOption = (typeof subtypeOptions)[number];
 
 export const statusOptions: ActivityStatus[] = ['open', 'bezig', 'feedback', 'afgerond'];
-
-// Afgeleid uit de gebruikersbeschrijving:
-// - groepen en range-labels zijn expliciet
-// - "eerder" bevat twee afgeronde challenge-items met echte titels
-// - overige titels/beschrijvingen blijven placeholders
-// - deadlines zijn specifiek, maar behalve voorbeelden niet volledig gespecificeerd
-export const initialActivities: ActivityItem[] = [
-  {
-    id: 'challenge-markering',
-    groupKey: 'eerder',
-    type: 'challenge',
-    title: 'Challenge markering',
-    description: '[omschrijving van de opdracht...]',
-    deadlineLabel: 'vr 11 mrt',
-    status: 'afgerond',
-    competencyLabel: '[gekoppelde competentie]',
-  },
-  {
-    id: 'gekozen-challenge',
-    groupKey: 'eerder',
-    type: 'challenge',
-    title: 'Gekozen challenge',
-    description: '[omschrijving van de opdracht...]',
-    deadlineLabel: 'zo 13 mrt',
-    status: 'afgerond',
-    competencyLabel: '[gekoppelde competentie]',
-  },
-  {
-    id: 'opdracht-open',
-    groupKey: 'deze-week',
-    type: 'opdracht',
-    title: '[activiteit titel]',
-    description: '[omschrijving van de opdracht...]',
-    deadlineLabel: 'vr 14 mrt',
-    status: 'open',
-    competencyLabel: '[gekoppelde competentie]',
-  },
-  {
-    id: 'workshop-bezig',
-    groupKey: 'deze-week',
-    type: 'workshop',
-    title: '[activiteit titel]',
-    description: '[omschrijving van de workshop...]',
-    deadlineLabel: 'wo 16 mrt',
-    status: 'bezig',
-    competencyLabel: '[gekoppelde competentie]',
-  },
-  {
-    id: 'competentie-feedback',
-    groupKey: 'volgende-week',
-    type: 'competentie',
-    title: '[activiteit titel]',
-    description: '[omschrijving van de competentie-activiteit...]',
-    deadlineLabel: 'di 22 mrt',
-    status: 'feedback',
-    competencyLabel: '[gekoppelde competentie]',
-  },
-  {
-    id: 'eigen-activiteit-open',
-    groupKey: 'volgende-week',
-    type: 'eigen activiteit',
-    title: '[activiteit titel]',
-    description: '[omschrijving van de eigen activiteit...]',
-    deadlineLabel: 'vr 25 mrt',
-    status: 'open',
-    competencyLabel: '[gekoppelde competentie]',
-  },
-  {
-    id: 'later-opdracht',
-    groupKey: 'later',
-    type: 'opdracht',
-    title: '[activiteit titel]',
-    description: '[omschrijving van de opdracht...]',
-    deadlineLabel: 'ma 28 mrt',
-    status: 'bezig',
-    competencyLabel: '[gekoppelde competentie]',
-  },
-];
 
 export function getTypeLabel(activityType: ActivityType) {
   return typeLabelMap[activityType];
