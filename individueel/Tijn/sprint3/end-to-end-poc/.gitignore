@@ -5,7 +5,7 @@ dist/
 .DS_Store
 
 # Persoonlijke portfolio-stukken, niet op repo
-analyse.md
-advies.md
-ontwerp.md
+infrastructuuranalyse-poc.md
+infrastructuuradvies-poc.md
+infrastructuurontwerp-poc.md
 competentieverantwoording.txt
