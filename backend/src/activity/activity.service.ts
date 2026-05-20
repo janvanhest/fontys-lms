@@ -121,6 +121,7 @@ export class ActivityService {
       .where('activity.studentId = :studentId', { studentId })
       .orderBy('activity.deadline', 'ASC', 'NULLS LAST')
       .addOrderBy('activity.position', 'ASC')
+      .addOrderBy('activity.createdAt', 'ASC')
       .getMany();
   }
 

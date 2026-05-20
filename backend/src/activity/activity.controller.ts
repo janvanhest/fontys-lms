@@ -12,6 +12,7 @@ import {
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentStudent } from '../auth/decorators/current-student.decorator';
 import { Student } from '../student/student.entity';
+import { Activity } from './activity.entity';
 import { ActivityService } from './activity.service';
 import { ActivityResponseDto } from './dto/activity-response.dto';
 import { CreateActivityDto } from './dto/create-activity.dto';
@@ -22,42 +23,47 @@ import { UpdateActivityDto } from './dto/update-activity.dto';
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
+  private toDto({ studentId: _studentId, ...rest }: Activity): ActivityResponseDto {
+    return rest;
+  }
+
   @Get()
   @ApiOperation({ summary: 'Alle activiteiten van de ingelogde student' })
   @ApiOkResponse({ type: [ActivityResponseDto] })
-  findAll(@CurrentStudent() student: Student): Promise<ActivityResponseDto[]> {
-    return this.activityService.findAll(student.id);
+  async findAll(@CurrentStudent() student: Student): Promise<ActivityResponseDto[]> {
+    const activities = await this.activityService.findAll(student.id);
+    return activities.map((a) => this.toDto(a));
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Één activiteit ophalen' })
   @ApiOkResponse({ type: ActivityResponseDto })
-  findOne(
+  async findOne(
     @Param('id') id: string,
     @CurrentStudent() student: Student,
   ): Promise<ActivityResponseDto> {
-    return this.activityService.findOne(id, student.id);
+    return this.toDto(await this.activityService.findOne(id, student.id));
   }
 
   @Post()
   @ApiOperation({ summary: 'Nieuwe activiteit aanmaken' })
   @ApiOkResponse({ type: ActivityResponseDto })
-  create(
+  async create(
     @Body() dto: CreateActivityDto,
     @CurrentStudent() student: Student,
   ): Promise<ActivityResponseDto> {
-    return this.activityService.create(student.id, dto);
+    return this.toDto(await this.activityService.create(student.id, dto));
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Activiteit bijwerken' })
   @ApiOkResponse({ type: ActivityResponseDto })
-  update(
+  async update(
     @Param('id') id: string,
     @Body() dto: UpdateActivityDto,
     @CurrentStudent() student: Student,
   ): Promise<ActivityResponseDto> {
-    return this.activityService.update(id, student.id, dto);
+    return this.toDto(await this.activityService.update(id, student.id, dto));
   }
 
   @Delete(':id')

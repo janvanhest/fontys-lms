@@ -8,7 +8,6 @@ import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 
 const STUDENT_A = 'student-a-uuid';
-const STUDENT_B = 'student-b-uuid';
 
 const makeActivity = (overrides: Partial<Activity> = {}): Activity => ({
   id: 'act-uuid-1',
@@ -67,30 +66,28 @@ describe('ActivityService', () => {
       });
       expect(mockQb.orderBy).toHaveBeenCalledWith('activity.deadline', 'ASC', 'NULLS LAST');
       expect(mockQb.addOrderBy).toHaveBeenCalledWith('activity.position', 'ASC');
+      expect(mockQb.addOrderBy).toHaveBeenCalledWith('activity.createdAt', 'ASC');
       expect(result).toEqual(activities);
     });
   });
 
   describe('findOne', () => {
-    it('returns the activity when it belongs to the student', async () => {
+    it('returns the activity and enforces ownership via query', async () => {
       const activity = makeActivity();
       repo.findOne.mockResolvedValue(activity);
 
       const result = await service.findOne('act-uuid-1', STUDENT_A);
 
+      expect(repo.findOne).toHaveBeenCalledWith({
+        where: { id: 'act-uuid-1', studentId: STUDENT_A },
+      });
       expect(result).toEqual(activity);
     });
 
-    it('throws NotFoundException when activity does not exist', async () => {
+    it('throws NotFoundException when not found or not owned', async () => {
       repo.findOne.mockResolvedValue(null);
 
       await expect(service.findOne('missing-id', STUDENT_A)).rejects.toThrow(NotFoundException);
-    });
-
-    it('throws NotFoundException when activity belongs to a different student', async () => {
-      repo.findOne.mockResolvedValue(makeActivity({ studentId: STUDENT_B }));
-
-      await expect(service.findOne('act-uuid-1', STUDENT_A)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -128,8 +125,8 @@ describe('ActivityService', () => {
       expect(result).toEqual(updated);
     });
 
-    it('throws NotFoundException when activity does not belong to student', async () => {
-      repo.findOne.mockResolvedValue(makeActivity({ studentId: STUDENT_B }));
+    it('throws NotFoundException when not found or not owned', async () => {
+      repo.findOne.mockResolvedValue(null);
 
       await expect(service.update('act-uuid-1', STUDENT_A, {})).rejects.toThrow(NotFoundException);
     });
@@ -144,8 +141,8 @@ describe('ActivityService', () => {
       expect(repo.delete).toHaveBeenCalledWith('act-uuid-1');
     });
 
-    it('throws NotFoundException when activity does not belong to student', async () => {
-      repo.findOne.mockResolvedValue(makeActivity({ studentId: STUDENT_B }));
+    it('throws NotFoundException when not found or not owned', async () => {
+      repo.findOne.mockResolvedValue(null);
 
       await expect(service.remove('act-uuid-1', STUDENT_A)).rejects.toThrow(NotFoundException);
     });
@@ -155,7 +152,7 @@ describe('ActivityService', () => {
     it('verwijdert bestaande activiteiten en maakt seed activiteiten aan', async () => {
       repo.delete.mockResolvedValue({ affected: 5, raw: [] });
       repo.create.mockImplementation((data) => data as Activity);
-      repo.save.mockImplementation(async (data) => data as Activity);
+      repo.save.mockImplementation((data) => Promise.resolve(data as Activity));
 
       const results = await service.seed(STUDENT_A);
 
