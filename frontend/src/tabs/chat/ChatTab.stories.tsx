@@ -14,6 +14,15 @@ const meta: Meta<typeof ChatTab> = {
 export default meta;
 type Story = StoryObj<typeof ChatTab>;
 
+const MOCK_STUDENT: StudentProfile = {
+  id: 'student-1',
+  canvasUserId: '31474',
+  displayName: 'Hest, Jan J.H. van',
+  email: 'jan.vanhest@student.fontys.nl',
+  avatarUrl: 'https://avatars.githubusercontent.com/u/81753593?v=4',
+  createdAt: '2026-05-19T00:00:00.000Z',
+};
+
 function ChatFrame({
   sidePanelOpen = false,
   children,
@@ -22,20 +31,14 @@ function ChatFrame({
   children: ReactNode;
 }) {
   const queryClient = new QueryClient();
-  const student: StudentProfile = {
-    id: 'student-1',
-    canvasUserId: '31474',
-    displayName: 'Hest, Jan J.H. van',
-    email: 'jan.vanhest@student.fontys.nl',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/81753593?v=4',
-    createdAt: '2026-05-19T00:00:00.000Z',
-  };
-
-  queryClient.setQueryData(studentProfileOptions.queryKey, student);
+  queryClient.setQueryData(studentProfileOptions.queryKey, MOCK_STUDENT);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LayoutStoryProvider sidePanelOpen={sidePanelOpen}>
+      <LayoutStoryProvider
+        sidePanelOpen={sidePanelOpen}
+        sidePanelContent={sidePanelOpen ? { type: 'activities' } : null}
+      >
         <Box sx={{ height: 640, display: 'flex', flexDirection: 'column' }}>{children}</Box>
       </LayoutStoryProvider>
     </QueryClientProvider>
