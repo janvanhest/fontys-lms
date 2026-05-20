@@ -21,7 +21,7 @@ type ChatTabProps = {
 };
 
 export function ChatTab({ conversationId }: ChatTabProps = {}) {
-  const { sidePanelOpen, setSidePanelOpen, activeTab, setSelectedConversationId } = useLayout();
+  const { sidePanelOpen, setSidePanelOpen, openSidePanel, activeTab, setSelectedConversationId } = useLayout();
   const handleConversationEstablished = useCallback(
     (nextConversationId: string) => {
       if (conversationId === nextConversationId) return;
@@ -91,7 +91,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
 
         <IconButton
           color={sidePanelOpen ? 'primary' : 'default'}
-          onClick={() => { setSidePanelOpen(!sidePanelOpen); }}
+          onClick={() => { if (sidePanelOpen) { setSidePanelOpen(false); } else { openSidePanel({ type: 'activities' }); } }}
           aria-label="Toggle activities panel"
         >
           <ChecklistRtlIcon />
