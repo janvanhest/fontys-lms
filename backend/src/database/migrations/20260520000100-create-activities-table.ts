@@ -5,7 +5,7 @@ export class CreateActivitiesTable20260520000100 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE IF NOT EXISTS "activities" (
+      CREATE TABLE "activities" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
         "studentId" uuid NOT NULL,
         "portflowId" integer,

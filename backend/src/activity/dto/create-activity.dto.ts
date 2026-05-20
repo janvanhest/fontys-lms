@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsIn, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 import type { ActivityStatus, ActivityType } from '../activity.entity';
 
 const ACTIVITY_TYPES: ActivityType[] = [
@@ -47,7 +47,7 @@ export class CreateActivityDto {
   status?: ActivityStatus;
 
   @ApiPropertyOptional({ example: '2026-03-14' })
-  @IsDateString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'deadline must be a date in YYYY-MM-DD format' })
   @IsOptional()
   deadline?: string;
 
