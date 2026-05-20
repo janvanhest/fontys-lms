@@ -5,8 +5,9 @@ import { ConversationEntity } from '../chat/entities/conversation.entity';
 import { MessageEntity } from '../chat/entities/message.entity';
 import { DocumentEntity } from '../document/document.entity';
 import { Student } from '../student/student.entity';
+import { Activity } from '../activity/activity.entity';
 
-const entities = [ConversationEntity, MessageEntity, DocumentEntity, Student];
+const entities = [ConversationEntity, MessageEntity, DocumentEntity, Student, Activity];
 const migrations = [join(__dirname, 'migrations', '*{.ts,.js}')];
 
 export function createTypeOrmOptions(databaseUrl: string): TypeOrmModuleOptions {
