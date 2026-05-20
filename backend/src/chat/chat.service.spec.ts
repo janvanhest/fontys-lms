@@ -219,7 +219,10 @@ describe('ChatService', () => {
 
     await collectEvents({ message: 'Follow up', conversationId: 'c-existing' });
 
-    expect(mockConversationService.findConversationWithMessages).toHaveBeenCalledWith('c-existing');
+    expect(mockConversationService.findConversationWithMessages).toHaveBeenCalledWith(
+      'c-existing',
+      STUDENT_ID,
+    );
   });
 
   it('generates an automatic title after the first complete assistant answer', async () => {

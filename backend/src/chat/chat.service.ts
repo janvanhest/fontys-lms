@@ -117,7 +117,10 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
     studentId: string,
   ): Promise<ConversationEntity> {
     if (conversationId) {
-      const existing = await this.conversationService.findConversationWithMessages(conversationId);
+      const existing = await this.conversationService.findConversationWithMessages(
+        conversationId,
+        studentId,
+      );
       if (existing) return existing;
     }
     return this.conversationService.createConversation(studentId);

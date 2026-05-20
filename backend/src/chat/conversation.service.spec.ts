@@ -66,11 +66,16 @@ describe('ConversationService', () => {
     expect(result).toHaveLength(2);
   });
 
-  it('findConversationWithMessages returns null when conversation does not exist', async () => {
+  it('findConversationWithMessages scopes lookup to the current student', async () => {
     conversationRepo.findOne.mockResolvedValue(null);
 
-    const result = await service.findConversationWithMessages('nonexistent');
+    const result = await service.findConversationWithMessages('nonexistent', 'student-uuid');
 
+    expect(conversationRepo.findOne).toHaveBeenCalledWith({
+      where: { id: 'nonexistent', studentId: 'student-uuid' },
+      relations: ['messages'],
+      order: { messages: { timestamp: 'ASC' } },
+    });
     expect(result).toBeNull();
   });
 
