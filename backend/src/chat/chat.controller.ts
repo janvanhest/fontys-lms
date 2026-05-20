@@ -50,8 +50,8 @@ export class ChatController {
 
   @Get('conversations/:id')
   @ApiOperation({ summary: 'Conversation with messages by ID (FR-08)' })
-  async getConversation(@Param('id') id: string) {
-    return this.conversationService.findConversationWithMessages(id);
+  async getConversation(@Param('id') id: string, @CurrentStudent() student: Student) {
+    return this.conversationService.findConversationWithMessages(id, student.id);
   }
 
   @Patch('conversations/:id')

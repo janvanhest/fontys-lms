@@ -87,4 +87,28 @@ describe('ChatController', () => {
       'Semesterplan hulp',
     );
   });
+
+  it('getConversation passes the current student id to the conversation service', async () => {
+    const findConversationWithMessages = jest.fn().mockResolvedValue({
+      id: 'conv-1',
+      studentId: 'student-1',
+      messages: [],
+    });
+    const module2: TestingModule = await Test.createTestingModule({
+      controllers: [ChatController],
+      providers: [
+        { provide: ChatService, useValue: { async *streamResponse() {} } },
+        {
+          provide: ConversationService,
+          useValue: { findConversationWithMessages, updateConversationTitle: jest.fn() },
+        },
+      ],
+    }).compile();
+    const ctrl = module2.get<ChatController>(ChatController);
+    const student = { id: 'student-1' } as Student;
+
+    await ctrl.getConversation('conv-1', student);
+
+    expect(findConversationWithMessages).toHaveBeenCalledWith('conv-1', 'student-1');
+  });
 });
