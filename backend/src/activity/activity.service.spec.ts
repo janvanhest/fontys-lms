@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Activity } from './activity.entity';
-import { ActivityService } from './activity.service';
+import { ActivityService, SEED_ACTIVITIES } from './activity.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 
@@ -152,7 +152,7 @@ describe('ActivityService', () => {
   });
 
   describe('seed', () => {
-    it('verwijdert bestaande activiteiten en maakt 10 nieuwe aan', async () => {
+    it('verwijdert bestaande activiteiten en maakt seed activiteiten aan', async () => {
       repo.delete.mockResolvedValue({ affected: 5, raw: [] });
       repo.create.mockImplementation((data) => data as Activity);
       repo.save.mockImplementation(async (data) => data as Activity);
@@ -160,7 +160,7 @@ describe('ActivityService', () => {
       const results = await service.seed(STUDENT_A);
 
       expect(repo.delete).toHaveBeenCalledWith({ studentId: STUDENT_A });
-      expect(results).toHaveLength(10);
+      expect(results).toHaveLength(SEED_ACTIVITIES.length);
     });
   });
 });
