@@ -15,10 +15,7 @@ describe('StudentService', () => {
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [
-        StudentService,
-        { provide: getRepositoryToken(Student), useFactory: mockRepo },
-      ],
+      providers: [StudentService, { provide: getRepositoryToken(Student), useFactory: mockRepo }],
     }).compile();
 
     service = module.get(StudentService);

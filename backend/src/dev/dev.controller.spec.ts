@@ -6,21 +6,20 @@ import { Activity } from '../activity/activity.entity';
 const STUDENT_ID = 'student-uuid';
 const mockStudent = { id: STUDENT_ID } as any;
 
-const makeActivity = (): Activity =>
-  ({
-    id: 'act-1',
-    studentId: STUDENT_ID,
-    portflowId: 7178,
-    title: 'Context helder krijgen',
-    description: null,
-    position: 1,
-    type: 'opdracht',
-    status: 'open',
-    deadline: '2026-03-07',
-    competencyLabel: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }) as Activity;
+const makeActivity = (): Activity => ({
+  id: 'act-1',
+  studentId: STUDENT_ID,
+  portflowId: 7178,
+  title: 'Context helder krijgen',
+  description: null,
+  position: 1,
+  type: 'opdracht',
+  status: 'open',
+  deadline: '2026-03-07',
+  competencyLabel: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
 
 describe('DevController', () => {
   let controller: DevController;

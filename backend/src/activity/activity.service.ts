@@ -125,8 +125,8 @@ export class ActivityService {
   }
 
   async findOne(id: string, studentId: string): Promise<Activity> {
-    const activity = await this.repo.findOne({ where: { id } });
-    if (!activity || activity.studentId !== studentId) {
+    const activity = await this.repo.findOne({ where: { id, studentId } });
+    if (!activity) {
       throw new NotFoundException(`Activity ${id} not found`);
     }
     return activity;

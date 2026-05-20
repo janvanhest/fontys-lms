@@ -9,10 +9,7 @@ import { MockAuthGuard } from './mock-auth.guard';
 const mockStudentService = () => ({ findOrCreate: jest.fn() });
 const mockReflector = () => ({ getAllAndOverride: jest.fn() });
 
-function buildContext(
-  isPublic: boolean,
-  request: Record<string, unknown> = {},
-): ExecutionContext {
+function buildContext(isPublic: boolean, request: Record<string, unknown> = {}): ExecutionContext {
   return {
     getHandler: () => ({}),
     getClass: () => ({}),

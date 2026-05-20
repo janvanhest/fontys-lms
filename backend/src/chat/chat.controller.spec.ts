@@ -75,7 +75,11 @@ describe('ChatController', () => {
   it('forwards conversation title updates with the current student id', async () => {
     const student = { id: 'student-1' } as Student;
 
-    await controller.updateConversationTitle('conversation-1', { title: 'Semesterplan hulp' }, student);
+    await controller.updateConversationTitle(
+      'conversation-1',
+      { title: 'Semesterplan hulp' },
+      student,
+    );
 
     expect(conversationService.updateConversationTitle).toHaveBeenCalledWith(
       'conversation-1',

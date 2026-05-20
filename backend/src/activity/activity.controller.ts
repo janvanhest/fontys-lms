@@ -63,10 +63,7 @@ export class ActivityController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Activiteit verwijderen' })
-  remove(
-    @Param('id') id: string,
-    @CurrentStudent() student: Student,
-  ): Promise<void> {
+  remove(@Param('id') id: string, @CurrentStudent() student: Student): Promise<void> {
     return this.activityService.remove(id, student.id);
   }
 }

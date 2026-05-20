@@ -266,7 +266,10 @@ describe('ChatService', () => {
       content: [{ type: 'text', text: 'Portflow helpt je bewijzen structureren.' }],
     });
 
-    await collectEvents({ message: 'Wat moet ik met Portflow doen?', conversationId: 'c-existing' });
+    await collectEvents({
+      message: 'Wat moet ik met Portflow doen?',
+      conversationId: 'c-existing',
+    });
 
     expect(mockConversationService.updateAutoConversationTitle).toHaveBeenCalledWith(
       'c1',

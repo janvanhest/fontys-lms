@@ -10,10 +10,7 @@ describe('RagTool', () => {
     mockSearchService = { zoekRelevanteChunks: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        RagTool,
-        { provide: DocumentSearchService, useValue: mockSearchService },
-      ],
+      providers: [RagTool, { provide: DocumentSearchService, useValue: mockSearchService }],
     }).compile();
 
     tool = module.get<RagTool>(RagTool);

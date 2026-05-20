@@ -93,12 +93,7 @@ export class ChatService {
     const fallback =
       'Ik kon je vraag niet volledig beantwoorden binnen het maximale aantal stappen.';
     const finalSources = this.getFinalSources(usedSources);
-    await this.conversationService.addMessage(
-      conversation.id,
-      'assistant',
-      fallback,
-      finalSources,
-    );
+    await this.conversationService.addMessage(conversation.id, 'assistant', fallback, finalSources);
     yield {
       event: 'final',
       data: this.serializeFinalPayload(conversation.id, fallback, finalSources),
@@ -114,9 +109,7 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
   }
 
   private getAvailableTools() {
-    return this.studentContextEnabled
-      ? [STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF]
-      : [RAG_TOOL_DEF];
+    return this.studentContextEnabled ? [STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF] : [RAG_TOOL_DEF];
   }
 
   private async getOrCreateConversation(
@@ -166,7 +159,8 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
           result = JSON.stringify({
             available: false,
             temporary: true,
-            notitie: 'Studentcontext is tijdelijk uitgeschakeld totdat echte studentdata beschikbaar is.',
+            notitie:
+              'Studentcontext is tijdelijk uitgeschakeld totdat echte studentdata beschikbaar is.',
           });
         } else {
           result = await this.studentContextTool.execute(studentId);
@@ -301,8 +295,6 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
     const selectedWords = (significantWords.length > 0 ? significantWords : cleaned).slice(0, 4);
     if (selectedWords.length === 0) return null;
 
-    return selectedWords
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    return selectedWords.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   }
 }

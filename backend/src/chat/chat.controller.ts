@@ -27,7 +27,7 @@ export class ChatController {
       void (async () => {
         try {
           for await (const event of this.chatService.streamResponse(dto, student.id)) {
-            subscriber.next({ type: event.event, data: event.data } as MessageEvent);
+            subscriber.next({ type: event.event, data: event.data });
           }
           subscriber.complete();
         } catch (error: unknown) {
@@ -35,7 +35,7 @@ export class ChatController {
             event: 'error',
             data: error instanceof Error ? error.message : String(error),
           };
-          subscriber.next({ type: errEvent.event, data: errEvent.data } as MessageEvent);
+          subscriber.next({ type: errEvent.event, data: errEvent.data });
           subscriber.complete();
         }
       })();

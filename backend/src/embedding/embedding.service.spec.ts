@@ -32,7 +32,7 @@ describe('EmbeddingService', () => {
     fetchSpy.mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue({ embedding }),
-    } as unknown as Response);
+    });
 
     const result = await service.embedText('hello world');
 
@@ -50,7 +50,7 @@ describe('EmbeddingService', () => {
     fetchSpy.mockResolvedValue({
       ok: false,
       status: 503,
-    } as unknown as Response);
+    });
 
     const result = await service.embedText('hello world');
 

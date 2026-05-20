@@ -6,11 +6,7 @@ import * as fs from 'fs/promises';
 import { Repository } from 'typeorm';
 import { EmbeddingService } from '../embedding/embedding.service';
 import { DocumentEntity } from './document.entity';
-import {
-  DocumentSeederService,
-  chunkByH2,
-  parseFrontmatter,
-} from './document-seeder.service';
+import { DocumentSeederService, chunkByH2, parseFrontmatter } from './document-seeder.service';
 
 const mockReaddir = fs.readdir as jest.MockedFunction<typeof fs.readdir>;
 const mockReadFile = fs.readFile as jest.MockedFunction<typeof fs.readFile>;
@@ -87,9 +83,7 @@ describe('chunkByH2', () => {
 
 describe('DocumentSeederService', () => {
   let service: DocumentSeederService;
-  let mockRepository: jest.Mocked<
-    Pick<Repository<DocumentEntity>, 'createQueryBuilder' | 'save'>
-  >;
+  let mockRepository: jest.Mocked<Pick<Repository<DocumentEntity>, 'createQueryBuilder' | 'save'>>;
   let mockEmbeddingService: jest.Mocked<Pick<EmbeddingService, 'embedText'>>;
   const mockDeleteExecute = jest.fn().mockResolvedValue({});
   const mockDelete = jest.fn().mockReturnValue({ execute: mockDeleteExecute });
@@ -128,7 +122,7 @@ describe('DocumentSeederService', () => {
 
   it('saves all chunks for a file in a single batched save call', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
 
     await service.onApplicationBootstrap();
 
@@ -143,7 +137,7 @@ describe('DocumentSeederService', () => {
 
   it('sets chunkIndex to 0-based position within the file', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
 
     await service.onApplicationBootstrap();
 
@@ -157,7 +151,7 @@ describe('DocumentSeederService', () => {
   it('saves chunk with embedding: null when embedText returns null', async () => {
     mockEmbeddingService.embedText.mockResolvedValue(null);
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
 
     await service.onApplicationBootstrap();
 
@@ -169,7 +163,7 @@ describe('DocumentSeederService', () => {
 
   it('preserves numeric embeddings for pgvector-backed persistence', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
     mockEmbeddingService.embedText.mockResolvedValue([0.11, 0.22, 0.33]);
 
     await service.onApplicationBootstrap();
@@ -182,7 +176,7 @@ describe('DocumentSeederService', () => {
 
   it('stores correct metadata from frontmatter', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
 
     await service.onApplicationBootstrap();
 
@@ -199,7 +193,7 @@ describe('DocumentSeederService', () => {
   it('skips files with missing frontmatter fields', async () => {
     const missingTitle = `---\nsource: s\ntitle:\nurl: https://example.com\n---\n\n# Page\n\nContent.`;
     mockReaddir.mockResolvedValue(['bad.md'] as never);
-    mockReadFile.mockResolvedValue(missingTitle as never);
+    mockReadFile.mockResolvedValue(missingTitle);
 
     await service.onApplicationBootstrap();
 

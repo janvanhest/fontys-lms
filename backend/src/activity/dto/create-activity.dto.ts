@@ -1,10 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsIn, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import type { ActivityStatus, ActivityType } from '../activity.entity';
 
 const ACTIVITY_TYPES: ActivityType[] = [
-  'opdracht', 'workshop', 'competentie', 'eigen activiteit', 'challenge',
-  'coaching', 'sprint review', 'semesterplan', 'posterpresentatie', 'overdracht',
+  'opdracht',
+  'workshop',
+  'competentie',
+  'eigen activiteit',
+  'challenge',
+  'coaching',
+  'sprint review',
+  'semesterplan',
+  'posterpresentatie',
+  'overdracht',
 ];
 const ACTIVITY_STATUSES: ActivityStatus[] = ['open', 'bezig', 'feedback', 'afgerond'];
 
@@ -39,7 +47,7 @@ export class CreateActivityDto {
   status?: ActivityStatus;
 
   @ApiPropertyOptional({ example: '2026-03-14' })
-  @IsString()
+  @IsDateString()
   @IsOptional()
   deadline?: string;
 

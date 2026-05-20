@@ -10,26 +10,27 @@ import { UpdateActivityDto } from './dto/update-activity.dto';
 const STUDENT_A = 'student-a-uuid';
 const STUDENT_B = 'student-b-uuid';
 
-const makeActivity = (overrides: Partial<Activity> = {}): Activity =>
-  ({
-    id: 'act-uuid-1',
-    studentId: STUDENT_A,
-    portflowId: null,
-    title: 'Test activiteit',
-    description: null,
-    position: 0,
-    type: 'opdracht',
-    status: 'open',
-    deadline: null,
-    competencyLabel: null,
-    createdAt: new Date('2026-05-20'),
-    updatedAt: new Date('2026-05-20'),
-    ...overrides,
-  }) as Activity;
+const makeActivity = (overrides: Partial<Activity> = {}): Activity => ({
+  id: 'act-uuid-1',
+  studentId: STUDENT_A,
+  portflowId: null,
+  title: 'Test activiteit',
+  description: null,
+  position: 0,
+  type: 'opdracht',
+  status: 'open',
+  deadline: null,
+  competencyLabel: null,
+  createdAt: new Date('2026-05-20'),
+  updatedAt: new Date('2026-05-20'),
+  ...overrides,
+});
 
 describe('ActivityService', () => {
   let service: ActivityService;
-  let repo: jest.Mocked<Pick<Repository<Activity>, 'findOne' | 'create' | 'save' | 'delete' | 'createQueryBuilder'>>;
+  let repo: jest.Mocked<
+    Pick<Repository<Activity>, 'findOne' | 'create' | 'save' | 'delete' | 'createQueryBuilder'>
+  >;
 
   beforeEach(async () => {
     repo = {
@@ -41,10 +42,7 @@ describe('ActivityService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ActivityService,
-        { provide: getRepositoryToken(Activity), useValue: repo },
-      ],
+      providers: [ActivityService, { provide: getRepositoryToken(Activity), useValue: repo }],
     }).compile();
 
     service = module.get<ActivityService>(ActivityService);
@@ -64,7 +62,9 @@ describe('ActivityService', () => {
       const result = await service.findAll(STUDENT_A);
 
       expect(repo.createQueryBuilder).toHaveBeenCalledWith('activity');
-      expect(mockQb.where).toHaveBeenCalledWith('activity.studentId = :studentId', { studentId: STUDENT_A });
+      expect(mockQb.where).toHaveBeenCalledWith('activity.studentId = :studentId', {
+        studentId: STUDENT_A,
+      });
       expect(mockQb.orderBy).toHaveBeenCalledWith('activity.deadline', 'ASC', 'NULLS LAST');
       expect(mockQb.addOrderBy).toHaveBeenCalledWith('activity.position', 'ASC');
       expect(result).toEqual(activities);
@@ -103,7 +103,12 @@ describe('ActivityService', () => {
 
       const result = await service.create(STUDENT_A, dto);
 
-      expect(repo.create).toHaveBeenCalledWith({ ...dto, studentId: STUDENT_A, position: 0, status: 'open' });
+      expect(repo.create).toHaveBeenCalledWith({
+        ...dto,
+        studentId: STUDENT_A,
+        position: 0,
+        status: 'open',
+      });
       expect(repo.save).toHaveBeenCalledWith(created);
       expect(result).toEqual(created);
     });

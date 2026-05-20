@@ -8,22 +8,21 @@ import { UpdateActivityDto } from './dto/update-activity.dto';
 const STUDENT_ID = 'student-uuid';
 const mockStudent = { id: STUDENT_ID } as any;
 
-const makeActivity = (overrides: Partial<Activity> = {}): Activity =>
-  ({
-    id: 'act-1',
-    studentId: STUDENT_ID,
-    portflowId: null,
-    title: 'Test',
-    description: null,
-    position: 0,
-    type: 'opdracht',
-    status: 'open',
-    deadline: null,
-    competencyLabel: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  }) as Activity;
+const makeActivity = (overrides: Partial<Activity> = {}): Activity => ({
+  id: 'act-1',
+  studentId: STUDENT_ID,
+  portflowId: null,
+  title: 'Test',
+  description: null,
+  position: 0,
+  type: 'opdracht',
+  status: 'open',
+  deadline: null,
+  competencyLabel: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+});
 
 describe('ActivityController', () => {
   let controller: ActivityController;

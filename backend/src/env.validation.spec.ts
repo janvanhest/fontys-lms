@@ -48,7 +48,9 @@ describe('validate', () => {
   });
 
   it('rejects invalid ports', () => {
-    expect(() => validate({ ...validBase, PORT: '70000' })).toThrow(/Environment validation failed/);
+    expect(() => validate({ ...validBase, PORT: '70000' })).toThrow(
+      /Environment validation failed/,
+    );
     expect(() => validate({ ...validBase, PORT: '70000' })).toThrow(/"property": "PORT"/);
     expect(() => validate({ ...validBase, PORT: '70000' })).toThrow(
       /must not be greater than 65535/,
@@ -100,6 +102,8 @@ describe('validate', () => {
   });
 
   it('accepts a valid ANTHROPIC_API_KEY', () => {
-    expect(() => validate({ ...validBase, ANTHROPIC_API_KEY: 'sk-ant-api03-abc123' })).not.toThrow();
+    expect(() =>
+      validate({ ...validBase, ANTHROPIC_API_KEY: 'sk-ant-api03-abc123' }),
+    ).not.toThrow();
   });
 });

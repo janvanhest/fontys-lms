@@ -17,11 +17,6 @@ import { StudentContextTool } from './tools/student-context.tool';
     DocumentModule,
   ],
   controllers: [ChatController],
-  providers: [
-    ChatService,
-    ConversationService,
-    StudentContextTool,
-    RagTool,
-  ],
+  providers: [ChatService, ConversationService, StudentContextTool, RagTool],
 })
 export class ChatModule {}
