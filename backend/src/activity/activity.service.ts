@@ -6,16 +6,106 @@ import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 
 const SEED_ACTIVITIES: Omit<Activity, 'id' | 'studentId' | 'createdAt' | 'updatedAt'>[] = [
-  { portflowId: 7178, title: 'Context helder krijgen', description: 'Analyseer en beschrijf de projectcontext.', position: 1, type: 'opdracht', status: 'afgerond', deadline: '2026-03-07', competencyLabel: 'Software - Analyseren - Niveau 2' },
-  { portflowId: 7179, title: 'Probleem helder krijgen', description: 'Formuleer een heldere probleemstelling.', position: 2, type: 'opdracht', status: 'afgerond', deadline: '2026-03-11', competencyLabel: 'Software - Analyseren - Niveau 2' },
-  { portflowId: 7193, title: 'Oorzaak en Context', description: 'Onderzoek de oorzaken achter het probleem.', position: 3, type: 'opdracht', status: 'afgerond', deadline: '2026-03-13', competencyLabel: 'Software - Analyseren - Niveau 2' },
-  { portflowId: 7202, title: 'Opzetten vragenlijst', description: 'Ontwerp een vragenlijst voor stakeholders.', position: 4, type: 'opdracht', status: 'bezig', deadline: '2026-05-21', competencyLabel: 'Software - Adviseren - Niveau 2' },
-  { portflowId: 7209, title: 'Stakeholderanalyse', description: 'Identificeer en analyseer alle stakeholders.', position: 5, type: 'opdracht', status: 'open', deadline: '2026-05-23', competencyLabel: 'Software - Adviseren - Niveau 2' },
-  { portflowId: 7219, title: 'Domeinmodellen', description: null, position: 6, type: 'opdracht', status: 'open', deadline: '2026-05-26', competencyLabel: 'Software - Ontwerpen - Niveau 2' },
-  { portflowId: 7237, title: 'Risico Tabel', description: null, position: 7, type: 'opdracht', status: 'open', deadline: '2026-05-28', competencyLabel: 'Software - Ontwerpen - Niveau 2' },
-  { portflowId: 7238, title: 'Brainstorm', description: null, position: 8, type: 'workshop', status: 'open', deadline: '2026-06-04', competencyLabel: null },
-  { portflowId: 7239, title: 'Scenariovergelijkingstabel', description: null, position: 9, type: 'opdracht', status: 'open', deadline: '2026-06-11', competencyLabel: 'Software - Ontwerpen - Niveau 3' },
-  { portflowId: 7180, title: 'Persoonlijk ontwikkelplan', description: 'Schrijf een persoonlijk ontwikkelplan voor dit semester.', position: 10, type: 'eigen activiteit', status: 'open', deadline: '2026-06-18', competencyLabel: null },
+  {
+    portflowId: 7178,
+    title: 'Context helder krijgen',
+    description: 'Analyseer en beschrijf de projectcontext.',
+    position: 1,
+    type: 'opdracht',
+    status: 'afgerond',
+    deadline: '2026-03-07',
+    competencyLabel: 'Software - Analyseren - Niveau 2',
+  },
+  {
+    portflowId: 7179,
+    title: 'Probleem helder krijgen',
+    description: 'Formuleer een heldere probleemstelling.',
+    position: 2,
+    type: 'opdracht',
+    status: 'afgerond',
+    deadline: '2026-03-11',
+    competencyLabel: 'Software - Analyseren - Niveau 2',
+  },
+  {
+    portflowId: 7193,
+    title: 'Oorzaak en Context',
+    description: 'Onderzoek de oorzaken achter het probleem.',
+    position: 3,
+    type: 'opdracht',
+    status: 'afgerond',
+    deadline: '2026-03-13',
+    competencyLabel: 'Software - Analyseren - Niveau 2',
+  },
+  {
+    portflowId: 7202,
+    title: 'Opzetten vragenlijst',
+    description: 'Ontwerp een vragenlijst voor stakeholders.',
+    position: 4,
+    type: 'opdracht',
+    status: 'bezig',
+    deadline: '2026-05-21',
+    competencyLabel: 'Software - Adviseren - Niveau 2',
+  },
+  {
+    portflowId: 7209,
+    title: 'Stakeholderanalyse',
+    description: 'Identificeer en analyseer alle stakeholders.',
+    position: 5,
+    type: 'opdracht',
+    status: 'open',
+    deadline: '2026-05-23',
+    competencyLabel: 'Software - Adviseren - Niveau 2',
+  },
+  {
+    portflowId: 7219,
+    title: 'Domeinmodellen',
+    description: null,
+    position: 6,
+    type: 'opdracht',
+    status: 'open',
+    deadline: '2026-05-26',
+    competencyLabel: 'Software - Ontwerpen - Niveau 2',
+  },
+  {
+    portflowId: 7237,
+    title: 'Risico Tabel',
+    description: null,
+    position: 7,
+    type: 'opdracht',
+    status: 'open',
+    deadline: '2026-05-28',
+    competencyLabel: 'Software - Ontwerpen - Niveau 2',
+  },
+  {
+    portflowId: 7238,
+    title: 'Brainstorm',
+    description: null,
+    position: 8,
+    type: 'workshop',
+    status: 'open',
+    deadline: '2026-06-04',
+    competencyLabel: null,
+  },
+  {
+    portflowId: 7239,
+    title: 'Scenariovergelijkingstabel',
+    description: null,
+    position: 9,
+    type: 'opdracht',
+    status: 'open',
+    deadline: '2026-06-11',
+    competencyLabel: 'Software - Ontwerpen - Niveau 3',
+  },
+  {
+    portflowId: 7180,
+    title: 'Persoonlijk ontwikkelplan',
+    description: 'Schrijf een persoonlijk ontwikkelplan voor dit semester.',
+    position: 10,
+    type: 'eigen activiteit',
+    status: 'open',
+    deadline: '2026-06-18',
+    competencyLabel: null,
+  },
 ];
 
 @Injectable()
@@ -60,11 +150,20 @@ export class ActivityService {
     await this.repo.delete(id);
   }
 
+  /**
+   * Seeds a student's activities with a predefined set of template activities. Existing activities for the student are removed before the seed data is inserted.
+   *
+   * This method is typically used to initialize or reset a student's activity list to a known baseline.
+   *
+   * Args:
+   *   studentId: The identifier of the student whose activities should be replaced with the seed data.
+   *
+   * Returns:
+   *   A promise that resolves with the list of newly created activities for the student.
+   */
   async seed(studentId: string): Promise<Activity[]> {
     await this.repo.delete({ studentId });
-    const activities = SEED_ACTIVITIES.map((data) =>
-      this.repo.create({ ...data, studentId }),
-    );
+    const activities = SEED_ACTIVITIES.map((data) => this.repo.create({ ...data, studentId }));
     return Promise.all(activities.map((a) => this.repo.save(a)));
   }
 }
