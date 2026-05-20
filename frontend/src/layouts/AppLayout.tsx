@@ -6,7 +6,7 @@ import { CompetentiesTab } from '@/tabs/CompetentiesTab';
 import { StappenplanTab } from '@/tabs/StappenplanTab';
 import { Sidebar } from './Sidebar';
 import { SidePanel } from './SidePanel';
-import { Topbar } from './Topbar';
+import { Topbar } from '@/layouts/topbar/Topbar';
 
 function assertUnreachable(tab: never): never {
   throw new Error(`Unexpected activeTab value: ${String(tab)}`);

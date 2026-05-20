@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useState, type KeyboardEvent } from 'react';
 import { fetchConversations, type ConversationSummary, updateConversationTitle } from '@/api/chat';
 import { useLayout } from '@/context/useLayout';
-import { formatConversationTitle, normalizeConversationTitleInput } from './sidebarTitle';
+import { formatConversationTitle, normalizeConversationTitleInput } from '@/utils/sidebarTitle';
 
 const sidebarWidth = 190;
 
