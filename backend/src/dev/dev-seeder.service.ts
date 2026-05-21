@@ -21,7 +21,10 @@ export class DevSeederService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    if (!this.configService.get<boolean>('MOCK_AUTH', false)) {
+    const isMockAuthEnabled = this.configService.get<boolean>('MOCK_AUTH', false);
+    const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
+
+    if (!isMockAuthEnabled || nodeEnv === 'production') {
       return;
     }
 
