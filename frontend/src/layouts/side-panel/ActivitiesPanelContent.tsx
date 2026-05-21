@@ -1,3 +1,6 @@
+import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
+import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { KeyboardEvent, MouseEvent } from 'react';
@@ -18,6 +21,17 @@ type ActivitiesPanelContentProps = {
   totalActivities: number;
 };
 
+function ActivityCardSkeleton() {
+  return (
+    <Skeleton
+      variant="rounded"
+      height={88}
+      sx={{ borderRadius: 2, transform: 'none' }}
+      animation="wave"
+    />
+  );
+}
+
 export function ActivitiesPanelContent({
   error,
   groups,
@@ -33,9 +47,11 @@ export function ActivitiesPanelContent({
 }: ActivitiesPanelContentProps) {
   if (isLoading) {
     return (
-      <Typography variant="body2" color="text.secondary">
-        Activiteiten laden...
-      </Typography>
+      <Stack spacing={1.5}>
+        <ActivityCardSkeleton />
+        <ActivityCardSkeleton />
+        <ActivityCardSkeleton />
+      </Stack>
     );
   }
 
@@ -49,9 +65,27 @@ export function ActivitiesPanelContent({
 
   if (totalActivities === 0) {
     return (
-      <Typography variant="body2" color="text.secondary">
-        Nog geen activiteiten.
-      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 1.5,
+          py: 5,
+          px: 2,
+          textAlign: 'center',
+        }}
+      >
+        <EventNoteOutlinedIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
+        <Box>
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            Nog geen activiteiten
+          </Typography>
+          <Typography variant="caption" color="text.disabled">
+            Klik op "Nieuwe activiteit" om te beginnen.
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 
