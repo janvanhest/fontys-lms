@@ -3,6 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { ConversationEntity } from './entities/conversation.entity';
 import { ConversationService } from './conversation.service';
+import {
+  PERFORM_UI_ACTION_TOOL_DEF,
+  PerformUiActionTool,
+  type PerformUiActionInput,
+} from './tools/perform-ui-action.tool';
 import { RAG_TOOL_DEF, RagTool } from './tools/rag.tool';
 import { SEARCH_ACTIVITIES_TOOL_DEF, SearchActivitiesTool } from './tools/search-activities.tool';
 import { STUDENT_CONTEXT_TOOL_DEF, StudentContextTool } from './tools/student-context.tool';
@@ -20,7 +25,11 @@ Je helpt studenten hun leervoortgang te begrijpen en te verbeteren.
 Aanpak:
 1. Gebruik search_course_content voor vragen over begrippen, het HBO-i raamwerk of cursusinhoud.
 2. Gebruik search_activities voor vragen over activiteiten, deadlines, open taken, workshops, competenties of voortgang van de student.
-3. Combineer bronnen alleen als dat inhoudelijk helpt.
+3. Gebruik perform_ui_action om het activiteitenpaneel te openen:
+   - mode 'auto': als de student expliciet vraagt om het paneel te openen of te tonen.
+   - mode 'suggest': als het tonen van het paneel nuttig zou zijn maar de student er niet om heeft gevraagd.
+   Gebruik dit nooit automatisch alleen omdat search_activities werd aangeroepen.
+4. Combineer bronnen alleen als dat inhoudelijk helpt.
 Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
 
 const STUDENT_CONTEXT_DISABLED_RESULT = {
@@ -52,6 +61,7 @@ export class ChatService {
     private readonly studentContextTool: StudentContextTool,
     private readonly ragTool: RagTool,
     private readonly searchActivitiesTool: SearchActivitiesTool,
+    private readonly performUiActionTool: PerformUiActionTool,
     private readonly configService: ConfigService,
   ) {
     this.anthropic = new Anthropic({
@@ -137,8 +147,8 @@ ${this.studentContextPolicy.disabledPromptNote}`;
 
   private getAvailableTools() {
     return this.studentContextPolicy.enabled
-      ? [SEARCH_ACTIVITIES_TOOL_DEF, STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF]
-      : [SEARCH_ACTIVITIES_TOOL_DEF, RAG_TOOL_DEF];
+      ? [PERFORM_UI_ACTION_TOOL_DEF, SEARCH_ACTIVITIES_TOOL_DEF, STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF]
+      : [PERFORM_UI_ACTION_TOOL_DEF, SEARCH_ACTIVITIES_TOOL_DEF, RAG_TOOL_DEF];
   }
 
   private async getOrCreateConversation(
@@ -201,6 +211,13 @@ ${this.studentContextPolicy.disabledPromptNote}`;
           studentId,
           block.input as Parameters<SearchActivitiesTool['execute']>[1],
         );
+      } else if (block.name === 'perform_ui_action') {
+        const input = block.input as PerformUiActionInput;
+        events.push({
+          event: 'ui_action',
+          data: JSON.stringify({ action: input.action, mode: input.mode, label: input.label }),
+        });
+        result = this.performUiActionTool.execute();
       } else {
         result = `Unknown tool: ${block.name}`;
       }

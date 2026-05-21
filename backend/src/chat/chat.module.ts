@@ -8,6 +8,7 @@ import { ChatService } from './chat.service';
 import { ConversationEntity } from './entities/conversation.entity';
 import { MessageEntity } from './entities/message.entity';
 import { ConversationService } from './conversation.service';
+import { PerformUiActionTool } from './tools/perform-ui-action.tool';
 import { RagTool } from './tools/rag.tool';
 import { SearchActivitiesTool } from './tools/search-activities.tool';
 import { StudentContextTool } from './tools/student-context.tool';
@@ -20,6 +21,13 @@ import { StudentContextTool } from './tools/student-context.tool';
     DocumentModule,
   ],
   controllers: [ChatController],
-  providers: [ChatService, ConversationService, StudentContextTool, RagTool, SearchActivitiesTool],
+  providers: [
+    ChatService,
+    ConversationService,
+    StudentContextTool,
+    RagTool,
+    SearchActivitiesTool,
+    PerformUiActionTool,
+  ],
 })
 export class ChatModule {}
