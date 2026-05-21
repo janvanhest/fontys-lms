@@ -1,14 +1,13 @@
+// frontend/src/hooks/useChatStream.ts
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  parseFinalChatPayload,
-  streamChatMessage,
-} from '@/api/chat';
+import { parseFinalChatPayload, streamChatMessage } from '@/api/chat';
 import {
   applyErrorMessage,
   applyFinalMessage,
   createPendingMessages,
   getStatusTextFromToolCall,
   loadConversationHistory,
+  type ChatUiAction,
   type Message,
 } from './chatStreamHelpers';
 
@@ -16,10 +15,11 @@ export type { Message } from './chatStreamHelpers';
 
 type UseChatStreamOptions = {
   onConversationEstablished?: (conversationId: string) => void;
+  onUiAction?: (action: string) => void;
 };
 
 export function useChatStream(conversationId?: string, options: UseChatStreamOptions = {}) {
-  const { onConversationEstablished } = options;
+  const { onConversationEstablished, onUiAction } = options;
   const hasConversation = Boolean(conversationId);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -29,10 +29,10 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
   );
   const streamAbortRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
+  const pendingSuggestions = useRef<ChatUiAction[]>([]);
 
   useEffect(() => {
     isMountedRef.current = true;
-
     return () => {
       isMountedRef.current = false;
       streamAbortRef.current?.abort();
@@ -41,10 +41,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
   useEffect(() => {
     streamAbortRef.current?.abort();
-
-    if (!conversationId) {
-      return;
-    }
+    if (!conversationId) return;
 
     const controller = new AbortController();
     let ignore = false;
@@ -52,14 +49,12 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
     void loadConversationHistory(conversationId, controller.signal)
       .then((historyMessages) => {
         if (ignore || !isMountedRef.current) return;
-
         setMessages(historyMessages);
         setStatusText(null);
       })
       .catch((error: unknown) => {
         if (ignore || !isMountedRef.current) return;
         if (error instanceof DOMException && error.name === 'AbortError') return;
-
         setMessages([]);
         setStatusText('Gesprek laden mislukt.');
       })
@@ -74,6 +69,14 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
     };
   }, [conversationId]);
 
+  const consumeAction = useCallback((messageId: string, action: string) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId ? { ...m, actions: m.actions?.filter((a) => a.action !== action) } : m,
+      ),
+    );
+  }, []);
+
   const sendMessage = useCallback(
     async (text: string) => {
       if (isStreaming || isLoadingHistory) return;
@@ -83,6 +86,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       streamAbortRef.current = controller;
 
       const { streamingId, streamingMessage, userMessage } = createPendingMessages(text);
+      pendingSuggestions.current = [];
 
       setMessages((prev) => [...prev, userMessage, streamingMessage]);
       setIsStreaming(true);
@@ -102,24 +106,44 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
             case 'tool_result':
               setStatusText('Antwoord opstellen...');
               break;
+            case 'ui_action': {
+              const payload = JSON.parse(sseEvent.data) as {
+                action: string;
+                mode: string;
+                label: string;
+              };
+              if (payload.mode === 'auto') {
+                onUiAction?.(payload.action);
+              } else {
+                pendingSuggestions.current.push({
+                  action: payload.action as 'open_activities_panel',
+                  label: payload.label,
+                });
+              }
+              break;
+            }
             case 'final': {
               const finalPayload = parseFinalChatPayload(sseEvent.data);
               if (finalPayload.conversationId) {
                 onConversationEstablished?.(finalPayload.conversationId);
               }
-              setMessages((prev) => applyFinalMessage(prev, streamingId, finalPayload));
+              setMessages((prev) =>
+                applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions.current),
+              );
               setStatusText(null);
               break;
             }
             case 'error':
-              setMessages((prev) => applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`));
+              setMessages((prev) =>
+                applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`),
+              );
               setStatusText(null);
               break;
           }
         }
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-          // Ignore aborted streams; cleanup happens in finally.
+          // Intentional abort — no action needed.
         } else if (isMountedRef.current) {
           setMessages((prev) =>
             applyErrorMessage(
@@ -140,8 +164,8 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
         }
       }
     },
-    [isStreaming, isLoadingHistory, conversationId, onConversationEstablished],
+    [isStreaming, isLoadingHistory, conversationId, onConversationEstablished, onUiAction],
   );
 
-  return { messages, isStreaming, isLoadingHistory, statusText, sendMessage };
+  return { messages, isStreaming, isLoadingHistory, statusText, sendMessage, consumeAction };
 }
