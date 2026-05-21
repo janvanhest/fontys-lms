@@ -24,6 +24,7 @@ const meta: Meta<typeof ActivityMenus> = {
     onCloseSubmenu: fn(),
     onTypeChange: fn(),
     onStatusChange: fn(),
+    onEdit: fn(),
   },
 };
 
