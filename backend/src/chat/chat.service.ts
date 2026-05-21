@@ -147,7 +147,12 @@ export class ChatService {
 
   private getAvailableTools() {
     return this.studentContextPolicy.enabled
-      ? [PERFORM_UI_ACTION_TOOL_DEF, SEARCH_ACTIVITIES_TOOL_DEF, STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF]
+      ? [
+          PERFORM_UI_ACTION_TOOL_DEF,
+          SEARCH_ACTIVITIES_TOOL_DEF,
+          STUDENT_CONTEXT_TOOL_DEF,
+          RAG_TOOL_DEF,
+        ]
       : [PERFORM_UI_ACTION_TOOL_DEF, SEARCH_ACTIVITIES_TOOL_DEF, RAG_TOOL_DEF];
   }
 
