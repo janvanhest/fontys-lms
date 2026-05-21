@@ -8,7 +8,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { statusMeta, statusOptions, subtypeOptions } from './constants';
+import { statusMeta, statusOptions, typeOptions } from './constants';
 import type { ActivityStatus, ActivityType, OpenSubmenu } from './types';
 import type { Activity } from '@/types/activity';
 
@@ -100,7 +100,7 @@ export function ActivityMenus({
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         {openSubmenu === 'type'
-          ? subtypeOptions.map((option) => (
+          ? typeOptions.map((option) => (
               <MenuItem
                 key={option.value}
                 onClick={() => {

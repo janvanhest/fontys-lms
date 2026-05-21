@@ -31,16 +31,9 @@ export const typeLabelMap: Record<ActivityType, string> = {
   overdracht: 'Overdracht',
 };
 
-export const subtypeOptions = [
-  { label: 'Coaching', value: 'coaching' },
-  { label: 'Workshop', value: 'workshop' },
-  { label: 'Sprint review', value: 'sprint review' },
-  { label: 'Semesterplan', value: 'semesterplan' },
-  { label: 'Posterpresentatie', value: 'posterpresentatie' },
-  { label: 'Overdracht', value: 'overdracht' },
-] as const satisfies readonly { label: string; value: ActivityType }[];
-
-export type SubtypeOption = (typeof subtypeOptions)[number];
+export const typeOptions = (
+  Object.entries(typeLabelMap) as [ActivityType, string][]
+).map(([value, label]) => ({ value, label }));
 
 export const statusOptions: ActivityStatus[] = ['open', 'bezig', 'feedback', 'afgerond'];
 
