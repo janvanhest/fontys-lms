@@ -13,7 +13,14 @@ type ChatTabProps = {
 };
 
 export function ChatTab({ conversationId }: ChatTabProps = {}) {
-  const { sidePanelOpen, setSidePanelOpen, openSidePanel, activeTab, setSelectedConversationId } = useLayout();
+  const {
+    sidePanelOpen,
+    setSidePanelOpen,
+    openSidePanel,
+    activeTab,
+    setSelectedConversationId,
+  } = useLayout();
+
   const handleConversationEstablished = useCallback(
     (nextConversationId: string) => {
       if (conversationId === nextConversationId) return;
@@ -21,10 +28,30 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
     },
     [conversationId, setSelectedConversationId],
   );
-  const { messages, isStreaming, isLoadingHistory, statusText, sendMessage } = useChatStream(
-    conversationId,
-    { onConversationEstablished: handleConversationEstablished },
+
+  const handleUiAction = useCallback(
+    (action: string) => {
+      if (action === 'open_activities_panel') {
+        openSidePanel({ type: 'activities' });
+      }
+    },
+    [openSidePanel],
   );
+
+  const { messages, isStreaming, isLoadingHistory, statusText, sendMessage, consumeAction } =
+    useChatStream(conversationId, {
+      onConversationEstablished: handleConversationEstablished,
+      onUiAction: handleUiAction,
+    });
+
+  const handleAction = useCallback(
+    (messageId: string, action: string) => {
+      handleUiAction(action);
+      consumeAction(messageId, action);
+    },
+    [handleUiAction, consumeAction],
+  );
+
   const { data: student } = useQuery(studentProfileOptions);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -69,7 +96,12 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
         sidePanelOpen={sidePanelOpen}
         statusText={statusText}
       />
-      <ChatMessageList bottomRef={bottomRef} messages={messages} student={student} />
+      <ChatMessageList
+        bottomRef={bottomRef}
+        messages={messages}
+        student={student}
+        onAction={handleAction}
+      />
       <ChatComposer
         disabled={isStreaming || isLoadingHistory}
         input={input}

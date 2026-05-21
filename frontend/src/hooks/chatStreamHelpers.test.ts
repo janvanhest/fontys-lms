@@ -1,11 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   applyFinalMessage,
-  ChatUiAction,
   generateMessageId,
   getStatusTextFromToolCall,
-  Message,
 } from './chatStreamHelpers';
+import type { ChatUiAction, Message } from './chatStreamHelpers';
 
 describe('generateMessageId', () => {
   afterEach(() => {

@@ -14,9 +14,10 @@ type ChatMessageListProps = {
   bottomRef: RefObject<HTMLDivElement | null>;
   messages: Message[];
   student?: StudentProfile;
+  onAction?: (messageId: string, action: string) => void;
 };
 
-export function ChatMessageList({ bottomRef, messages, student }: ChatMessageListProps) {
+export function ChatMessageList({ bottomRef, messages, student, onAction }: ChatMessageListProps) {
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
       <Stack spacing={2.5}>
@@ -33,7 +34,9 @@ export function ChatMessageList({ bottomRef, messages, student }: ChatMessageLis
                 alignItems: 'flex-end',
               }}
             >
-              {!isStudent && <Avatar sx={{ bgcolor: 'primary.main', width: 34, height: 34 }}>L</Avatar>}
+              {!isStudent && (
+                <Avatar sx={{ bgcolor: 'primary.main', width: 34, height: 34 }}>L</Avatar>
+              )}
               <Paper
                 elevation={0}
                 sx={{
@@ -57,7 +60,12 @@ export function ChatMessageList({ bottomRef, messages, student }: ChatMessageLis
                   <Box>
                     <ChatMarkdown content={message.content} />
                     {message.sources && message.sources.length > 0 ? (
-                      <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1.5, flexWrap: 'wrap' }}>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        useFlexGap
+                        sx={{ mt: 1.5, flexWrap: 'wrap' }}
+                      >
                         {message.sources.map((source) => {
                           const chip = (
                             <Chip
@@ -70,17 +78,11 @@ export function ChatMessageList({ bottomRef, messages, student }: ChatMessageLis
                                 borderColor: 'divider',
                                 bgcolor: 'grey.50',
                                 fontSize: '0.75rem',
-                                '& .MuiChip-label': {
-                                  px: 1.25,
-                                },
+                                '& .MuiChip-label': { px: 1.25 },
                               }}
                             />
                           );
-
-                          if (!source.url) {
-                            return chip;
-                          }
-
+                          if (!source.url) return chip;
                           return (
                             <Box
                               key={`${message.id}-${source.label}-${source.url}`}
@@ -94,6 +96,24 @@ export function ChatMessageList({ bottomRef, messages, student }: ChatMessageLis
                             </Box>
                           );
                         })}
+                      </Stack>
+                    ) : null}
+                    {message.actions && message.actions.length > 0 ? (
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        useFlexGap
+                        sx={{ mt: 1.5, flexWrap: 'wrap' }}
+                      >
+                        {message.actions.map((a) => (
+                          <Chip
+                            key={a.action}
+                            label={a.label}
+                            size="small"
+                            onClick={() => onAction?.(message.id, a.action)}
+                            sx={{ fontSize: '0.75rem' }}
+                          />
+                        ))}
                       </Stack>
                     ) : null}
                   </Box>
