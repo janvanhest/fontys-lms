@@ -1,0 +1,3 @@
+[submodule "individueel/LMSDataExtraction"]
+	path = individueel/LMSDataExtraction
+	url = https://github.com/Whelmand/LMSDataExtraction.git
