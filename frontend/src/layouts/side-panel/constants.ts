@@ -4,8 +4,8 @@ export const panelWidth = 320;
 
 export const groupMeta: Record<GroupKey, { label: string; rangeLabel: string }> = {
   eerder: { label: 'eerder', rangeLabel: 'vóór deze week' },
-  'deze-week': { label: 'deze week', rangeLabel: 'deze week' },
-  'volgende-week': { label: 'volgende week', rangeLabel: 'volgende week' },
+  'deze-week': { label: 'deze week', rangeLabel: 'ma t/m zo' },
+  'volgende-week': { label: 'volgende week', rangeLabel: 'komende 7 dagen' },
   later: { label: 'later', rangeLabel: 'na volgende week' },
 };
 
