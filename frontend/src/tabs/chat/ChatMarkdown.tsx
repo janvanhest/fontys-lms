@@ -44,8 +44,8 @@ function ChatMarkdownContent({ content }: ChatMarkdownProps) {
               insetInline: 0,
               bottom: 0,
               height: 72,
-              background:
-                'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.92) 60%, rgba(255,255,255,1) 100%)',
+              background: (theme) =>
+                `linear-gradient(to bottom, transparent 0%, ${theme.palette.background.paper}cc 60%, ${theme.palette.background.paper} 100%)`,
               pointerEvents: 'none',
             }}
           />

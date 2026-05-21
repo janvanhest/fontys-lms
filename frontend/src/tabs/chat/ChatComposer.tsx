@@ -1,6 +1,7 @@
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import type { KeyboardEvent } from 'react';
 
@@ -29,30 +30,34 @@ export function ChatComposer({
         bgcolor: 'background.paper',
       }}
     >
-      <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end' }}>
-        <TextField
-          fullWidth
-          multiline
-          minRows={2}
-          maxRows={6}
-          placeholder="Typ je vraag..."
-          size="small"
-          value={input}
-          onChange={(event) => {
-            onChange(event.target.value);
-          }}
-          onKeyDown={onKeyDown}
-          disabled={disabled}
-        />
-        <IconButton
-          color="primary"
-          aria-label="Send message"
-          onClick={onSend}
-          disabled={disabled || !input.trim()}
-        >
-          <ArrowUpwardIcon />
-        </IconButton>
-      </Box>
+      <TextField
+        fullWidth
+        multiline
+        minRows={2}
+        maxRows={6}
+        placeholder="Typ je vraag..."
+        value={input}
+        onChange={(event) => { onChange(event.target.value); }}
+        onKeyDown={onKeyDown}
+        disabled={disabled}
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="end" sx={{ alignSelf: 'flex-end', pb: 0.5 }}>
+                <IconButton
+                  color="primary"
+                  aria-label="Bericht verzenden"
+                  onClick={onSend}
+                  disabled={disabled || !input.trim()}
+                  size="small"
+                >
+                  <ArrowUpwardIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
     </Box>
   );
 }

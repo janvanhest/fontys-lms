@@ -35,7 +35,7 @@ export function ChatTabHeader({
     >
       <Box>
         <Typography variant="h4" component="h1">
-          {activeTab === 'activities' ? 'Activities' : 'Chat'}
+          {activeTab === 'activities' ? 'Activiteiten' : 'Chat'}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {statusText ??
