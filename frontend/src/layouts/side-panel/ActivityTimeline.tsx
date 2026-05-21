@@ -3,17 +3,15 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
-import Timeline from '@mui/lab/Timeline';
-import TimelineConnector from '@mui/lab/TimelineConnector';
-import TimelineContent from '@mui/lab/TimelineContent';
-import TimelineDot from '@mui/lab/TimelineDot';
-import TimelineItem from '@mui/lab/TimelineItem';
-import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import { formatDeadlineLabel } from '@/utils/activity-grouping';
 import { ActivityCard } from './ActivityCard';
 import { getTypeLabel, statusMeta } from './constants';
 import type { ActivityGroupSection } from './types';
 import type { Activity } from '@/types/activity';
+
+// Dot is offset 12px from the item top (mt: 1.5). Dot height = 10px.
+const DOT_TOP = 12; // px
+const DOT_HEIGHT = 10; // px
 
 type ActivityTimelineProps = {
   groups: ActivityGroupSection[];
@@ -59,39 +57,58 @@ export function ActivityTimeline({
         </Box>
       </Divider>
 
-      <Timeline
-        sx={{
-          m: 0,
-          p: 0,
-          [`& .MuiTimelineItem-root:before`]: { flex: 0, padding: 0 },
-        }}
-      >
+      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         {group.items.map((activity: Activity, index) => {
+          const isLast = index === group.items.length - 1;
           const isSelected = selectedActivityId === activity.id;
           const status = statusMeta[activity.status];
 
           return (
-            <TimelineItem key={activity.id} sx={{ alignItems: 'stretch', minHeight: 0 }}>
-              <TimelineSeparator sx={{ minWidth: 20 }}>
-                <TimelineDot
+            <Box key={activity.id} sx={{ display: 'flex', alignItems: 'stretch' }}>
+              {/* Separator column with dot and connector */}
+              <Box
+                sx={{
+                  width: 20,
+                  flexShrink: 0,
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  overflow: 'visible',
+                }}
+              >
+                {/* Dot */}
+                <Box
                   sx={{
-                    m: 0,
-                    mt: 1.5,
-                    boxShadow: 'none',
-                    border: 'none',
+                    mt: `${DOT_TOP}px`,
+                    width: DOT_HEIGHT,
+                    height: DOT_HEIGHT,
+                    borderRadius: '50%',
                     bgcolor: status.color,
-                    width: 10,
-                    height: 10,
+                    flexShrink: 0,
+                    zIndex: 1,
+                    position: 'relative',
                   }}
                 />
-                {index < group.items.length - 1 ? (
-                  <TimelineConnector
-                    sx={{ bgcolor: alpha('#1976d2', 0.14), width: 2, borderRadius: 999 }}
+
+                {/* Connector: absolutely positioned from dot-bottom to next item's dot-top */}
+                {!isLast ? (
+                  <Box
+                    sx={(theme) => ({
+                      position: 'absolute',
+                      top: `${DOT_TOP + DOT_HEIGHT}px`,
+                      // Extends into next item by DOT_TOP px to meet that item's dot
+                      bottom: `-${DOT_TOP}px`,
+                      width: 2,
+                      bgcolor: alpha(theme.palette.primary.main, 0.18),
+                      borderRadius: '0 0 2px 2px',
+                    })}
                   />
                 ) : null}
-              </TimelineSeparator>
+              </Box>
 
-              <TimelineContent sx={{ py: 0.5, pr: 0 }}>
+              {/* Card */}
+              <Box sx={{ py: 0.5, flex: 1, minWidth: 0 }}>
                 <ActivityCard
                   activity={activity}
                   deadlineLabel={formatDeadlineLabel(activity.deadline)}
@@ -104,11 +121,11 @@ export function ActivityTimeline({
                   onKeyDown={onCardKeyDown}
                   onOpenMenu={onOpenMenu}
                 />
-              </TimelineContent>
-            </TimelineItem>
+              </Box>
+            </Box>
           );
         })}
-      </Timeline>
+      </Box>
     </Box>
   ));
 }

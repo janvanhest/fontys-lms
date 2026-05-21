@@ -1,6 +1,7 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
@@ -62,16 +63,18 @@ export function ActivityCard({
         },
       })}
     >
-      <IconButton
-        size="small"
-        aria-label={`Open menu voor ${activity.title}`}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        onClick={(event) => { onOpenMenu(event, activity.id); }}
-        sx={{ position: 'absolute', top: 8, right: 8 }}
-      >
-        <MoreVertIcon fontSize="small" />
-      </IconButton>
+      <Tooltip title="Opties" placement="left" enterDelay={600}>
+        <IconButton
+          size="small"
+          aria-label={`Open menu voor ${activity.title}`}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={(event) => { onOpenMenu(event, activity.id); }}
+          sx={{ position: 'absolute', top: 8, right: 8 }}
+        >
+          <MoreVertIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
 
       <Stack spacing={1.25}>
         <Chip label={typeLabel} color="primary" size="small" sx={{ alignSelf: 'flex-start' }} />
