@@ -4,17 +4,17 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
+import { MOCK_ACTIVITIES } from '@/storybook/mock-activities';
 import { ActivityMenus } from './ActivityMenus';
-import { initialActivities } from './constants';
 import type { OpenSubmenu } from './types';
 
-const MENU_ACTIVITY_ID = initialActivities[0].id;
+const MENU_ACTIVITY_ID = MOCK_ACTIVITIES[0].id;
 
 const meta: Meta<typeof ActivityMenus> = {
   title: 'SidePanel/ActivityMenus',
   component: ActivityMenus,
   args: {
-    activities: initialActivities,
+    activities: MOCK_ACTIVITIES,
     menuActivityId: MENU_ACTIVITY_ID,
     menuAnchorEl: null,
     submenuAnchorEl: null,

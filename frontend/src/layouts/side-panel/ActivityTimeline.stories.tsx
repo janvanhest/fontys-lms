@@ -2,21 +2,12 @@ import { useState, type ComponentProps, type KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
+import { groupActivities } from '@/utils/activity-grouping';
+import { MOCK_ACTIVITIES } from '@/storybook/mock-activities';
 import { ActivityTimeline } from './ActivityTimeline';
-import { groupMeta, groupOrder, initialActivities, panelWidth } from './constants';
-import type { ActivityGroupSection, ActivityItem } from './types';
+import { panelWidth } from './constants';
 
-function buildGroups(activities: ActivityItem[] = initialActivities): ActivityGroupSection[] {
-  return groupOrder
-    .map((groupKey) => ({
-      groupKey,
-      ...groupMeta[groupKey],
-      items: activities.filter((a) => a.groupKey === groupKey),
-    }))
-    .filter((group) => group.items.length > 0);
-}
-
-const ALL_GROUPS = buildGroups();
+const ALL_GROUPS = groupActivities(MOCK_ACTIVITIES);
 
 const meta: Meta<typeof ActivityTimeline> = {
   title: 'SidePanel/ActivityTimeline',
@@ -46,13 +37,13 @@ export const Default: Story = {};
 
 export const WithSelection: Story = {
   args: {
-    selectedActivityId: initialActivities[2].id,
+    selectedActivityId: MOCK_ACTIVITIES[2].id,
   },
 };
 
 export const SingleGroup: Story = {
   args: {
-    groups: buildGroups(initialActivities.filter((a) => a.groupKey === 'deze-week')),
+    groups: groupActivities(MOCK_ACTIVITIES).filter((g) => g.groupKey === 'deze-week'),
   },
 };
 
