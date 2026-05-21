@@ -1,57 +1,33 @@
 import AddIcon from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useState, type KeyboardEvent } from 'react';
-import { fetchConversations, type ConversationSummary, updateConversationTitle } from '@/api/chat';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
+import {
+  conversationSummariesQueryOptions,
+  type ConversationSummary,
+  updateConversationTitle,
+} from '@/api/chat';
 import { useLayout } from '@/context/useLayout';
-import { formatConversationTitle, normalizeConversationTitleInput } from '@/utils/sidebarTitle';
+import { normalizeConversationTitleInput } from '@/utils/sidebarTitle';
+import { SidebarConversationList } from './sidebar/SidebarConversationList';
 
 const sidebarWidth = 190;
 
 export function Sidebar() {
   const { sidebarOpen, selectedConversationId, setSelectedConversationId, selectTab } = useLayout();
-  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: conversations = [], isLoading } = useQuery({
+    ...conversationSummariesQueryOptions,
+    enabled: sidebarOpen,
+    refetchInterval: sidebarOpen ? 5000 : false,
+  });
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [savingConversationId, setSavingConversationId] = useState<string | null>(null);
-
-  const refreshConversations = useCallback((showLoader = false) => {
-    if (showLoader) {
-      queueMicrotask(() => {
-        setLoading(true);
-      });
-    }
-    fetchConversations()
-      .then(setConversations)
-      .catch(() => {
-        setConversations([]);
-      })
-      .finally(() => {
-        if (showLoader) {
-          setLoading(false);
-        }
-      });
-  }, []);
-
-  useEffect(() => {
-    if (!sidebarOpen) return;
-    refreshConversations(true);
-
-    const intervalId = window.setInterval(() => {
-      refreshConversations(false);
-    }, 5000);
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [sidebarOpen, selectedConversationId, refreshConversations]);
 
   const startEditing = useCallback((conversation: ConversationSummary) => {
     setEditingConversationId(conversation.id);
@@ -71,10 +47,13 @@ export function Sidebar() {
         return;
       }
 
+      const queryKey = conversationSummariesQueryOptions.queryKey;
+      const previousConversations = queryClient.getQueryData<ConversationSummary[]>(queryKey) ?? [];
       const previousTitle = conversation.title;
       setSavingConversationId(conversation.id);
-      setConversations((prev) =>
-        prev.map((item) =>
+      queryClient.setQueryData<ConversationSummary[]>(
+        queryKey,
+        previousConversations.map((item) =>
           item.id === conversation.id ? { ...item, title: normalizedTitle } : item,
         ),
       );
@@ -83,8 +62,9 @@ export function Sidebar() {
         await updateConversationTitle(conversation.id, normalizedTitle);
         cancelEditing();
       } catch {
-        setConversations((prev) =>
-          prev.map((item) =>
+        queryClient.setQueryData<ConversationSummary[]>(
+          queryKey,
+          previousConversations.map((item) =>
             item.id === conversation.id ? { ...item, title: previousTitle } : item,
           ),
         );
@@ -92,20 +72,7 @@ export function Sidebar() {
         setSavingConversationId(null);
       }
     },
-    [cancelEditing, editingTitle],
-  );
-
-  const handleEditKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLElement>, conversation: ConversationSummary) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        void saveTitle(conversation);
-      } else if (event.key === 'Escape') {
-        event.preventDefault();
-        cancelEditing();
-      }
-    },
-    [cancelEditing, saveTitle],
+    [cancelEditing, editingTitle, queryClient],
   );
 
   return (
@@ -144,78 +111,24 @@ export function Sidebar() {
             Gesprekken
           </Typography>
 
-          {loading ? (
+          {isLoading ? (
             <CircularProgress size={20} sx={{ alignSelf: 'center' }} />
           ) : (
-            <List disablePadding sx={{ display: 'grid', gap: 1 }}>
-              {conversations.map((conversation) => (
-                <ListItemButton
-                  key={conversation.id}
-                  selected={conversation.id === selectedConversationId}
-                  onClick={() => {
-                    setSelectedConversationId(conversation.id);
-                    selectTab('chat');
-                  }}
-                  sx={{
-                    display: 'block',
-                    borderRadius: 1.5,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    bgcolor:
-                      conversation.id === selectedConversationId
-                        ? 'action.selected'
-                        : 'transparent',
-                  }}
-                >
-                  {editingConversationId === conversation.id ? (
-                    <TextField
-                      fullWidth
-                      size="small"
-                      value={editingTitle}
-                      autoFocus
-                      disabled={savingConversationId === conversation.id}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                      }}
-                      onChange={(event) => {
-                        setEditingTitle(event.target.value);
-                      }}
-                      onBlur={() => void saveTitle(conversation)}
-                      onKeyDown={(event) => {
-                        handleEditKeyDown(event, conversation);
-                      }}
-                    />
-                  ) : (
-                    <Typography
-                      sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text' }}
-                      onClick={(event) => {
-                        if (conversation.id !== selectedConversationId) return;
-                        event.stopPropagation();
-                        startEditing(conversation);
-                      }}
-                      onDoubleClick={(event) => {
-                        event.stopPropagation();
-                        startEditing(conversation);
-                      }}
-                    >
-                      {formatConversationTitle(conversation)}
-                    </Typography>
-                  )}
-                  <Chip
-                    size="small"
-                    label={new Date(conversation.createdAt).toLocaleDateString('nl-NL')}
-                    variant="outlined"
-                    color="default"
-                    sx={{ mt: 1 }}
-                  />
-                </ListItemButton>
-              ))}
-              {conversations.length === 0 && (
-                <Typography variant="caption" color="text.secondary">
-                  Nog geen gesprekken
-                </Typography>
-              )}
-            </List>
+            <SidebarConversationList
+              conversations={conversations}
+              editingConversationId={editingConversationId}
+              editingTitle={editingTitle}
+              savingConversationId={savingConversationId}
+              selectedConversationId={selectedConversationId}
+              onCancelEditing={cancelEditing}
+              onEditTitleChange={setEditingTitle}
+              onSaveTitle={saveTitle}
+              onSelectConversation={(conversationId) => {
+                setSelectedConversationId(conversationId);
+                selectTab('chat');
+              }}
+              onStartEditing={startEditing}
+            />
           )}
         </Stack>
       </Box>

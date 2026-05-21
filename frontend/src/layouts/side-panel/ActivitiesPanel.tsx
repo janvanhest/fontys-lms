@@ -3,15 +3,14 @@ import AddIcon from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { activitiesQueryOptions, useUpdateActivity } from '@/api/activities';
 import { groupActivities } from '@/utils/activity-grouping';
 import { ActivityDetails } from './ActivityDetails';
 import { ActivityFormDialog } from './ActivityFormDialog';
 import { ActivityMenus } from './ActivityMenus';
-import { ActivityTimeline } from './ActivityTimeline';
+import { ActivitiesPanelContent } from './ActivitiesPanelContent';
+import { ActivitiesPanelHeader } from './ActivitiesPanelHeader';
 import type { ActivityGroupSection, OpenSubmenu } from './types';
 import type { Activity, ActivityStatus, ActivityType } from '@/types/activity';
 
@@ -92,58 +91,24 @@ export function ActivitiesPanel() {
     handleSelectActivity(activityId);
   };
 
-
-  const renderPanelContent = () => {
-    if (isLoading) {
-      return (
-        <Typography variant="body2" color="text.secondary">
-          Activiteiten laden...
-        </Typography>
-      );
-    }
-
-    if (isError) {
-      return (
-        <Typography variant="body2" color="error.main">
-          {error instanceof Error ? error.message : 'Kon activiteiten niet ophalen'}
-        </Typography>
-      );
-    }
-
-    if (activities.length === 0) {
-      return (
-        <Typography variant="body2" color="text.secondary">
-          Nog geen activiteiten.
-        </Typography>
-      );
-    }
-
-    return (
-      <Stack spacing={2}>
-        <ActivityTimeline
-          groups={groupedActivities}
-          selectedActivityId={selectedActivityId}
-          menuActivityId={menuActivityId}
-          menuAnchorEl={menuAnchorEl}
-          onSelectActivity={handleSelectActivity}
-          onCardKeyDown={handleCardKeyDown}
-          onOpenMenu={handleOpenMenu}
-        />
-      </Stack>
-    );
-  };
-
   return (
     <>
-      <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography variant="h6">Activiteiten</Typography>
-        <Typography variant="body2" color="text.secondary">
-          Tijdlijn van activiteiten en deadlines rond deze student.
-        </Typography>
-      </Box>
+      <ActivitiesPanelHeader />
 
       <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1.5, py: 1.5 }}>
-        {renderPanelContent()}
+        <ActivitiesPanelContent
+          error={error}
+          groups={groupedActivities}
+          isError={isError}
+          isLoading={isLoading}
+          menuActivityId={menuActivityId}
+          menuAnchorEl={menuAnchorEl}
+          onCardKeyDown={handleCardKeyDown}
+          onOpenMenu={handleOpenMenu}
+          onSelectActivity={handleSelectActivity}
+          selectedActivityId={selectedActivityId}
+          totalActivities={activities.length}
+        />
       </Box>
 
       <Collapse in={!!selectedActivity} timeout="auto" unmountOnExit>

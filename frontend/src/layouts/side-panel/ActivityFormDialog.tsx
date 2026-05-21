@@ -1,11 +1,6 @@
 import { useState, type SubmitEventHandler } from 'react';
 import AddIcon from '@mui/icons-material/Add';
-import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
-import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
-import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -14,26 +9,16 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import { useCreateActivity, useUpdateActivity } from '@/api/activities';
 import type { Activity, ActivityType } from '@/types/activity';
+import { ActivityFormFields } from './ActivityFormFields';
 
 type ActivityFormDialogProps = {
   open: boolean;
   activity: Activity | null;
   onClose: () => void;
 };
-
-const typeToggleOptions: { value: ActivityType; label: string; icon: React.ReactNode }[] = [
-  { value: 'opdracht', label: 'Opdracht', icon: <AssignmentOutlinedIcon fontSize="small" /> },
-  { value: 'workshop', label: 'Workshop', icon: <GroupsOutlinedIcon fontSize="small" /> },
-  { value: 'competentie', label: 'Competentie', icon: <SchoolOutlinedIcon fontSize="small" /> },
-  { value: 'challenge', label: 'Challenge', icon: <EmojiEventsOutlinedIcon fontSize="small" /> },
-];
 
 export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDialogProps) {
   const isEdit = activity !== null;
@@ -113,76 +98,21 @@ export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDial
         <Divider />
 
         <DialogContent>
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
-            <TextField
-              label="Titel"
-              required
-              fullWidth
-              value={title}
-              onChange={(e) => { setTitle(e.target.value); }}
-              disabled={isPending}
-              autoFocus
-            />
-
-            {!isEdit && (
-              <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                  Soort *
-                </Typography>
-                <ToggleButtonGroup
-                  value={type}
-                  exclusive
-                  onChange={(_, val: ActivityType | null) => { if (val) setType(val); }}
-                  disabled={isPending}
-                  fullWidth
-                  size="small"
-                >
-                  {typeToggleOptions.map((opt) => (
-                    <ToggleButton key={opt.value} value={opt.value} sx={{ gap: 0.75, py: 1 }}>
-                      {opt.icon}
-                      <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                        {opt.label}
-                      </Typography>
-                    </ToggleButton>
-                  ))}
-                </ToggleButtonGroup>
-              </Box>
-            )}
-
-            <TextField
-              label="Beschrijving"
-              multiline
-              minRows={3}
-              fullWidth
-              value={description}
-              onChange={(e) => { setDescription(e.target.value); }}
-              disabled={isPending}
-            />
-
-            <TextField
-              label="Deadline"
-              type="date"
-              fullWidth
-              value={deadline}
-              onChange={(e) => { setDeadline(e.target.value); }}
-              disabled={isPending}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-
-            <TextField
-              label="Gekoppelde competentie"
-              fullWidth
-              value={competencyLabel}
-              onChange={(e) => { setCompetencyLabel(e.target.value); }}
-              disabled={isPending}
-            />
-
-            {mutationError ? (
-              <Alert severity="error">
-                {mutationError instanceof Error ? mutationError.message : 'Er is iets misgegaan'}
-              </Alert>
-            ) : null}
-          </Stack>
+          <ActivityFormFields
+            competencyLabel={competencyLabel}
+            deadline={deadline}
+            description={description}
+            isEdit={isEdit}
+            isPending={isPending}
+            mutationError={mutationError}
+            onCompetencyLabelChange={setCompetencyLabel}
+            onDeadlineChange={setDeadline}
+            onDescriptionChange={setDescription}
+            onTitleChange={setTitle}
+            onTypeChange={setType}
+            title={title}
+            type={type}
+          />
         </DialogContent>
 
         <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
