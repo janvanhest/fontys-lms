@@ -19,6 +19,7 @@ type ActivityMenusProps = {
   onCloseSubmenu: () => void;
   onTypeChange: (nextType: ActivityType) => void;
   onStatusChange: (status: ActivityStatus) => void;
+  onEdit: (activity: Activity) => void;
 };
 
 export function ActivityMenus({
@@ -32,6 +33,7 @@ export function ActivityMenus({
   onCloseSubmenu,
   onTypeChange,
   onStatusChange,
+  onEdit,
 }: ActivityMenusProps) {
   const activity = activities.find((item) => item.id === menuActivityId);
 
@@ -47,8 +49,22 @@ export function ActivityMenus({
           },
         }}
       >
-        <MenuItem onClick={onCloseMenus}>Hernoem titel</MenuItem>
-        <MenuItem onClick={onCloseMenus}>Bewerk</MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (activity) onEdit(activity);
+            onCloseMenus();
+          }}
+        >
+          Hernoem titel
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (activity) onEdit(activity);
+            onCloseMenus();
+          }}
+        >
+          Bewerken
+        </MenuItem>
         <MenuItem
           onClick={(event) => {
             onOpenSubmenu(event, 'type');
