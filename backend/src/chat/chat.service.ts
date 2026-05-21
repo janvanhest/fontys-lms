@@ -135,14 +135,14 @@ export class ChatService {
   }
 
   private buildSystemPrompt(): string {
+    const today = new Date().toISOString().slice(0, 10);
+    const dateNote = `Vandaag is het ${today}.`;
+
     if (this.studentContextPolicy.enabled) {
-      return `${BASE_SYSTEM_PROMPT}
-3. Gebruik get_student_context voor aanvullende studentcontext wanneer dat nodig is.`;
+      return `${BASE_SYSTEM_PROMPT}\n${dateNote}\n3. Gebruik get_student_context voor aanvullende studentcontext wanneer dat nodig is.`;
     }
 
-    return `${BASE_SYSTEM_PROMPT}
-
-${this.studentContextPolicy.disabledPromptNote}`;
+    return `${BASE_SYSTEM_PROMPT}\n${dateNote}\n\n${this.studentContextPolicy.disabledPromptNote}`;
   }
 
   private getAvailableTools() {
