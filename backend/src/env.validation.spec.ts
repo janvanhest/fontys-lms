@@ -14,6 +14,7 @@ describe('validate', () => {
     expect(config.PORT).toBe(3000);
     expect(config.CORS_ORIGINS).toEqual(['http://localhost:5173']);
     expect(config.OLLAMA_URL).toBe('http://ollama:11434');
+    expect(config.MOCK_AUTH).toBe(false);
   });
 
   it('accepts explicit env values', () => {
@@ -48,7 +49,9 @@ describe('validate', () => {
   });
 
   it('rejects invalid ports', () => {
-    expect(() => validate({ ...validBase, PORT: '70000' })).toThrow(/Environment validation failed/);
+    expect(() => validate({ ...validBase, PORT: '70000' })).toThrow(
+      /Environment validation failed/,
+    );
     expect(() => validate({ ...validBase, PORT: '70000' })).toThrow(/"property": "PORT"/);
     expect(() => validate({ ...validBase, PORT: '70000' })).toThrow(
       /must not be greater than 65535/,
@@ -94,12 +97,21 @@ describe('validate', () => {
   });
 
   it('throws when ANTHROPIC_API_KEY is missing', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { ANTHROPIC_API_KEY: _, ...withoutKey } = validBase;
     expect(() => validate(withoutKey)).toThrow(/Environment validation failed/);
     expect(() => validate(withoutKey)).toThrow(/"property": "ANTHROPIC_API_KEY"/);
   });
 
   it('accepts a valid ANTHROPIC_API_KEY', () => {
-    expect(() => validate({ ...validBase, ANTHROPIC_API_KEY: 'sk-ant-api03-abc123' })).not.toThrow();
+    expect(() =>
+      validate({ ...validBase, ANTHROPIC_API_KEY: 'sk-ant-api03-abc123' }),
+    ).not.toThrow();
+  });
+
+  it('accepts explicit MOCK_AUTH=true', () => {
+    const config = validate({ ...validBase, MOCK_AUTH: 'true' });
+
+    expect(config.MOCK_AUTH).toBe(true);
   });
 });

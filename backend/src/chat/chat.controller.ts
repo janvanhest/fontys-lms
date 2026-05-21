@@ -1,12 +1,13 @@
 import { Body, Controller, Get, MessageEvent, Param, Patch, Post, Sse } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { CurrentStudent } from '../auth/decorators/current-student.decorator';
 import { Student } from '../student/student.entity';
 import { ChatService, ChatSseEvent } from './chat.service';
-import { SendMessageDto } from './dto/send-message.dto';
 import { ConversationService } from './conversation.service';
+import { SendMessageDto } from './dto/send-message.dto';
 import { UpdateConversationTitleDto } from './dto/update-conversation-title.dto';
+import { ConversationEntity } from './entities/conversation.entity';
 
 @ApiTags('chat')
 @Controller('chat')
@@ -19,6 +20,7 @@ export class ChatController {
   @Post('stream')
   @Sse()
   @ApiOperation({ summary: 'Start SSE stream for a chat message (FR-13)' })
+  @ApiBody({ type: SendMessageDto })
   stream(
     @Body() dto: SendMessageDto,
     @CurrentStudent() student: Student,
@@ -27,7 +29,7 @@ export class ChatController {
       void (async () => {
         try {
           for await (const event of this.chatService.streamResponse(dto, student.id)) {
-            subscriber.next({ type: event.event, data: event.data } as MessageEvent);
+            subscriber.next({ type: event.event, data: event.data });
           }
           subscriber.complete();
         } catch (error: unknown) {
@@ -35,7 +37,7 @@ export class ChatController {
             event: 'error',
             data: error instanceof Error ? error.message : String(error),
           };
-          subscriber.next({ type: errEvent.event, data: errEvent.data } as MessageEvent);
+          subscriber.next({ type: errEvent.event, data: errEvent.data });
           subscriber.complete();
         }
       })();
@@ -44,18 +46,27 @@ export class ChatController {
 
   @Get('conversations')
   @ApiOperation({ summary: 'Conversation list for the logged-in student (FR-08)' })
-  async getConversations(@CurrentStudent() student: Student) {
+  @ApiOkResponse({ type: [ConversationEntity] })
+  async getConversations(@CurrentStudent() student: Student): Promise<ConversationEntity[]> {
     return this.conversationService.findConversationsByStudent(student.id);
   }
 
   @Get('conversations/:id')
   @ApiOperation({ summary: 'Conversation with messages by ID (FR-08)' })
-  async getConversation(@Param('id') id: string) {
-    return this.conversationService.findConversationWithMessages(id);
+  @ApiOkResponse({ type: ConversationEntity })
+  async getConversation(
+    @Param('id') id: string,
+    @CurrentStudent() student: Student,
+  ): Promise<ConversationEntity | null> {
+    return this.conversationService.findConversationWithMessages(id, student.id);
   }
 
   @Patch('conversations/:id')
   @ApiOperation({ summary: 'Update a conversation title for the logged-in student' })
+  @ApiBody({ type: UpdateConversationTitleDto })
+  @ApiOkResponse({
+    schema: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' } } },
+  })
   async updateConversationTitle(
     @Param('id') id: string,
     @Body() dto: UpdateConversationTitleDto,

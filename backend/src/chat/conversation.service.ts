@@ -30,9 +30,12 @@ export class ConversationService {
     });
   }
 
-  async findConversationWithMessages(conversationId: string): Promise<ConversationEntity | null> {
+  async findConversationWithMessages(
+    conversationId: string,
+    studentId: string,
+  ): Promise<ConversationEntity | null> {
     return this.conversationRepository.findOne({
-      where: { id: conversationId },
+      where: { id: conversationId, studentId },
       relations: ['messages'],
       order: { messages: { timestamp: 'ASC' } },
     });

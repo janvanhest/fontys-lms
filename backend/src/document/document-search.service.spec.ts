@@ -1,10 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import { EmbeddingService } from '../embedding/embedding.service';
-import {
-  DocumentSearchService,
-  DocumentSearchUnavailableError,
-} from './document-search.service';
+import { DocumentSearchService, DocumentSearchUnavailableError } from './document-search.service';
 
 describe('DocumentSearchService', () => {
   let service: DocumentSearchService;

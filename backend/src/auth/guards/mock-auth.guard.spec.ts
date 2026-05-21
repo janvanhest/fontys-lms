@@ -9,10 +9,7 @@ import { MockAuthGuard } from './mock-auth.guard';
 const mockStudentService = () => ({ findOrCreate: jest.fn() });
 const mockReflector = () => ({ getAllAndOverride: jest.fn() });
 
-function buildContext(
-  isPublic: boolean,
-  request: Record<string, unknown> = {},
-): ExecutionContext {
+function buildContext(isPublic: boolean, request: Record<string, unknown> = {}): ExecutionContext {
   return {
     getHandler: () => ({}),
     getClass: () => ({}),
@@ -74,6 +71,25 @@ describe('MockAuthGuard', () => {
         { provide: StudentService, useFactory: mockStudentService },
         { provide: Reflector, useFactory: mockReflector },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(false) } },
+      ],
+    }).compile();
+
+    guard = module.get(MockAuthGuard);
+    reflector = module.get(Reflector);
+    reflector.getAllAndOverride.mockReturnValue(false);
+
+    await expect(guard.canActivate(buildContext(false, {}))).rejects.toThrow(
+      'Mock auth is disabled',
+    );
+  });
+
+  it('defaults to disabled when MOCK_AUTH is missing', async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        MockAuthGuard,
+        { provide: StudentService, useFactory: mockStudentService },
+        { provide: Reflector, useFactory: mockReflector },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(undefined) } },
       ],
     }).compile();
 

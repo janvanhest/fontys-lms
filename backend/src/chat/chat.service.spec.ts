@@ -1,6 +1,5 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import Anthropic from '@anthropic-ai/sdk';
 import { Logger } from '@nestjs/common';
 import { ChatService, ChatSseEvent } from './chat.service';
 import { ConversationService } from './conversation.service';
@@ -220,7 +219,10 @@ describe('ChatService', () => {
 
     await collectEvents({ message: 'Follow up', conversationId: 'c-existing' });
 
-    expect(mockConversationService.findConversationWithMessages).toHaveBeenCalledWith('c-existing');
+    expect(mockConversationService.findConversationWithMessages).toHaveBeenCalledWith(
+      'c-existing',
+      STUDENT_ID,
+    );
   });
 
   it('generates an automatic title after the first complete assistant answer', async () => {
@@ -266,7 +268,10 @@ describe('ChatService', () => {
       content: [{ type: 'text', text: 'Portflow helpt je bewijzen structureren.' }],
     });
 
-    await collectEvents({ message: 'Wat moet ik met Portflow doen?', conversationId: 'c-existing' });
+    await collectEvents({
+      message: 'Wat moet ik met Portflow doen?',
+      conversationId: 'c-existing',
+    });
 
     expect(mockConversationService.updateAutoConversationTitle).toHaveBeenCalledWith(
       'c1',
