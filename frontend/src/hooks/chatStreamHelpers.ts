@@ -41,6 +41,10 @@ export function createPendingMessages(text: string) {
 export function getStatusTextFromToolCall(data: string): string {
   try {
     const payload = JSON.parse(data) as { name?: string };
+    if (payload.name === 'search_activities') {
+      return 'Activiteiten raadplegen...';
+    }
+
     return payload.name === 'search_course_content'
       ? 'Bronnen raadplegen...'
       : 'Extra context ophalen...';

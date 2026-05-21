@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { ConversationEntity } from './entities/conversation.entity';
 import { ConversationService } from './conversation.service';
 import { RAG_TOOL_DEF, RagTool } from './tools/rag.tool';
+import { SEARCH_ACTIVITIES_TOOL_DEF, SearchActivitiesTool } from './tools/search-activities.tool';
 import { STUDENT_CONTEXT_TOOL_DEF, StudentContextTool } from './tools/student-context.tool';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatSource } from '../document/document-search.service';
@@ -11,30 +12,53 @@ import { ChatSource } from '../document/document-search.service';
 export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
 
-const SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
+const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-5';
+
+const BASE_SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
 Je helpt studenten hun leervoortgang te begrijpen en te verbeteren.
 
 Aanpak:
 1. Gebruik search_course_content voor vragen over begrippen, het HBO-i raamwerk of cursusinhoud.
-2. Gebruik get_student_context voor vragen over de voortgang, challenge of activiteiten van de student.
-3. Combineer beide bronnen voor een volledig antwoord.
+2. Gebruik search_activities voor vragen over activiteiten, deadlines, open taken, workshops, competenties of voortgang van de student.
+3. Combineer bronnen alleen als dat inhoudelijk helpt.
 Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
+
+const STUDENT_CONTEXT_DISABLED_RESULT = {
+  available: false,
+  temporary: true,
+  notitie: 'Studentcontext is tijdelijk uitgeschakeld totdat echte studentdata beschikbaar is.',
+} as const;
+
+type StudentContextPolicy = {
+  enabled: boolean;
+  disabledPromptNote: string;
+  disabledResult: typeof STUDENT_CONTEXT_DISABLED_RESULT;
+};
 
 @Injectable()
 export class ChatService {
   private readonly anthropic: Anthropic;
   private readonly logger = new Logger(ChatService.name);
-  private readonly studentContextEnabled = false;
+  private readonly anthropicModel: string;
+  private readonly studentContextPolicy: StudentContextPolicy = {
+    enabled: false,
+    disabledPromptNote:
+      'Let op: get_student_context is tijdelijk uitgeschakeld. Gebruik voor studentvragen over activiteiten, deadlines, open taken, workshops, competenties of voortgang dus search_activities.',
+    disabledResult: STUDENT_CONTEXT_DISABLED_RESULT,
+  };
 
   constructor(
     private readonly conversationService: ConversationService,
     private readonly studentContextTool: StudentContextTool,
     private readonly ragTool: RagTool,
+    private readonly searchActivitiesTool: SearchActivitiesTool,
     private readonly configService: ConfigService,
   ) {
     this.anthropic = new Anthropic({
       apiKey: this.configService.getOrThrow<string>('ANTHROPIC_API_KEY'),
     });
+    this.anthropicModel =
+      this.configService.get<string>('ANTHROPIC_MODEL') ?? DEFAULT_ANTHROPIC_MODEL;
   }
 
   async *streamResponse(dto: SendMessageDto, studentId: string): AsyncGenerator<ChatSseEvent> {
@@ -50,7 +74,7 @@ export class ChatService {
       yield { event: 'status', data: iterations === 0 ? 'Nadenken...' : 'Tool uitvoeren...' };
 
       const response = await this.anthropic.messages.create({
-        model: 'claude-opus-4-5',
+        model: this.anthropicModel,
         max_tokens: 2048,
         system: this.buildSystemPrompt(),
         messages,
@@ -101,15 +125,20 @@ export class ChatService {
   }
 
   private buildSystemPrompt(): string {
-    if (this.studentContextEnabled) return SYSTEM_PROMPT;
+    if (this.studentContextPolicy.enabled) {
+      return `${BASE_SYSTEM_PROMPT}
+3. Gebruik get_student_context voor aanvullende studentcontext wanneer dat nodig is.`;
+    }
 
-    return `${SYSTEM_PROMPT}
+    return `${BASE_SYSTEM_PROMPT}
 
-Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet beschikbaar. Baseer je dus niet op get_student_context tenzij dit later expliciet wordt aangezet.`;
+${this.studentContextPolicy.disabledPromptNote}`;
   }
 
   private getAvailableTools() {
-    return this.studentContextEnabled ? [STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF] : [RAG_TOOL_DEF];
+    return this.studentContextPolicy.enabled
+      ? [SEARCH_ACTIVITIES_TOOL_DEF, STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF]
+      : [SEARCH_ACTIVITIES_TOOL_DEF, RAG_TOOL_DEF];
   }
 
   private async getOrCreateConversation(
@@ -157,14 +186,9 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
 
       let result: string;
       if (block.name === 'get_student_context') {
-        if (!this.studentContextEnabled) {
+        if (!this.studentContextPolicy.enabled) {
           this.logger.warn(`student context tool called while disabled for studentId=${studentId}`);
-          result = JSON.stringify({
-            available: false,
-            temporary: true,
-            notitie:
-              'Studentcontext is tijdelijk uitgeschakeld totdat echte studentdata beschikbaar is.',
-          });
+          result = JSON.stringify(this.studentContextPolicy.disabledResult);
         } else {
           result = await this.studentContextTool.execute(studentId);
         }
@@ -172,6 +196,11 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
         const retrieval = await this.ragTool.execute((block.input as { query: string }).query);
         result = retrieval.content;
         sources.push(...retrieval.sources);
+      } else if (block.name === 'search_activities') {
+        result = await this.searchActivitiesTool.execute(
+          studentId,
+          block.input as Parameters<SearchActivitiesTool['execute']>[1],
+        );
       } else {
         result = `Unknown tool: ${block.name}`;
       }
