@@ -1,11 +1,11 @@
-import type { Preview } from '@storybook/react-vite'
-import { ThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import '@fontsource/roboto/300.css'
-import '@fontsource/roboto/400.css'
-import '@fontsource/roboto/500.css'
-import '@fontsource/roboto/700.css'
-import { fontysDefaultTheme, fontysOranjeTheme } from '../src/themes/muiTheme'
+import type { Preview } from '@storybook/react-vite';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import { fontysDefaultTheme, fontysOranjeTheme } from '../src/themes/muiTheme';
 
 const preview: Preview = {
   globalTypes: {
@@ -28,15 +28,14 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      const theme =
-        context.globals.theme === 'oranje' ? fontysOranjeTheme : fontysDefaultTheme
+      const theme = context.globals.theme === 'oranje' ? fontysOranjeTheme : fontysDefaultTheme;
 
       return (
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Story />
         </ThemeProvider>
-      )
+      );
     },
   ],
   parameters: {
@@ -46,6 +45,7 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+
     viewport: {
       defaultViewport: 'desktop',
       viewports: {
@@ -63,7 +63,14 @@ const preview: Preview = {
         },
       },
     },
-  },
-}
 
-export default preview
+    a11y: {
+      // 'todo' - show a11y violations in the test UI only
+      // 'error' - fail CI on a11y violations
+      // 'off' - skip a11y checks entirely
+      test: 'todo',
+    },
+  },
+};
+
+export default preview;
