@@ -151,6 +151,7 @@ export function ActivitiesPanel() {
           <ActivityDetails
             activity={selectedActivity}
             onClose={() => { setSelectedActivityId(null); }}
+            onEdit={handleEdit}
           />
         ) : null}
       </Collapse>

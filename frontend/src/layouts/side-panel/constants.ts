@@ -47,18 +47,3 @@ export const statusOptions: ActivityStatus[] = ['open', 'bezig', 'feedback', 'af
 export function getTypeLabel(activityType: ActivityType) {
   return typeLabelMap[activityType];
 }
-
-export function getActionLabel(activityType: ActivityType) {
-  switch (activityType) {
-    case 'opdracht':
-      return 'Bekijk opdracht';
-    case 'workshop':
-      return 'Open workshop';
-    case 'competentie':
-      return 'Bekijk voortgang';
-    case 'challenge':
-      return 'Bekijk challenge';
-    default:
-      return 'Bewerken';
-  }
-}

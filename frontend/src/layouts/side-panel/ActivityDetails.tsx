@@ -1,4 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
@@ -11,14 +12,15 @@ import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import type { Activity } from '@/types/activity';
 import { formatDeadlineLabel } from '@/utils/activity-grouping';
-import { getActionLabel, getTypeLabel, statusMeta } from './constants';
+import { getTypeLabel, statusMeta } from './constants';
 
 type ActivityDetailsProps = {
   activity: Activity;
   onClose: () => void;
+  onEdit: (activity: Activity) => void;
 };
 
-export function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
+export function ActivityDetails({ activity, onClose, onEdit }: ActivityDetailsProps) {
   return (
     <Box
       sx={{
@@ -84,8 +86,14 @@ export function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
           ) : null}
         </Stack>
 
-        <Button sx={{ mt: 'auto' }} variant="contained" fullWidth>
-          {getActionLabel(activity.type)}
+        <Button
+          sx={{ mt: 'auto' }}
+          variant="contained"
+          fullWidth
+          startIcon={<EditOutlinedIcon />}
+          onClick={() => { onEdit(activity); }}
+        >
+          Bewerken
         </Button>
       </Box>
     </Box>
