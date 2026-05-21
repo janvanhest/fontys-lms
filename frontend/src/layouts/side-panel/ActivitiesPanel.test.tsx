@@ -9,20 +9,29 @@ const useQueryMock = vi.fn();
 const useUpdateActivityMock = vi.fn();
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  const actualModule = await importOriginal();
 
   return {
-    ...actual,
-    useQuery: (...args: unknown[]) => useQueryMock(...args),
+    ...(actualModule as Record<string, unknown>),
+    useQuery: () =>
+      useQueryMock() as {
+        data?: Activity[];
+        isLoading: boolean;
+        isError: boolean;
+        error: Error | null;
+      },
   };
 });
 
 vi.mock('@/api/activities', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/api/activities')>();
+  const actualModule = await importOriginal();
 
   return {
-    ...actual,
-    useUpdateActivity: () => useUpdateActivityMock(),
+    ...(actualModule as Record<string, unknown>),
+    useUpdateActivity: () =>
+      useUpdateActivityMock() as {
+        mutate: (...args: unknown[]) => void;
+      },
   };
 });
 

@@ -39,7 +39,7 @@ export function useCreateActivity() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dto),
       });
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim());
+      if (!res.ok) throw new Error(`${String(res.status)} ${res.statusText}`.trim());
       return res.json() as Promise<Activity>;
     },
     onSuccess: async () => {
@@ -57,7 +57,7 @@ export function useUpdateActivity() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dto),
       });
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim());
+      if (!res.ok) throw new Error(`${String(res.status)} ${res.statusText}`.trim());
       return res.json() as Promise<Activity>;
     },
     onSuccess: async () => {
@@ -71,7 +71,7 @@ export function useRemoveActivity() {
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
       const res = await fetch(`${apiBase}/activities/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim());
+      if (!res.ok) throw new Error(`${String(res.status)} ${res.statusText}`.trim());
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: activitiesQueryOptions.queryKey });
