@@ -1,31 +1,31 @@
-import Avatar from '@mui/material/Avatar'
-import Box from '@mui/material/Box'
-import Card from '@mui/material/Card'
-import CardActions from '@mui/material/CardActions'
-import CardContent from '@mui/material/CardContent'
-import CardHeader from '@mui/material/CardHeader'
-import Chip from '@mui/material/Chip'
-import CircularProgress from '@mui/material/CircularProgress'
-import Divider from '@mui/material/Divider'
-import Fade from '@mui/material/Fade'
-import IconButton from '@mui/material/IconButton'
-import Skeleton from '@mui/material/Skeleton'
-import Tooltip from '@mui/material/Tooltip'
-import Typography from '@mui/material/Typography'
-import ReplayIcon from '@mui/icons-material/Replay'
-import type { ChuckNorrisJoke } from '@/api/chuckNorris'
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import Fade from '@mui/material/Fade';
+import IconButton from '@mui/material/IconButton';
+import Skeleton from '@mui/material/Skeleton';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import ReplayIcon from '@mui/icons-material/Replay';
+import type { ChuckNorrisJoke } from '@/api/chuckNorris';
 
 export interface ChuckNorrisWidgetProps {
-  joke: ChuckNorrisJoke | undefined
-  categories: string[]
-  selectedCategory: string | null
-  isPending: boolean
-  isRefetching: boolean
-  isError: boolean
-  errorMessage?: string
-  count: number
-  onRefetch: () => void
-  onCategoryChange: (category: string | null) => void
+  joke: ChuckNorrisJoke | undefined;
+  categories: string[];
+  selectedCategory: string | null;
+  isPending: boolean;
+  isRefetching: boolean;
+  isError: boolean;
+  errorMessage?: string;
+  count: number;
+  onRefetch: () => void;
+  onCategoryChange: (category: string | null) => void;
 }
 
 export function ChuckNorrisWidget({
@@ -44,10 +44,7 @@ export function ChuckNorrisWidget({
     <Card elevation={3}>
       <CardHeader
         avatar={
-          <Avatar
-            src="https://api.chucknorris.io/img/avatar/chuck-norris.png"
-            alt="Chuck Norris"
-          />
+          <Avatar src="https://api.chucknorris.io/img/avatar/chuck-norris.png" alt="Chuck Norris" />
         }
         title="Chuck Norris Facts"
         subheader={selectedCategory ?? 'alle categorieën'}
@@ -101,7 +98,9 @@ export function ChuckNorrisWidget({
                 key={cat}
                 label={cat}
                 size="small"
-                onClick={() => { onCategoryChange(selectedCategory === cat ? null : cat) }}
+                onClick={() => {
+                  onCategoryChange(selectedCategory === cat ? null : cat);
+                }}
                 color={selectedCategory === cat ? 'primary' : 'default'}
                 variant={selectedCategory === cat ? 'filled' : 'outlined'}
               />
@@ -116,5 +115,5 @@ export function ChuckNorrisWidget({
         </Typography>
       </CardActions>
     </Card>
-  )
+  );
 }

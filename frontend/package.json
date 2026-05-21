@@ -7,9 +7,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:check": "eslint . --max-warnings=0",
     "preview": "vite preview",
-    "storybook": "storybook dev -p 6006",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
+    "format:fix": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "storybook": "storybook dev --host 0.0.0.0 -p 6006",
     "build-storybook": "storybook build"
   },
   "dependencies": {
@@ -19,10 +22,14 @@
     "@mui/icons-material": "^9.0.0",
     "@mui/lab": "9.0.0-beta.2",
     "@mui/material": "^9.0.0",
+    "@mui/x-chat": "9.0.0-alpha.5",
+    "@mui/x-chat-headless": "9.0.0-alpha.5",
     "@tanstack/react-query": "^5.100.9",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.15.0"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.15.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.1.2",

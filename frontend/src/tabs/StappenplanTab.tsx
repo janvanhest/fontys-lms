@@ -1,7 +1,7 @@
-import Box from '@mui/material/Box'
-import Paper from '@mui/material/Paper'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 export function StappenplanTab() {
   return (
@@ -26,5 +26,5 @@ export function StappenplanTab() {
         </Paper>
       </Stack>
     </Box>
-  )
+  );
 }

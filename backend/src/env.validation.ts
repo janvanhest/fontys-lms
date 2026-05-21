@@ -1,6 +1,7 @@
 import 'reflect-metadata';
-import { plainToInstance } from 'class-transformer';
+import { Transform, plainToInstance } from 'class-transformer';
 import {
+  IsBoolean,
   IsIn,
   IsInt,
   IsString,
@@ -8,35 +9,58 @@ import {
   Matches,
   Max,
   Min,
+  MinLength,
   ValidationError,
   validateSync,
 } from 'class-validator';
 
 class EnvironmentVariables {
   @IsIn(['development', 'production', 'test'])
-  NODE_ENV = 'development';
+  NODE_ENV!: string;
 
   @IsInt()
   @Min(0)
   @Max(65535)
-  PORT = 3000;
+  PORT!: number;
 
-  @IsString()
-  CORS_ORIGINS = 'http://localhost:5173';
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string'
+      ? value
+          .split(',')
+          .map((origin) => origin.trim())
+          .filter((origin) => origin.length > 0)
+      : value,
+  )
+  @IsUrl(
+    { require_tld: false, require_protocol: true },
+    {
+      each: true,
+      message:
+        'Each CORS origin must include a protocol, e.g. http://host:port or https://host:port',
+    },
+  )
+  CORS_ORIGINS!: string[];
 
   // Must include protocol: http://host:port or https://host:port — bare hosts like ollama:11434 are rejected
   @IsUrl({
     require_tld: false,
     require_protocol: true,
   })
-  OLLAMA_URL = 'http://ollama:11434';
+  OLLAMA_URL!: string;
 
   // Must be a full postgres connection string: postgresql:// or postgres://
-  @Matches(/^postgr(?:es|esql):\/\/.+/, {
+  @Matches(/^postgres(ql)?:\/\/.+/, {
     message: 'DATABASE_URL must start with postgresql:// or postgres://',
   })
   @IsString()
   DATABASE_URL!: string;
+
+  @MinLength(1)
+  @IsString()
+  ANTHROPIC_API_KEY!: string;
+
+  @IsBoolean()
+  MOCK_AUTH!: boolean;
 }
 
 type FormattedValidationError = {
@@ -46,16 +70,18 @@ type FormattedValidationError = {
   children?: FormattedValidationError[];
 };
 
+const SENSITIVE_FIELDS = new Set(['ANTHROPIC_API_KEY', 'DATABASE_URL']);
+
 function formatValidationErrors(errors: ValidationError[]): FormattedValidationError[] {
   return errors.map((error) => ({
     property: error.property,
     constraints: error.constraints,
-    value: error.value as unknown,
+    value: SENSITIVE_FIELDS.has(error.property) ? '***' : (error.value as unknown),
     children: error.children?.length ? formatValidationErrors(error.children) : undefined,
   }));
 }
 
-function normalizePort(value: unknown): unknown {
+function normalizePort(value: unknown): number | string | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -68,14 +94,42 @@ function normalizePort(value: unknown): unknown {
     return Number.parseInt(value, 10);
   }
 
-  return value;
+  return typeof value === 'string' ? value : undefined;
+}
+
+function normalizeBoolean(value: unknown): boolean | string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  }
+
+  return undefined;
 }
 
 export function validate(config: Record<string, unknown>): EnvironmentVariables {
-  const normalizedPort = normalizePort(config.PORT);
-  const normalizedConfig = {
+  const withDefaults: Record<string, unknown> = {
+    NODE_ENV: 'development',
+    PORT: 3000,
+    CORS_ORIGINS: 'http://localhost:5173',
+    MOCK_AUTH: false,
     ...config,
-    ...(config.PORT !== undefined ? { PORT: normalizedPort } : {}),
+  };
+
+  const normalizedPort = normalizePort(withDefaults.PORT);
+  const normalizedMockAuth = normalizeBoolean(withDefaults.MOCK_AUTH);
+  const normalizedConfig = {
+    ...withDefaults,
+    ...(withDefaults.PORT !== undefined ? { PORT: normalizedPort } : {}),
+    ...(withDefaults.MOCK_AUTH !== undefined ? { MOCK_AUTH: normalizedMockAuth } : {}),
   };
   const validatedConfig = plainToInstance(EnvironmentVariables, normalizedConfig);
   const errors = validateSync(validatedConfig, {

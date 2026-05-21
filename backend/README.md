@@ -124,6 +124,53 @@ De productiecontainer start met:
 node dist/main.js
 ```
 
+## PostgreSQL en pgvector
+
+Deze backend verwacht dat de `vector` extension actief is in PostgreSQL. Voor verse lokale databases gebeurt dat via [postgres/init.sql](../postgres/init.sql).
+
+## Database migraties
+
+De backend gebruikt nu TypeORM-migraties in plaats van `synchronize`. Bij het opstarten draait TypeORM pending migraties automatisch, omdat de databaseconfig `migrationsRun: true` gebruikt en `synchronize` uit staat.
+
+Dat betekent:
+
+- een collega met een volledig lege database krijgt bij de eerste backend-start automatisch het basisschema
+- een bestaande lokale database zonder `messages.sources` krijgt die kolom automatisch via migratie
+- schemawijzigingen zijn voortaan expliciet en reviewbaar
+
+Handige commando's binnen `backend/`:
+
+```bash
+pnpm migration:run
+pnpm migration:revert
+```
+
+Nieuwe migraties genereer je met TypeORM CLI tegen de gedeelde datasource:
+
+```bash
+pnpm migration:generate -- src/database/migrations/<naam>
+```
+
+De datasource voor app en CLI staat in [src/database/typeorm.config.ts](./src/database/typeorm.config.ts). De migratiebestanden staan in [src/database/migrations](./src/database/migrations).
+
+Als je al een bestaande Docker volume had uit de periode waarin `documents.embedding` nog `real[]` was, dan heb je twee opties:
+
+```bash
+docker compose down -v
+docker compose up --watch
+```
+
+Of migreer de bestaande kolom handmatig:
+
+```bash
+docker compose exec -T postgres sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  < postgres/migrations/2026-05-18-documents-embedding-to-vector.sql
+```
+
+De handmatige migratie staat in [postgres/migrations/2026-05-18-documents-embedding-to-vector.sql](../postgres/migrations/2026-05-18-documents-embedding-to-vector.sql).
+
+Voor een volledig lege lokale database is die oude handmatige stap niet nodig; de huidige TypeORM-migraties bouwen het applicatieschema automatisch op. De pgvector extensie blijft wel via [postgres/init.sql](../postgres/init.sql) of via de baseline-migratie beschikbaar.
+
 ## Structuur
 
 ```text

@@ -1,25 +1,25 @@
-import type { KeyboardEvent, MouseEvent } from 'react'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import Box from '@mui/material/Box'
-import Chip from '@mui/material/Chip'
-import IconButton from '@mui/material/IconButton'
-import Paper from '@mui/material/Paper'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import { alpha } from '@mui/material/styles'
-import type { ActivityItem } from './types'
+import type { KeyboardEvent, MouseEvent } from 'react';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
+import type { ActivityItem } from './types';
 
 type ActivityCardProps = {
-  activity: ActivityItem
-  isSelected: boolean
-  menuOpen: boolean
-  statusColor: string
-  statusLabel: string
-  typeLabel: string
-  onSelect: (activityId: string) => void
-  onKeyDown: (event: KeyboardEvent<HTMLDivElement>, activityId: string) => void
-  onOpenMenu: (event: MouseEvent<HTMLButtonElement>, activityId: string) => void
-}
+  activity: ActivityItem;
+  isSelected: boolean;
+  menuOpen: boolean;
+  statusColor: string;
+  statusLabel: string;
+  typeLabel: string;
+  onSelect: (activityId: string) => void;
+  onKeyDown: (event: KeyboardEvent<HTMLDivElement>, activityId: string) => void;
+  onOpenMenu: (event: MouseEvent<HTMLButtonElement>, activityId: string) => void;
+};
 
 export function ActivityCard({
   activity,
@@ -38,10 +38,10 @@ export function ActivityCard({
       tabIndex={0}
       aria-pressed={isSelected}
       onClick={() => {
-        onSelect(activity.id)
+        onSelect(activity.id);
       }}
       onKeyDown={(event) => {
-        onKeyDown(event, activity.id)
+        onKeyDown(event, activity.id);
       }}
       elevation={isSelected ? 4 : 1}
       sx={(theme) => ({
@@ -72,7 +72,7 @@ export function ActivityCard({
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         onClick={(event) => {
-          onOpenMenu(event, activity.id)
+          onOpenMenu(event, activity.id);
         }}
         sx={{
           position: 'absolute',
@@ -115,5 +115,5 @@ export function ActivityCard({
         </Box>
       </Stack>
     </Paper>
-  )
+  );
 }

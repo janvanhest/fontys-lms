@@ -1,21 +1,21 @@
-import CloseIcon from '@mui/icons-material/Close'
-import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined'
-import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined'
-import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Chip from '@mui/material/Chip'
-import IconButton from '@mui/material/IconButton'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import { alpha } from '@mui/material/styles'
-import { getActionLabel, getTypeLabel, statusMeta } from './constants'
-import type { ActivityItem } from './types'
+import CloseIcon from '@mui/icons-material/Close';
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
+import { getActionLabel, getTypeLabel, statusMeta } from './constants';
+import type { ActivityItem } from './types';
 
 type ActivityDetailsProps = {
-  activity: ActivityItem
-  onClose: () => void
-}
+  activity: ActivityItem;
+  onClose: () => void;
+};
 
 export function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
   return (
@@ -50,7 +50,7 @@ export function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
             size="small"
             aria-label="Sluit detailweergave"
             onClick={() => {
-              onClose()
+              onClose();
             }}
           >
             <CloseIcon fontSize="small" />
@@ -94,5 +94,5 @@ export function ActivityDetails({ activity, onClose }: ActivityDetailsProps) {
         </Button>
       </Box>
     </Box>
-  )
+  );
 }

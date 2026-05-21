@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions } from '@tanstack/react-query';
 
 export interface ChuckNorrisJoke {
   id: string;
@@ -14,28 +14,28 @@ interface MockCategory {
 
 type MockJoke = ChuckNorrisJoke;
 
-const isMockApi = import.meta.env.VITE_CHUCK_API_MODE === "mock";
+const isMockApi = import.meta.env.VITE_CHUCK_API_MODE === 'mock';
 const mockApiBaseUrl =
-  typeof import.meta.env.VITE_CHUCK_API_BASE_URL === "string"
+  typeof import.meta.env.VITE_CHUCK_API_BASE_URL === 'string'
     ? import.meta.env.VITE_CHUCK_API_BASE_URL
-    : "http://localhost:3002";
+    : 'http://localhost:3002';
 
 function joinMockApiUrl(baseUrl: string, path: string) {
-  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
-  const normalizedPath = path.replace(/^\/+/, "");
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
+  const normalizedPath = path.replace(/^\/+/, '');
   return `${normalizedBaseUrl}/${normalizedPath}`;
 }
 
-const mockJokesUrl = joinMockApiUrl(mockApiBaseUrl, "/jokes");
-const mockCategoriesUrl = joinMockApiUrl(mockApiBaseUrl, "/categories");
-const chuckNorrisApiUrl = "https://api.chucknorris.io";
+const mockJokesUrl = joinMockApiUrl(mockApiBaseUrl, '/jokes');
+const mockCategoriesUrl = joinMockApiUrl(mockApiBaseUrl, '/categories');
+const chuckNorrisApiUrl = 'https://api.chucknorris.io';
 
 export const chuckNorrisApiSource = isMockApi
   ? `mock (${mockApiBaseUrl})`
   : `external (${chuckNorrisApiUrl})`;
 
 function pickRandomJoke(jokes: MockJoke[]): ChuckNorrisJoke {
-  if (jokes.length === 0) throw new Error("Kon geen grap ophalen");
+  if (jokes.length === 0) throw new Error('Kon geen grap ophalen');
 
   const index = Math.floor(Math.random() * jokes.length);
   return jokes[index];
@@ -46,10 +46,7 @@ function matchesCategory(joke: MockJoke, category: string | null) {
   return joke.categories?.includes(category) ?? false;
 }
 
-async function fetchJson<T>(
-  input: string | URL,
-  errorMessage: string,
-): Promise<T> {
+async function fetchJson<T>(input: string | URL, errorMessage: string): Promise<T> {
   let res: Response;
 
   try {
@@ -69,13 +66,8 @@ async function fetchJson<T>(
 
 async function fetchJoke(category: string | null): Promise<ChuckNorrisJoke> {
   if (isMockApi) {
-    const jokes = await fetchJson<MockJoke[]>(
-      mockJokesUrl,
-      "Kon geen grap ophalen",
-    );
-    const filteredJokes = jokes.filter((joke) =>
-      matchesCategory(joke, category),
-    );
+    const jokes = await fetchJson<MockJoke[]>(mockJokesUrl, 'Kon geen grap ophalen');
+    const filteredJokes = jokes.filter((joke) => matchesCategory(joke, category));
 
     return pickRandomJoke(filteredJokes);
   }
@@ -84,26 +76,26 @@ async function fetchJoke(category: string | null): Promise<ChuckNorrisJoke> {
     ? `${chuckNorrisApiUrl}/jokes/random?category=${encodeURIComponent(category)}`
     : `${chuckNorrisApiUrl}/jokes/random`;
 
-  return fetchJson<ChuckNorrisJoke>(url, "Kon geen grap ophalen");
+  return fetchJson<ChuckNorrisJoke>(url, 'Kon geen grap ophalen');
 }
 
 async function fetchCategories(): Promise<string[]> {
   if (isMockApi) {
     const categories = await fetchJson<MockCategory[]>(
       mockCategoriesUrl,
-      "Kon categorieën niet ophalen",
+      'Kon categorieën niet ophalen',
     );
     return categories.map((category) => category.name);
   }
 
   return fetchJson<string[]>(
     `${chuckNorrisApiUrl}/jokes/categories`,
-    "Kon categorieën niet ophalen",
+    'Kon categorieën niet ophalen',
   );
 }
 
 export const chuckNorrisCategoriesOptions = queryOptions({
-  queryKey: ["chuck-norris-categories"],
+  queryKey: ['chuck-norris-categories'],
   queryFn: fetchCategories,
   staleTime: 1000 * 60 * 60,
   refetchOnWindowFocus: true,
@@ -111,7 +103,7 @@ export const chuckNorrisCategoriesOptions = queryOptions({
 
 export function chuckNorrisJokeOptions(category: string | null) {
   return queryOptions({
-    queryKey: ["chuck-norris-joke", category],
+    queryKey: ['chuck-norris-joke', category],
     queryFn: () => fetchJoke(category),
     staleTime: 0,
   });

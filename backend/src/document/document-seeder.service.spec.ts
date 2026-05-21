@@ -6,14 +6,12 @@ import * as fs from 'fs/promises';
 import { Repository } from 'typeorm';
 import { EmbeddingService } from '../embedding/embedding.service';
 import { DocumentEntity } from './document.entity';
-import {
-  DocumentSeederService,
-  chunkByH2,
-  parseFrontmatter,
-} from './document-seeder.service';
+import { DocumentSeederService, chunkByH2, parseFrontmatter } from './document-seeder.service';
 
 const mockReaddir = fs.readdir as jest.MockedFunction<typeof fs.readdir>;
 const mockReadFile = fs.readFile as jest.MockedFunction<typeof fs.readFile>;
+const mockMkdir = fs.mkdir as jest.MockedFunction<typeof fs.mkdir>;
+const mockWriteFile = fs.writeFile as jest.MockedFunction<typeof fs.writeFile>;
 
 const SAMPLE_MARKDOWN = `---
 source: test-source
@@ -87,9 +85,7 @@ describe('chunkByH2', () => {
 
 describe('DocumentSeederService', () => {
   let service: DocumentSeederService;
-  let mockRepository: jest.Mocked<
-    Pick<Repository<DocumentEntity>, 'createQueryBuilder' | 'save'>
-  >;
+  let mockRepository: jest.Mocked<Pick<Repository<DocumentEntity>, 'createQueryBuilder' | 'save'>>;
   let mockEmbeddingService: jest.Mocked<Pick<EmbeddingService, 'embedText'>>;
   const mockDeleteExecute = jest.fn().mockResolvedValue({});
   const mockDelete = jest.fn().mockReturnValue({ execute: mockDeleteExecute });
@@ -115,6 +111,9 @@ describe('DocumentSeederService', () => {
     }).compile();
 
     service = module.get<DocumentSeederService>(DocumentSeederService);
+
+    mockMkdir.mockResolvedValue(undefined);
+    mockWriteFile.mockResolvedValue(undefined);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -128,25 +127,28 @@ describe('DocumentSeederService', () => {
 
   it('saves all chunks for a file in a single batched save call', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
 
     await service.onApplicationBootstrap();
 
     // SAMPLE_MARKDOWN produces 3 chunks: intro + 2 sections — saved in one batch
     expect(mockRepository.save).toHaveBeenCalledTimes(1);
     expect(mockRepository.save).toHaveBeenCalledWith(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       expect.arrayContaining([expect.objectContaining({ content: expect.any(String) })]),
     );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as unknown[];
     expect(batch).toHaveLength(3);
   });
 
   it('sets chunkIndex to 0-based position within the file', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
 
     await service.onApplicationBootstrap();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
       metadata: { chunkIndex: number };
     }>;
@@ -157,22 +159,38 @@ describe('DocumentSeederService', () => {
   it('saves chunk with embedding: null when embedText returns null', async () => {
     mockEmbeddingService.embedText.mockResolvedValue(null);
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
 
     await service.onApplicationBootstrap();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
       embedding: number[] | null;
     }>;
     expect(batch.every((e) => e.embedding === null)).toBe(true);
   });
 
-  it('stores correct metadata from frontmatter', async () => {
+  it('preserves numeric embeddings for pgvector-backed persistence', async () => {
     mockReaddir.mockResolvedValue(['01_test.md'] as never);
-    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
+    mockEmbeddingService.embedText.mockResolvedValue([0.11, 0.22, 0.33]);
 
     await service.onApplicationBootstrap();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
+      embedding: number[] | null;
+    }>;
+    expect(batch[0].embedding).toEqual([0.11, 0.22, 0.33]);
+  });
+
+  it('stores correct metadata from frontmatter', async () => {
+    mockReaddir.mockResolvedValue(['01_test.md'] as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
+
+    await service.onApplicationBootstrap();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const batch = (mockRepository.save as jest.Mock).mock.calls[0][0] as Array<{
       metadata: { source: string; title: string; url: string };
     }>;
@@ -186,7 +204,7 @@ describe('DocumentSeederService', () => {
   it('skips files with missing frontmatter fields', async () => {
     const missingTitle = `---\nsource: s\ntitle:\nurl: https://example.com\n---\n\n# Page\n\nContent.`;
     mockReaddir.mockResolvedValue(['bad.md'] as never);
-    mockReadFile.mockResolvedValue(missingTitle as never);
+    mockReadFile.mockResolvedValue(missingTitle);
 
     await service.onApplicationBootstrap();
 
@@ -199,5 +217,27 @@ describe('DocumentSeederService', () => {
 
     await expect(service.onApplicationBootstrap()).resolves.not.toThrow();
     expect(mockRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('stores the seed hash in a writable backend cache directory', async () => {
+    mockReaddir.mockResolvedValue(['01_test.md'] as never);
+    mockReadFile.mockResolvedValue(SAMPLE_MARKDOWN);
+
+    await service.onApplicationBootstrap();
+
+    expect(mockMkdir).toHaveBeenCalledWith(
+      expect.stringContaining('/.cache/document-seeder'),
+      expect.objectContaining({ recursive: true }),
+    );
+    expect(mockWriteFile).toHaveBeenCalledWith(
+      expect.stringContaining('/.cache/document-seeder/canvas-content.seed-hash'),
+      expect.any(String),
+      'utf-8',
+    );
+    expect(mockWriteFile).not.toHaveBeenCalledWith(
+      expect.stringContaining('/canvas_content/.seed-hash'),
+      expect.any(String),
+      'utf-8',
+    );
   });
 });

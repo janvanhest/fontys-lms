@@ -1,49 +1,49 @@
-import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react'
-import AddIcon from '@mui/icons-material/Add'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Collapse from '@mui/material/Collapse'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-import { useLayout } from '@/context/useLayout'
-import { ActivityDetails } from '@/layouts/side-panel/ActivityDetails'
-import { ActivityMenus } from '@/layouts/side-panel/ActivityMenus'
-import { ActivityTimeline } from '@/layouts/side-panel/ActivityTimeline'
+import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Collapse from '@mui/material/Collapse';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { useLayout } from '@/context/useLayout';
+import { ActivityDetails } from '@/layouts/side-panel/ActivityDetails';
+import { ActivityMenus } from '@/layouts/side-panel/ActivityMenus';
+import { ActivityTimeline } from '@/layouts/side-panel/ActivityTimeline';
 import {
   groupMeta,
   groupOrder,
   initialActivities,
   panelWidth,
-} from '@/layouts/side-panel/constants'
+} from '@/layouts/side-panel/constants';
 import type {
   ActivityGroupSection,
   ActivityItem,
   ActivityStatus,
   ActivityType,
   OpenSubmenu,
-} from '@/layouts/side-panel/types'
+} from '@/layouts/side-panel/types';
 
 type SidePanelProps = {
-  initialActivityItems?: ActivityItem[]
-  initialSelectedActivityId?: string | null
-}
+  initialActivityItems?: ActivityItem[];
+  initialSelectedActivityId?: string | null;
+};
 
 export function SidePanel({
   initialActivityItems = initialActivities,
   initialSelectedActivityId = null,
 }: SidePanelProps = {}) {
-  const { sidePanelOpen } = useLayout()
-  const [activities, setActivities] = useState(initialActivityItems)
+  const { sidePanelOpen } = useLayout();
+  const [activities, setActivities] = useState(initialActivityItems);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(
     initialSelectedActivityId,
-  )
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
-  const [menuActivityId, setMenuActivityId] = useState<string | null>(null)
-  const [submenuAnchorEl, setSubmenuAnchorEl] = useState<HTMLElement | null>(null)
-  const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>(null)
+  );
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [menuActivityId, setMenuActivityId] = useState<string | null>(null);
+  const [submenuAnchorEl, setSubmenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>(null);
 
   const selectedActivity =
-    activities.find((activity) => activity.id === selectedActivityId) ?? null
+    activities.find((activity) => activity.id === selectedActivityId) ?? null;
 
   const groupedActivities = useMemo(
     () =>
@@ -55,86 +55,86 @@ export function SidePanel({
         }))
         .filter((group) => group.items.length > 0),
     [activities],
-  ) as ActivityGroupSection[]
+  ) as ActivityGroupSection[];
 
   const closeMenus = () => {
-    setMenuAnchorEl(null)
-    setMenuActivityId(null)
-    setSubmenuAnchorEl(null)
-    setOpenSubmenu(null)
-  }
+    setMenuAnchorEl(null);
+    setMenuActivityId(null);
+    setSubmenuAnchorEl(null);
+    setOpenSubmenu(null);
+  };
 
-  const handleOpenMenu = (
-    event: MouseEvent<HTMLButtonElement>,
-    activityId: string,
-  ) => {
-    event.stopPropagation()
-    setMenuAnchorEl(event.currentTarget)
-    setMenuActivityId(activityId)
-    setSubmenuAnchorEl(null)
-    setOpenSubmenu(null)
-  }
+  const handleOpenMenu = (event: MouseEvent<HTMLButtonElement>, activityId: string) => {
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
+    setMenuActivityId(activityId);
+    setSubmenuAnchorEl(null);
+    setOpenSubmenu(null);
+  };
 
   const handleOpenSubmenu = (
     event: MouseEvent<HTMLElement>,
     submenu: Exclude<OpenSubmenu, null>,
   ) => {
-    event.stopPropagation()
-    setSubmenuAnchorEl(event.currentTarget)
-    setOpenSubmenu(submenu)
-  }
+    event.stopPropagation();
+    setSubmenuAnchorEl(event.currentTarget);
+    setOpenSubmenu(submenu);
+  };
 
-  const updateActivity = (activityId: string, updater: (activity: ActivityItem) => ActivityItem) => {
+  const updateActivity = (
+    activityId: string,
+    updater: (activity: ActivityItem) => ActivityItem,
+  ) => {
     setActivities((currentActivities) =>
       currentActivities.map((activity) =>
         activity.id === activityId ? updater(activity) : activity,
       ),
-    )
-  }
+    );
+  };
 
   const handleStatusChange = (status: ActivityStatus) => {
     if (!menuActivityId) {
-      return
+      return;
     }
 
     updateActivity(menuActivityId, (activity) => ({
       ...activity,
       status,
-    }))
-    closeMenus()
-  }
+    }));
+    closeMenus();
+  };
 
   const handleTypeChange = (nextType: ActivityType) => {
     if (!menuActivityId) {
-      return
+      return;
     }
 
     updateActivity(menuActivityId, (activity) => ({
       ...activity,
       type: nextType,
-    }))
-    closeMenus()
-  }
+    }));
+    closeMenus();
+  };
 
   const handleSelectActivity = (activityId: string) => {
-    setSelectedActivityId(activityId)
-  }
+    setSelectedActivityId(activityId);
+  };
 
   const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>, activityId: string) => {
     if (event.key !== 'Enter' && event.key !== ' ') {
-      return
+      return;
     }
     if ((event.target as HTMLElement).closest('button,[role="button"]')) {
-      return
+      return;
     }
-    event.preventDefault()
-    handleSelectActivity(activityId)
-  }
+    event.preventDefault();
+    handleSelectActivity(activityId);
+  };
 
   const closeSubmenu = () => {
-    setSubmenuAnchorEl(null)
-    setOpenSubmenu(null)
-  }
+    setSubmenuAnchorEl(null);
+    setOpenSubmenu(null);
+  };
 
   return (
     <Box
@@ -184,7 +184,7 @@ export function SidePanel({
           {selectedActivity ? (
             <ActivityDetails
               activity={selectedActivity}
-              onClose={() => setSelectedActivityId(null)}
+              onClose={() => { setSelectedActivityId(null); }}
             />
           ) : null}
         </Collapse>
@@ -218,5 +218,5 @@ export function SidePanel({
         onStatusChange={handleStatusChange}
       />
     </Box>
-  )
+  );
 }

@@ -1,2 +1,2 @@
-export { ChuckNorrisWidget } from './ChuckNorrisWidget'
-export type { ChuckNorrisWidgetProps } from './ChuckNorrisWidget'
+export { ChuckNorrisWidget } from './ChuckNorrisWidget';
+export type { ChuckNorrisWidgetProps } from './ChuckNorrisWidget';

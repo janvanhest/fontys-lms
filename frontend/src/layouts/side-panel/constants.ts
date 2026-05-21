@@ -1,22 +1,22 @@
-import type { ActivityItem, ActivityStatus, ActivityType, GroupKey } from './types'
+import type { ActivityItem, ActivityStatus, ActivityType, GroupKey } from './types';
 
-export const panelWidth = 320
+export const panelWidth = 320;
 
 export const groupMeta: Record<GroupKey, { label: string; rangeLabel: string }> = {
   eerder: { label: 'eerder', rangeLabel: 'vóór deze week' },
   'deze-week': { label: 'deze week', rangeLabel: 'deze week' },
   'volgende-week': { label: 'volgende week', rangeLabel: 'volgende week' },
   later: { label: 'later', rangeLabel: 'na volgende week' },
-}
+};
 
-export const groupOrder: GroupKey[] = ['eerder', 'deze-week', 'volgende-week', 'later']
+export const groupOrder: GroupKey[] = ['eerder', 'deze-week', 'volgende-week', 'later'];
 
 export const statusMeta: Record<ActivityStatus, { color: string; label: string }> = {
   open: { color: '#1976d2', label: 'Open' },
   bezig: { color: '#ed6c02', label: 'Wordt aangewerkt' },
   feedback: { color: '#d32f2f', label: 'Feedback' },
   afgerond: { color: '#2e7d32', label: 'Afgerond' },
-}
+};
 
 export const typeLabelMap: Record<ActivityType, string> = {
   opdracht: 'Opdracht',
@@ -29,7 +29,7 @@ export const typeLabelMap: Record<ActivityType, string> = {
   semesterplan: 'Semesterplan',
   posterpresentatie: 'Posterpresentatie',
   overdracht: 'Overdracht',
-}
+};
 
 export const subtypeOptions = [
   { label: 'Coaching', value: 'coaching' },
@@ -38,11 +38,11 @@ export const subtypeOptions = [
   { label: 'Semesterplan', value: 'semesterplan' },
   { label: 'Posterpresentatie', value: 'posterpresentatie' },
   { label: 'Overdracht', value: 'overdracht' },
-] as const satisfies readonly { label: string; value: ActivityType }[]
+] as const satisfies readonly { label: string; value: ActivityType }[];
 
-export type SubtypeOption = (typeof subtypeOptions)[number]
+export type SubtypeOption = (typeof subtypeOptions)[number];
 
-export const statusOptions: ActivityStatus[] = ['open', 'bezig', 'feedback', 'afgerond']
+export const statusOptions: ActivityStatus[] = ['open', 'bezig', 'feedback', 'afgerond'];
 
 // Afgeleid uit de gebruikersbeschrijving:
 // - groepen en range-labels zijn expliciet
@@ -120,23 +120,23 @@ export const initialActivities: ActivityItem[] = [
     status: 'bezig',
     competencyLabel: '[gekoppelde competentie]',
   },
-]
+];
 
 export function getTypeLabel(activityType: ActivityType) {
-  return typeLabelMap[activityType]
+  return typeLabelMap[activityType];
 }
 
 export function getActionLabel(activityType: ActivityType) {
   switch (activityType) {
     case 'opdracht':
-      return 'Bekijk opdracht'
+      return 'Bekijk opdracht';
     case 'workshop':
-      return 'Open workshop'
+      return 'Open workshop';
     case 'competentie':
-      return 'Bekijk voortgang'
+      return 'Bekijk voortgang';
     case 'challenge':
-      return 'Bekijk challenge'
+      return 'Bekijk challenge';
     default:
-      return 'Bewerken'
+      return 'Bewerken';
   }
 }

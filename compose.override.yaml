@@ -9,6 +9,8 @@ services:
       CORS_ORIGINS: http://localhost:5173
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       DATABASE_URL: ${DATABASE_URL}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      MOCK_AUTH: ${MOCK_AUTH:-true}
     ports:
       - "3000:3000"
     volumes:
@@ -22,6 +24,8 @@ services:
           target: /app/src
         - action: rebuild
           path: ./backend/package.json
+        - action: rebuild
+          path: ./backend/pnpm-lock.yaml
     depends_on:
       ollama:
         condition: service_healthy
@@ -47,5 +51,32 @@ services:
           target: /app/src
         - action: rebuild
           path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/pnpm-lock.yaml
+    depends_on:
+      - mock-api
+
+  storybook:
+    build:
+      context: ./frontend
+      target: development
+    environment:
+      VITE_CHUCK_API_MODE: mock
+      VITE_CHUCK_API_BASE_URL: http://localhost:3002
+    command: ["pnpm", "storybook"]
+    ports:
+      - "6006:6006"
+    volumes:
+      - frontend-node-modules:/app/node_modules
+      - frontend-pnpm-store:/pnpm/store
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/pnpm-lock.yaml
     depends_on:
       - mock-api

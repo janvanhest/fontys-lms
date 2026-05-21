@@ -46,7 +46,7 @@ describe('configureApp', () => {
   it('registers the default localhost frontend origin for CORS', () => {
     const enableCors = jest.fn();
     const configService = {
-      getOrThrow: jest.fn().mockReturnValue('http://localhost:5173'),
+      getOrThrow: jest.fn().mockReturnValue(['http://localhost:5173']),
     } as unknown as ConfigService;
     const app = {
       enableCors,
@@ -67,7 +67,7 @@ describe('configureApp', () => {
     const configService = {
       getOrThrow: jest
         .fn()
-        .mockReturnValue('http://localhost:5173, https://frontend.example.com  ,'),
+        .mockReturnValue(['http://localhost:5173', 'https://frontend.example.com']),
     } as unknown as ConfigService;
     const app = {
       enableCors,
@@ -83,26 +83,11 @@ describe('configureApp', () => {
     });
   });
 
-  it('throws when CORS_ORIGINS does not contain any valid origins', () => {
-    const configService = {
-      getOrThrow: jest.fn().mockReturnValue(' ,  , '),
-    } as unknown as ConfigService;
-    const app = {
-      enableCors: jest.fn(),
-      useGlobalPipes: jest.fn<void, [ValidationPipe]>(),
-      getHttpAdapter: jest.fn().mockReturnValue({}),
-    } as unknown as INestApplication;
-
-    expect(() => configureApp(app, configService)).toThrow(
-      'Invalid CORS_ORIGINS configuration: no valid origins found. Ensure CORS_ORIGINS is a comma-separated list of non-empty origins.',
-    );
-  });
-
   it('registers the global validation pipe', () => {
     const useGlobalPipes = jest.fn<void, [ValidationPipe]>();
     const enableCors = jest.fn();
     const configService = {
-      getOrThrow: jest.fn().mockReturnValue('http://localhost:5173'),
+      getOrThrow: jest.fn().mockReturnValue(['http://localhost:5173']),
     } as unknown as ConfigService;
     const app = {
       enableCors,

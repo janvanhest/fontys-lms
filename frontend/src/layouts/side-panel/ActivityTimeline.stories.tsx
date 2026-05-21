@@ -1,10 +1,10 @@
-import { useState, type ComponentProps, type KeyboardEvent } from 'react'
-import Box from '@mui/material/Box'
-import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
-import { ActivityTimeline } from './ActivityTimeline'
-import { groupMeta, groupOrder, initialActivities, panelWidth } from './constants'
-import type { ActivityGroupSection, ActivityItem } from './types'
+import { useState, type ComponentProps, type KeyboardEvent } from 'react';
+import Box from '@mui/material/Box';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
+import { ActivityTimeline } from './ActivityTimeline';
+import { groupMeta, groupOrder, initialActivities, panelWidth } from './constants';
+import type { ActivityGroupSection, ActivityItem } from './types';
 
 function buildGroups(activities: ActivityItem[] = initialActivities): ActivityGroupSection[] {
   return groupOrder
@@ -13,10 +13,10 @@ function buildGroups(activities: ActivityItem[] = initialActivities): ActivityGr
       ...groupMeta[groupKey],
       items: activities.filter((a) => a.groupKey === groupKey),
     }))
-    .filter((group) => group.items.length > 0) as ActivityGroupSection[]
+    .filter((group) => group.items.length > 0);
 }
 
-const ALL_GROUPS = buildGroups()
+const ALL_GROUPS = buildGroups();
 
 const meta: Meta<typeof ActivityTimeline> = {
   title: 'SidePanel/ActivityTimeline',
@@ -37,44 +37,44 @@ const meta: Meta<typeof ActivityTimeline> = {
     onCardKeyDown: fn(),
     onOpenMenu: fn(),
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof ActivityTimeline>
+export default meta;
+type Story = StoryObj<typeof ActivityTimeline>;
 
-export const Default: Story = {}
+export const Default: Story = {};
 
 export const WithSelection: Story = {
   args: {
     selectedActivityId: initialActivities[2].id,
   },
-}
+};
 
 export const SingleGroup: Story = {
   args: {
     groups: buildGroups(initialActivities.filter((a) => a.groupKey === 'deze-week')),
   },
-}
+};
 
 function InteractiveStory(args: ComponentProps<typeof ActivityTimeline>) {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
     <ActivityTimeline
       {...args}
       selectedActivityId={selectedId}
       onSelectActivity={(id) => {
-        setSelectedId(id)
-        args.onSelectActivity(id)
+        setSelectedId(id);
+        args.onSelectActivity(id);
       }}
       onCardKeyDown={(event: KeyboardEvent<HTMLDivElement>, id: string) => {
-        setSelectedId(id)
-        args.onCardKeyDown(event, id)
+        setSelectedId(id);
+        args.onCardKeyDown(event, id);
       }}
     />
-  )
+  );
 }
 
 export const Interactive: Story = {
   render: (args) => <InteractiveStory {...args} />,
-}
+};

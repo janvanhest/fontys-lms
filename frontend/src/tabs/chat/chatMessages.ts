@@ -1,9 +1,9 @@
 export type ChatMessage = {
-  id: string
-  role: 'assistant' | 'student'
-  title: string
-  content: string
-}
+  id: string;
+  role: 'assistant' | 'student';
+  title: string;
+  content: string;
+};
 
 export const defaultMessages: ChatMessage[] = [
   {
@@ -27,4 +27,4 @@ export const defaultMessages: ChatMessage[] = [
     content:
       'Prima. Open desgewenst de activiteitenkolom om het recente logboek mee te nemen in dit gesprek.',
   },
-]
+];

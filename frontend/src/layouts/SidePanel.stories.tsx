@@ -1,12 +1,12 @@
-import Box from '@mui/material/Box'
-import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { ReactNode } from 'react'
-import { LayoutStoryProvider } from '@/storybook/LayoutStoryProvider'
-import { initialActivities } from './side-panel/constants'
-import { SidePanel } from './SidePanel'
+import Box from '@mui/material/Box';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { ReactNode } from 'react';
+import { LayoutStoryProvider } from '@/storybook/LayoutStoryProvider';
+import { initialActivities } from './side-panel/constants';
+import { SidePanel } from './SidePanel';
 
 const SELECTED_ACTIVITY_ID =
-  initialActivities.find((activity) => activity.status === 'open')?.id ?? initialActivities[0].id
+  initialActivities.find((activity) => activity.status === 'open')?.id ?? initialActivities[0].id;
 
 const meta: Meta<typeof SidePanel> = {
   title: 'Layouts/SidePanel',
@@ -15,17 +15,17 @@ const meta: Meta<typeof SidePanel> = {
     initialActivityItems: initialActivities,
     initialSelectedActivityId: null,
   },
-}
+};
 
-export default meta
-type Story = StoryObj<typeof SidePanel>
+export default meta;
+type Story = StoryObj<typeof SidePanel>;
 
 function SidePanelFrame({
   sidePanelOpen,
   children,
 }: {
-  sidePanelOpen: boolean
-  children: ReactNode
+  sidePanelOpen: boolean;
+  children: ReactNode;
 }) {
   return (
     <LayoutStoryProvider
@@ -43,7 +43,7 @@ function SidePanelFrame({
         {children}
       </Box>
     </LayoutStoryProvider>
-  )
+  );
 }
 
 export const Default: Story = {
@@ -52,7 +52,7 @@ export const Default: Story = {
       <SidePanel {...args} />
     </SidePanelFrame>
   ),
-}
+};
 
 export const WithSelectedActivity: Story = {
   args: {
@@ -63,7 +63,7 @@ export const WithSelectedActivity: Story = {
       <SidePanel {...args} />
     </SidePanelFrame>
   ),
-}
+};
 
 export const Collapsed: Story = {
   render: (args) => (
@@ -71,4 +71,4 @@ export const Collapsed: Story = {
       <SidePanel {...args} />
     </SidePanelFrame>
   ),
-}
+};
