@@ -15,7 +15,12 @@ import type { ActivityGroupSection, OpenSubmenu } from './types';
 import type { Activity, ActivityStatus, ActivityType } from '@/types/activity';
 
 export function ActivitiesPanel() {
-  const { data: activities = [] } = useQuery(activitiesQueryOptions);
+  const {
+    data: activities = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery(activitiesQueryOptions);
 
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
@@ -101,6 +106,46 @@ export function ActivitiesPanel() {
     setOpenSubmenu(null);
   };
 
+  const renderPanelContent = () => {
+    if (isLoading) {
+      return (
+        <Typography variant="body2" color="text.secondary">
+          Activiteiten laden...
+        </Typography>
+      );
+    }
+
+    if (isError) {
+      return (
+        <Typography variant="body2" color="error.main">
+          {error instanceof Error ? error.message : 'Kon activiteiten niet ophalen'}
+        </Typography>
+      );
+    }
+
+    if (mergedActivities.length === 0) {
+      return (
+        <Typography variant="body2" color="text.secondary">
+          Nog geen activiteiten.
+        </Typography>
+      );
+    }
+
+    return (
+      <Stack spacing={2}>
+        <ActivityTimeline
+          groups={groupedActivities}
+          selectedActivityId={selectedActivityId}
+          menuActivityId={menuActivityId}
+          menuAnchorEl={menuAnchorEl}
+          onSelectActivity={handleSelectActivity}
+          onCardKeyDown={handleCardKeyDown}
+          onOpenMenu={handleOpenMenu}
+        />
+      </Stack>
+    );
+  };
+
   return (
     <>
       <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -111,17 +156,7 @@ export function ActivitiesPanel() {
       </Box>
 
       <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1.5, py: 1.5 }}>
-        <Stack spacing={2}>
-          <ActivityTimeline
-            groups={groupedActivities}
-            selectedActivityId={selectedActivityId}
-            menuActivityId={menuActivityId}
-            menuAnchorEl={menuAnchorEl}
-            onSelectActivity={handleSelectActivity}
-            onCardKeyDown={handleCardKeyDown}
-            onOpenMenu={handleOpenMenu}
-          />
-        </Stack>
+        {renderPanelContent()}
       </Box>
 
       <Collapse in={!!selectedActivity} timeout="auto" unmountOnExit>
