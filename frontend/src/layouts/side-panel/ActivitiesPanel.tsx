@@ -114,6 +114,7 @@ export function ActivitiesPanel() {
       />
 
       <ActivityFormDialog
+        key={editActivity?.id ?? 'new'}
         open={formOpen}
         activity={editActivity}
         onClose={() => { setFormOpen(false); }}
