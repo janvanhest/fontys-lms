@@ -6,6 +6,7 @@ import { ActivitiesPanel } from './ActivitiesPanel';
 import { PANEL_REGISTRY } from './panel-registry';
 
 const useQueryMock = vi.fn();
+const useUpdateActivityMock = vi.fn();
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
@@ -13,6 +14,15 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
   return {
     ...actual,
     useQuery: (...args: unknown[]) => useQueryMock(...args),
+  };
+});
+
+vi.mock('@/api/activities', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/activities')>();
+
+  return {
+    ...actual,
+    useUpdateActivity: () => useUpdateActivityMock(),
   };
 });
 
@@ -24,6 +34,10 @@ vi.mock('./ActivityTimeline', () => ({
 
 vi.mock('./ActivityDetails', () => ({
   ActivityDetails: () => <div data-testid="activity-details" />,
+}));
+
+vi.mock('./ActivityFormDialog', () => ({
+  ActivityFormDialog: () => null,
 }));
 
 vi.mock('./ActivityMenus', () => ({
@@ -55,6 +69,7 @@ describe('ActivitiesPanel', () => {
       isError: false,
       error: null,
     });
+    useUpdateActivityMock.mockReturnValue({ mutate: vi.fn() });
 
     const html = renderToStaticMarkup(<ActivitiesPanel />);
 
@@ -69,6 +84,7 @@ describe('ActivitiesPanel', () => {
       isError: true,
       error: new Error('Kon activiteiten niet ophalen'),
     });
+    useUpdateActivityMock.mockReturnValue({ mutate: vi.fn() });
 
     const html = renderToStaticMarkup(<ActivitiesPanel />);
 
@@ -83,6 +99,7 @@ describe('ActivitiesPanel', () => {
       isError: false,
       error: null,
     });
+    useUpdateActivityMock.mockReturnValue({ mutate: vi.fn() });
 
     const html = renderToStaticMarkup(<ActivitiesPanel />);
 
@@ -97,6 +114,7 @@ describe('ActivitiesPanel', () => {
       isError: false,
       error: null,
     });
+    useUpdateActivityMock.mockReturnValue({ mutate: vi.fn() });
 
     const html = renderToStaticMarkup(<ActivitiesPanel />);
 

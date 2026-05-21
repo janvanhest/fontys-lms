@@ -6,9 +6,10 @@ import Collapse from '@mui/material/Collapse';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
-import { activitiesQueryOptions } from '@/api/activities';
+import { activitiesQueryOptions, useUpdateActivity } from '@/api/activities';
 import { groupActivities } from '@/utils/activity-grouping';
 import { ActivityDetails } from './ActivityDetails';
+import { ActivityFormDialog } from './ActivityFormDialog';
 import { ActivityMenus } from './ActivityMenus';
 import { ActivityTimeline } from './ActivityTimeline';
 import type { ActivityGroupSection, OpenSubmenu } from './types';
@@ -22,31 +23,22 @@ export function ActivitiesPanel() {
     error,
   } = useQuery(activitiesQueryOptions);
 
+  const updateActivity = useUpdateActivity();
+
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [menuActivityId, setMenuActivityId] = useState<string | null>(null);
   const [submenuAnchorEl, setSubmenuAnchorEl] = useState<HTMLElement | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>(null);
-
-  const [localOverrides, setLocalOverrides] = useState<
-    Record<string, Partial<Pick<Activity, 'status' | 'type'>>>
-  >({});
-
-  const mergedActivities = useMemo(
-    () =>
-      activities.map((a) =>
-        localOverrides[a.id] ? { ...a, ...localOverrides[a.id] } : a,
-      ),
-    [activities, localOverrides],
-  );
+  const [formOpen, setFormOpen] = useState(false);
+  const [editActivity, setEditActivity] = useState<Activity | null>(null);
 
   const groupedActivities: ActivityGroupSection[] = useMemo(
-    () => groupActivities(mergedActivities),
-    [mergedActivities],
+    () => groupActivities(activities),
+    [activities],
   );
 
-  const selectedActivity =
-    mergedActivities.find((a) => a.id === selectedActivityId) ?? null;
+  const selectedActivity = activities.find((a) => a.id === selectedActivityId) ?? null;
 
   const closeMenus = () => {
     setMenuAnchorEl(null);
@@ -74,20 +66,19 @@ export function ActivitiesPanel() {
 
   const handleStatusChange = (status: ActivityStatus) => {
     if (!menuActivityId) return;
-    setLocalOverrides((prev) => ({
-      ...prev,
-      [menuActivityId]: { ...prev[menuActivityId], status },
-    }));
+    updateActivity.mutate({ id: menuActivityId, status });
     closeMenus();
   };
 
   const handleTypeChange = (nextType: ActivityType) => {
     if (!menuActivityId) return;
-    setLocalOverrides((prev) => ({
-      ...prev,
-      [menuActivityId]: { ...prev[menuActivityId], type: nextType },
-    }));
+    updateActivity.mutate({ id: menuActivityId, type: nextType });
     closeMenus();
+  };
+
+  const handleEdit = (activity: Activity) => {
+    setEditActivity(activity);
+    setFormOpen(true);
   };
 
   const handleSelectActivity = (activityId: string) => {
@@ -101,10 +92,6 @@ export function ActivitiesPanel() {
     handleSelectActivity(activityId);
   };
 
-  const closeSubmenu = () => {
-    setSubmenuAnchorEl(null);
-    setOpenSubmenu(null);
-  };
 
   const renderPanelContent = () => {
     if (isLoading) {
@@ -123,7 +110,7 @@ export function ActivitiesPanel() {
       );
     }
 
-    if (mergedActivities.length === 0) {
+    if (activities.length === 0) {
       return (
         <Typography variant="body2" color="text.secondary">
           Nog geen activiteiten.
@@ -178,22 +165,34 @@ export function ActivitiesPanel() {
           bgcolor: 'background.paper',
         }}
       >
-        <Button fullWidth variant="contained" startIcon={<AddIcon />}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => { setEditActivity(null); setFormOpen(true); }}
+        >
           Nieuwe activiteit
         </Button>
       </Box>
 
       <ActivityMenus
-        activities={mergedActivities}
+        activities={activities}
         menuActivityId={menuActivityId}
         menuAnchorEl={menuAnchorEl}
         submenuAnchorEl={submenuAnchorEl}
         openSubmenu={openSubmenu}
         onCloseMenus={closeMenus}
         onOpenSubmenu={handleOpenSubmenu}
-        onCloseSubmenu={closeSubmenu}
+        onCloseSubmenu={() => { setSubmenuAnchorEl(null); setOpenSubmenu(null); }}
         onTypeChange={handleTypeChange}
         onStatusChange={handleStatusChange}
+        onEdit={handleEdit}
+      />
+
+      <ActivityFormDialog
+        open={formOpen}
+        activity={editActivity}
+        onClose={() => { setFormOpen(false); }}
       />
     </>
   );
