@@ -29,7 +29,6 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
   );
   const streamAbortRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
-  const pendingSuggestions = useRef<ChatUiAction[]>([]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -86,7 +85,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       streamAbortRef.current = controller;
 
       const { streamingId, streamingMessage, userMessage } = createPendingMessages(text);
-      pendingSuggestions.current = [];
+      const pendingSuggestions: ChatUiAction[] = [];
 
       setMessages((prev) => [...prev, userMessage, streamingMessage]);
       setIsStreaming(true);
@@ -115,7 +114,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               if (payload.mode === 'auto') {
                 onUiAction?.(payload.action);
               } else {
-                pendingSuggestions.current.push({
+                pendingSuggestions.push({
                   action: payload.action as 'open_activities_panel',
                   label: payload.label,
                 });
@@ -128,7 +127,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
                 onConversationEstablished?.(finalPayload.conversationId);
               }
               setMessages((prev) =>
-                applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions.current),
+                applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions),
               );
               setStatusText(null);
               break;
