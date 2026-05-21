@@ -1,5 +1,5 @@
 import { useState, type SubmitEventHandler } from 'react';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
@@ -95,7 +95,7 @@ export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDial
                 flexShrink: 0,
               }}
             >
-              {isEdit ? <EditOutlinedIcon /> : <AddCircleOutlineIcon />}
+              {isEdit ? <EditOutlinedIcon /> : <AddIcon />}
             </Box>
             <Box>
               <Typography variant="h6" component="div" sx={{ lineHeight: 1.2 }}>
