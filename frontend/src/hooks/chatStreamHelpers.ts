@@ -5,12 +5,18 @@ import {
   type FinalChatPayload,
 } from '@/api/chat';
 
+export type ChatUiAction = {
+  action: 'open_activities_panel';
+  label: string;
+};
+
 export type Message = {
   id: string;
   role: 'student' | 'assistant';
   content: string;
   isStreaming?: boolean;
   sources?: ChatSource[];
+  actions?: ChatUiAction[];
 };
 
 export function generateMessageId(prefix: string): string {
@@ -44,10 +50,14 @@ export function getStatusTextFromToolCall(data: string): string {
     if (payload.name === 'search_activities') {
       return 'Activiteiten raadplegen...';
     }
+    if (payload.name === 'search_course_content') {
+      return 'Bronnen raadplegen...';
+    }
+    if (payload.name === 'perform_ui_action') {
+      return 'Paneel instellen...';
+    }
 
-    return payload.name === 'search_course_content'
-      ? 'Bronnen raadplegen...'
-      : 'Extra context ophalen...';
+    return 'Extra context ophalen...';
   } catch {
     return 'Bronnen raadplegen...';
   }
@@ -57,6 +67,7 @@ export function applyFinalMessage(
   messages: Message[],
   streamingId: string,
   finalPayload: FinalChatPayload,
+  actions: ChatUiAction[] = [],
 ): Message[] {
   return messages.map((message) =>
     message.id === streamingId
@@ -65,6 +76,7 @@ export function applyFinalMessage(
           content: finalPayload.text,
           sources: finalPayload.sources,
           isStreaming: false,
+          ...(actions.length > 0 ? { actions } : {}),
         }
       : message,
   );

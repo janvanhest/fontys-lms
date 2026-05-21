@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { generateMessageId, getStatusTextFromToolCall } from './chatStreamHelpers';
+import {
+  applyFinalMessage,
+  ChatUiAction,
+  generateMessageId,
+  getStatusTextFromToolCall,
+  Message,
+} from './chatStreamHelpers';
 
 describe('generateMessageId', () => {
   afterEach(() => {
@@ -41,5 +47,46 @@ describe('getStatusTextFromToolCall', () => {
     expect(getStatusTextFromToolCall(JSON.stringify({ name: 'unknown_tool' }))).toBe(
       'Extra context ophalen...',
     );
+  });
+
+  it('shows panel status for perform_ui_action', () => {
+    expect(getStatusTextFromToolCall(JSON.stringify({ name: 'perform_ui_action' }))).toBe(
+      'Paneel instellen...',
+    );
+  });
+});
+
+describe('applyFinalMessage', () => {
+  it('attaches actions to the streaming message when provided', () => {
+    const messages: Message[] = [
+      { id: 'user-1', role: 'student', content: 'Open het paneel' },
+      { id: 'assistant-1', role: 'assistant', content: '', isStreaming: true },
+    ];
+    const actions: ChatUiAction[] = [
+      { action: 'open_activities_panel', label: 'Open activiteiten' },
+    ];
+
+    const result = applyFinalMessage(
+      messages,
+      'assistant-1',
+      { text: 'Gedaan!', conversationId: 'c1' },
+      actions,
+    );
+
+    expect(result.find((m) => m.id === 'assistant-1')).toMatchObject({
+      content: 'Gedaan!',
+      isStreaming: false,
+      actions: [{ action: 'open_activities_panel', label: 'Open activiteiten' }],
+    });
+  });
+
+  it('omits actions field when no actions are provided', () => {
+    const messages: Message[] = [
+      { id: 'assistant-1', role: 'assistant', content: '', isStreaming: true },
+    ];
+
+    const result = applyFinalMessage(messages, 'assistant-1', { text: 'Antwoord.', conversationId: 'c1' });
+
+    expect(result.find((m) => m.id === 'assistant-1')?.actions).toBeUndefined();
   });
 });
