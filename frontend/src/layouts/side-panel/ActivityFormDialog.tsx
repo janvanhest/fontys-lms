@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import { useCreateActivity, useUpdateActivity } from '@/api/activities';
 import type { Activity, ActivityType } from '@/types/activity';
 import { ActivityFormFields } from './ActivityFormFields';
+import { getActivityFormState } from './activityFormState';
 
 type ActivityFormDialogProps = {
   open: boolean;
@@ -22,13 +23,14 @@ type ActivityFormDialogProps = {
 
 export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDialogProps) {
   const isEdit = activity !== null;
-  const dialogKey = `${activity?.id ?? 'new'}:${open ? 'open' : 'closed'}`;
+  const dialogKey = activity?.id ?? 'new';
+  const initialFormState = getActivityFormState(activity);
 
-  const [title, setTitle] = useState(() => activity?.title ?? '');
-  const [type, setType] = useState<ActivityType>(() => activity?.type ?? 'opdracht');
-  const [description, setDescription] = useState(() => activity?.description ?? '');
-  const [deadline, setDeadline] = useState(() => activity?.deadline ?? '');
-  const [competencyLabel, setCompetencyLabel] = useState(() => activity?.competencyLabel ?? '');
+  const [title, setTitle] = useState(() => initialFormState.title);
+  const [type, setType] = useState<ActivityType>(() => initialFormState.type);
+  const [description, setDescription] = useState(() => initialFormState.description);
+  const [deadline, setDeadline] = useState(() => initialFormState.deadline);
+  const [competencyLabel, setCompetencyLabel] = useState(() => initialFormState.competencyLabel);
 
   const createActivity = useCreateActivity();
   const updateActivity = useUpdateActivity();

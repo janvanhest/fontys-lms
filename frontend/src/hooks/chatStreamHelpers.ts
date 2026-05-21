@@ -13,15 +13,12 @@ export type Message = {
   sources?: ChatSource[];
 };
 
-let messageIdCounter = 0;
-
-function generateMessageId(prefix: string): string {
+export function generateMessageId(prefix: string): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return `${prefix}-${crypto.randomUUID()}`;
   }
 
-  messageIdCounter += 1;
-  return `${prefix}-${String(Date.now())}-${String(messageIdCounter)}`;
+  return `${prefix}-${Math.random().toString(36).slice(2)}`;
 }
 
 export function createPendingMessages(text: string) {

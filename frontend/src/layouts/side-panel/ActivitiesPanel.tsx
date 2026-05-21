@@ -1,18 +1,15 @@
-import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
 import { useQuery } from '@tanstack/react-query';
 import { activitiesQueryOptions, useUpdateActivity } from '@/api/activities';
-import { groupActivities } from '@/utils/activity-grouping';
 import { ActivityDetails } from './ActivityDetails';
 import { ActivityFormDialog } from './ActivityFormDialog';
 import { ActivityMenus } from './ActivityMenus';
 import { ActivitiesPanelContent } from './ActivitiesPanelContent';
 import { ActivitiesPanelHeader } from './ActivitiesPanelHeader';
-import type { ActivityGroupSection, OpenSubmenu } from './types';
-import type { Activity, ActivityStatus, ActivityType } from '@/types/activity';
+import { useActivitiesPanelState } from './useActivitiesPanelState';
 
 export function ActivitiesPanel() {
   const {
@@ -23,73 +20,34 @@ export function ActivitiesPanel() {
   } = useQuery(activitiesQueryOptions);
 
   const updateActivity = useUpdateActivity();
-
-  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
-  const [menuActivityId, setMenuActivityId] = useState<string | null>(null);
-  const [submenuAnchorEl, setSubmenuAnchorEl] = useState<HTMLElement | null>(null);
-  const [openSubmenu, setOpenSubmenu] = useState<OpenSubmenu>(null);
-  const [formOpen, setFormOpen] = useState(false);
-  const [editActivity, setEditActivity] = useState<Activity | null>(null);
-
-  const groupedActivities: ActivityGroupSection[] = useMemo(
-    () => groupActivities(activities),
-    [activities],
-  );
-
-  const selectedActivity = activities.find((a) => a.id === selectedActivityId) ?? null;
-
-  const closeMenus = () => {
-    setMenuAnchorEl(null);
-    setMenuActivityId(null);
-    setSubmenuAnchorEl(null);
-    setOpenSubmenu(null);
-  };
-
-  const handleOpenMenu = (event: MouseEvent<HTMLButtonElement>, activityId: string) => {
-    event.stopPropagation();
-    setMenuAnchorEl(event.currentTarget);
-    setMenuActivityId(activityId);
-    setSubmenuAnchorEl(null);
-    setOpenSubmenu(null);
-  };
-
-  const handleOpenSubmenu = (
-    event: MouseEvent<HTMLElement>,
-    submenu: Exclude<OpenSubmenu, null>,
-  ) => {
-    event.stopPropagation();
-    setSubmenuAnchorEl(event.currentTarget);
-    setOpenSubmenu(submenu);
-  };
-
-  const handleStatusChange = (status: ActivityStatus) => {
-    if (!menuActivityId) return;
-    updateActivity.mutate({ id: menuActivityId, status });
-    closeMenus();
-  };
-
-  const handleTypeChange = (nextType: ActivityType) => {
-    if (!menuActivityId) return;
-    updateActivity.mutate({ id: menuActivityId, type: nextType });
-    closeMenus();
-  };
-
-  const handleEdit = (activity: Activity) => {
-    setEditActivity(activity);
-    setFormOpen(true);
-  };
-
-  const handleSelectActivity = (activityId: string) => {
-    setSelectedActivityId(activityId);
-  };
-
-  const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>, activityId: string) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    if ((event.target as HTMLElement).closest('button,[role="button"]')) return;
-    event.preventDefault();
-    handleSelectActivity(activityId);
-  };
+  const {
+    closeMenus,
+    editActivity,
+    formOpen,
+    groupedActivities,
+    handleCardKeyDown,
+    handleCreate,
+    handleEdit,
+    handleOpenMenu,
+    handleOpenSubmenu,
+    handleStatusChange,
+    handleTypeChange,
+    menuActivityId,
+    menuAnchorEl,
+    openSubmenu,
+    selectedActivity,
+    selectedActivityId,
+    setFormOpen,
+    setOpenSubmenu,
+    setSelectedActivityId,
+    setSubmenuAnchorEl,
+    submenuAnchorEl,
+  } = useActivitiesPanelState({
+    activities,
+    onUpdateActivity: (activityId, patch) => {
+      updateActivity.mutate({ id: activityId, ...patch });
+    },
+  });
 
   return (
     <>
@@ -105,7 +63,7 @@ export function ActivitiesPanel() {
           menuAnchorEl={menuAnchorEl}
           onCardKeyDown={handleCardKeyDown}
           onOpenMenu={handleOpenMenu}
-          onSelectActivity={handleSelectActivity}
+          onSelectActivity={setSelectedActivityId}
           selectedActivityId={selectedActivityId}
           totalActivities={activities.length}
         />
@@ -135,7 +93,7 @@ export function ActivitiesPanel() {
           fullWidth
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => { setEditActivity(null); setFormOpen(true); }}
+          onClick={handleCreate}
         >
           Nieuwe activiteit
         </Button>

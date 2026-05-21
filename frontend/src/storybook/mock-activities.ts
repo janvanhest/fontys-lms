@@ -1,15 +1,22 @@
 import type { Activity } from '@/types/activity';
 
-// Returns an ISO date string relative to Monday of the current week.
+// Returns an ISO date string relative to Monday of the current week in UTC.
 // daysFromMonday=0 → this Monday, -7 → last Monday, 10 → Thursday next week, etc.
-function isoDate(daysFromMonday: number): string {
-  const today = new Date();
-  const day = today.getDay();
-  const monday = new Date(today);
-  monday.setHours(0, 0, 0, 0);
-  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-  monday.setDate(monday.getDate() + daysFromMonday);
-  return monday.toISOString().split('T')[0];
+export function isoDate(daysFromMonday: number): string {
+  const now = new Date();
+  const utcDay = now.getUTCDay();
+  const diffToMonday = utcDay === 0 ? -6 : 1 - utcDay;
+  const baseUtc = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + diffToMonday + daysFromMonday,
+  );
+
+  const date = new Date(baseUtc);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return [String(year), month, day].join('-');
 }
 
 export const MOCK_ACTIVITIES: Activity[] = [

@@ -55,14 +55,6 @@ export function ActivityMenus({
             onCloseMenus();
           }}
         >
-          Hernoem titel
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            if (activity) onEdit(activity);
-            onCloseMenus();
-          }}
-        >
           Bewerken
         </MenuItem>
         <MenuItem

@@ -4,7 +4,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { KeyboardEvent } from 'react';
-import { formatConversationTitle } from '@/utils/sidebarTitle';
+import { formatConversationDateLabel, formatConversationTitle } from '@/utils/sidebarTitle';
 import type { ConversationSummary } from '@/api/chat';
 
 type SidebarConversationListProps = {
@@ -99,7 +99,7 @@ export function SidebarConversationList({
           )}
           <Chip
             size="small"
-            label={new Date(conversation.createdAt).toLocaleDateString('nl-NL')}
+            label={formatConversationDateLabel(conversation.createdAt)}
             variant="outlined"
             color="default"
             sx={{ mt: 1 }}
