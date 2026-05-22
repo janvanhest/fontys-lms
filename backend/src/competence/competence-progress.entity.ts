@@ -17,14 +17,15 @@ export type HboiLayer =
   | 'Hardware Interfacing'
   | 'Professional Development';
 
-// De vijf HBO-i activiteiten, plus de twee Professional Development-onderdelen die
-// in het raamwerk de plek van een activiteit innemen.
+// De vijf HBO-i activiteiten (namen volgens de HBO-i Domeinbeschrijving 2023,
+// sectie 2.2), plus de twee Professional Development-onderdelen die in het
+// raamwerk de plek van een activiteit innemen.
 export type HboiActivity =
   | 'Analysis'
-  | 'Advice'
+  | 'Advise'
   | 'Design'
-  | 'Realisation'
-  | 'Management & Control'
+  | 'Realise'
+  | 'Manage & Control'
   | 'Personal Leadership'
   | 'Professional Standard';
 
