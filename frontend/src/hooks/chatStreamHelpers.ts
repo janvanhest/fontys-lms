@@ -52,10 +52,10 @@ export function generateMessageId(prefix: string): string {
 
 export function toolCallToBubble(name: string): ToolCallBubble | null {
   if (name === 'search_activities') {
-    return { name, label: '🔍 Activiteiten bekeken', icon: 'activities' };
+    return { name, label: 'Activiteiten bekeken', icon: 'activities' };
   }
   if (name === 'get_student_context') {
-    return { name, label: '👤 Studentprofiel bekeken', icon: 'student' };
+    return { name, label: 'Studentprofiel bekeken', icon: 'student' };
   }
   return null;
 }
