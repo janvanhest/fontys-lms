@@ -6,7 +6,7 @@ import {
 } from '@/api/chat';
 
 export type ChatUiAction = {
-  action: 'open_activities_panel';
+  action: 'open_activities_panel' | 'highlight_activity';
   label: string;
 };
 
