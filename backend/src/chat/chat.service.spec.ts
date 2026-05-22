@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
+import Anthropic from '@anthropic-ai/sdk';
 import { ChatService, ChatSseEvent } from './chat.service';
 import { ConversationService } from './conversation.service';
 import { ConversationEntity } from './entities/conversation.entity';
@@ -14,7 +15,7 @@ const STUDENT_ID = 'student-uuid-001';
 
 function makeStreamMock(
   textDeltas: string[],
-  finalMsg: { stop_reason: string; content: Array<{ type: string; [key: string]: unknown }> },
+  finalMsg: { stop_reason: string; content: Anthropic.ContentBlock[] },
 ) {
   const events = textDeltas.map((text) => ({
     type: 'content_block_delta' as const,
@@ -151,9 +152,10 @@ describe('ChatService', () => {
 
     const final = events.find((e) => e.event === 'final');
     expect(final).toBeDefined();
-    const deltaIndex = events.findIndex((e) => e.event === 'text_delta');
     const finalIndex = events.findIndex((e) => e.event === 'final');
-    expect(deltaIndex).toBeLessThan(finalIndex);
+    const lastDeltaIndex = events.map((e) => e.event).lastIndexOf('text_delta');
+    expect(lastDeltaIndex).toBeGreaterThanOrEqual(0);
+    expect(lastDeltaIndex).toBeLessThan(finalIndex);
   });
 
   it('executes tool call and sends tool_call + tool_result events', async () => {
