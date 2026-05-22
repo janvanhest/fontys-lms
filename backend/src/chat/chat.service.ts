@@ -86,57 +86,69 @@ export class ChatService {
     while (iterations < 6) {
       yield { event: 'status', data: 'Nadenken...' };
 
-      const stream = this.anthropic.messages.stream({
-        model: this.anthropicModel,
-        max_tokens: 2048,
-        system: this.buildSystemPrompt(),
-        messages,
-        tools: this.getAvailableTools(),
-      });
+      try {
+        const stream = this.anthropic.messages.stream({
+          model: this.anthropicModel,
+          max_tokens: 2048,
+          system: this.buildSystemPrompt(),
+          messages,
+          tools: this.getAvailableTools(),
+        });
 
-      let iterationHasText = false;
-      for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-          iterationHasText = true;
-          yield { event: 'text_delta', data: event.delta.text };
-        }
-      }
-
-      const finalMessage = await stream.finalMessage();
-      lastStopReason = finalMessage.stop_reason;
-
-      messages.push({ role: 'assistant', content: finalMessage.content });
-
-      if (finalMessage.stop_reason === 'end_turn') {
-        const text = finalMessage.content
-          .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-          .map((b) => b.text)
-          .join('');
-        const finalSources = this.getFinalSources(usedSources);
-        await this.conversationService.addMessage(conversation.id, 'assistant', text, finalSources);
-        await this.maybeUpdateConversationTitle(conversation, dto.message);
-        yield {
-          event: 'final',
-          data: this.serializeFinalPayload(conversation.id, text, finalSources),
-        };
-        return;
-      }
-
-      if (finalMessage.stop_reason === 'tool_use') {
-        if (iterationHasText) {
-          yield { event: 'stream_reset', data: '' };
-        }
-        for (const block of finalMessage.content) {
-          if (block.type === 'tool_use') {
-            yield { event: 'tool_call', data: JSON.stringify({ name: block.name }) };
+        let iterationHasText = false;
+        for await (const event of stream) {
+          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            iterationHasText = true;
+            yield { event: 'text_delta', data: event.delta.text };
           }
         }
-        const toolResults = await this.executeToolCalls(finalMessage.content, studentId);
-        for (const event of toolResults.events) {
-          yield event;
+
+        const finalMessage = await stream.finalMessage();
+        lastStopReason = finalMessage.stop_reason;
+
+        messages.push({ role: 'assistant', content: finalMessage.content });
+
+        if (finalMessage.stop_reason === 'end_turn') {
+          const text = finalMessage.content
+            .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+            .map((b) => b.text)
+            .join('');
+          const finalSources = this.getFinalSources(usedSources);
+          await this.conversationService.addMessage(conversation.id, 'assistant', text, finalSources);
+          await this.maybeUpdateConversationTitle(conversation, dto.message);
+          yield {
+            event: 'final',
+            data: this.serializeFinalPayload(conversation.id, text, finalSources),
+          };
+          return;
         }
-        usedSources.push(...toolResults.sources);
-        messages.push({ role: 'user', content: toolResults.results });
+
+        if (finalMessage.stop_reason === 'tool_use') {
+          if (iterationHasText) {
+            yield { event: 'stream_reset', data: '' };
+          }
+          for (const block of finalMessage.content) {
+            if (block.type === 'tool_use') {
+              yield { event: 'tool_call', data: JSON.stringify({ name: block.name }) };
+            }
+          }
+          const toolResults = await this.executeToolCalls(finalMessage.content, studentId);
+          for (const event of toolResults.events) {
+            yield event;
+          }
+          usedSources.push(...toolResults.sources);
+          messages.push({ role: 'user', content: toolResults.results });
+        }
+      } catch (err) {
+        this.logger.error(
+          `Anthropic stream error on iteration ${iterations} for conversationId=${conversation.id}`,
+          err,
+        );
+        yield {
+          event: 'error',
+          data: JSON.stringify({ message: 'Er is een fout opgetreden bij het verwerken van je vraag.' }),
+        };
+        return;
       }
 
       iterations++;
