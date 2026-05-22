@@ -90,6 +90,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
       <ChatTabHeader
         activeTab={activeTab}
         isLoadingHistory={isLoadingHistory}
+        isStreaming={isStreaming}
         onToggleActivities={() => {
           if (sidePanelOpen) {
             setSidePanelOpen(false);

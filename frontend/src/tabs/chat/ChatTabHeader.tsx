@@ -16,6 +16,7 @@ import type { ChatStatus, ChatStatusIcon } from '@/hooks/chatStreamHelpers';
 type ChatTabHeaderProps = {
   activeTab: LayoutTab;
   isLoadingHistory: boolean;
+  isStreaming: boolean;
   onToggleActivities: () => void;
   sidePanelOpen: boolean;
   status: ChatStatus | null;
@@ -46,6 +47,7 @@ function getStatusIcon(icon: ChatStatusIcon) {
 export function ChatTabHeader({
   activeTab,
   isLoadingHistory,
+  isStreaming,
   onToggleActivities,
   sidePanelOpen,
   status,
@@ -83,13 +85,13 @@ export function ChatTabHeader({
               },
             }}
           />
-        ) : (
+        ) : !isStreaming ? (
           <Typography variant="body2" color="text.secondary">
             {isLoadingHistory
               ? 'Gesprek laden...'
               : 'Stel een vraag over je challenge, activiteiten of cursusinhoud.'}
           </Typography>
-        )}
+        ) : null}
       </Box>
 
       <IconButton
