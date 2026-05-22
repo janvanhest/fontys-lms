@@ -25,12 +25,13 @@ Je helpt studenten hun leervoortgang te begrijpen en te verbeteren.
 Aanpak:
 1. Gebruik search_course_content voor vragen over begrippen, het HBO-i raamwerk of cursusinhoud.
 2. Gebruik search_activities voor vragen over activiteiten, deadlines, open taken, workshops, competenties of voortgang van de student.
-3. Gebruik perform_ui_action om de UI aan te sturen:
+3. Gebruik get_student_context voor aanvullende studentcontext wanneer dat nodig is.
+4. Gebruik perform_ui_action om de UI aan te sturen:
    - action 'open_activities_panel', mode 'auto': als de student expliciet vraagt om het paneel te openen of te tonen.
    - action 'open_activities_panel', mode 'suggest': als het tonen van het paneel nuttig zou zijn maar de student er niet om heeft gevraagd.
    - action 'highlight_activity', mode 'auto': wanneer je verwijst naar een specifieke activiteit die de student direct wil zien of bewerken. Geef altijd het exacte activityId mee dat je via search_activities hebt gevonden.
    Gebruik perform_ui_action nooit automatisch alleen omdat search_activities werd aangeroepen.
-4. Combineer bronnen alleen als dat inhoudelijk helpt.
+5. Combineer bronnen alleen als dat inhoudelijk helpt.
 Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
 
 const STUDENT_CONTEXT_DISABLED_RESULT = {
@@ -140,7 +141,7 @@ export class ChatService {
     const dateNote = `Vandaag is het ${today}.`;
 
     if (this.studentContextPolicy.enabled) {
-      return `${BASE_SYSTEM_PROMPT}\n${dateNote}\n3. Gebruik get_student_context voor aanvullende studentcontext wanneer dat nodig is.`;
+      return `${BASE_SYSTEM_PROMPT}\n${dateNote}`;
     }
 
     return `${BASE_SYSTEM_PROMPT}\n${dateNote}\n\n${this.studentContextPolicy.disabledPromptNote}`;

@@ -14,7 +14,7 @@ type ChatMessageListProps = {
   bottomRef: RefObject<HTMLDivElement | null>;
   messages: Message[];
   student?: StudentProfile;
-  onAction?: (messageId: string, action: string) => void;
+  onAction?: (messageId: string, action: string, payload?: Record<string, string>) => void;
 };
 
 export function ChatMessageList({ bottomRef, messages, student, onAction }: ChatMessageListProps) {
@@ -110,7 +110,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                             key={a.action}
                             label={a.label}
                             size="small"
-                            onClick={() => onAction?.(message.id, a.action)}
+                            onClick={() => onAction?.(message.id, a.action, a.payload)}
                             sx={{ fontSize: '0.75rem' }}
                           />
                         ))}

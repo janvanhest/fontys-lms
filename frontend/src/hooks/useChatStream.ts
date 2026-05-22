@@ -123,6 +123,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
                 pendingSuggestions.push({
                   action: uiPayload.action as ChatUiAction['action'],
                   label: uiPayload.label,
+                  ...(uiPayload.activityId ? { payload: { activityId: uiPayload.activityId } } : {}),
                 });
               }
               break;

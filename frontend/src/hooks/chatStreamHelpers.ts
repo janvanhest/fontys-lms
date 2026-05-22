@@ -8,6 +8,7 @@ import {
 export type ChatUiAction = {
   action: 'open_activities_panel' | 'highlight_activity';
   label: string;
+  payload?: Record<string, string>;
 };
 
 export type ChatStatusIcon =

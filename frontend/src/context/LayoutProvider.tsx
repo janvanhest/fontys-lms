@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import { useCallback, useMemo, useState, type PropsWithChildren } from 'react';
 import {
-  HIGHLIGHT_DURATION_MS,
   LayoutContext,
   type LayoutContextValue,
   type LayoutTab,
   type SidePanelContent,
 } from '@/context/layout-context';
+import { useHighlightActivity } from '@/hooks/useHighlightActivity';
 
 export function LayoutProvider({ children }: PropsWithChildren) {
   const [activeTab, setActiveTab] = useState<LayoutTab>('chat');
@@ -13,14 +13,7 @@ export function LayoutProvider({ children }: PropsWithChildren) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [sidePanelContent, setSidePanelContent] = useState<SidePanelContent | null>(null);
-  const [highlightedActivityId, setHighlightedActivityId] = useState<string | null>(null);
-  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
-    };
-  }, []);
+  const { highlightedActivityId, highlightActivity } = useHighlightActivity();
 
   const selectTab = useCallback((tab: LayoutTab) => {
     setActiveTab(tab);
@@ -39,14 +32,6 @@ export function LayoutProvider({ children }: PropsWithChildren) {
   const openSidePanel = useCallback((content: SidePanelContent) => {
     setSidePanelContent(content);
     setSidePanelOpen(true);
-  }, []);
-
-  const highlightActivity = useCallback((id: string) => {
-    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
-    setHighlightedActivityId(id);
-    highlightTimeoutRef.current = setTimeout(() => {
-      setHighlightedActivityId(null);
-    }, HIGHLIGHT_DURATION_MS);
   }, []);
 
   const value = useMemo<LayoutContextValue>(

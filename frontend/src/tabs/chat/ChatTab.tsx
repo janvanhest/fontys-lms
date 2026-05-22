@@ -49,8 +49,8 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
     });
 
   const handleAction = useCallback(
-    (messageId: string, action: string) => {
-      handleUiAction(action);
+    (messageId: string, action: string, payload?: Record<string, string>) => {
+      handleUiAction(action, payload);
       consumeAction(messageId, action);
     },
     [handleUiAction, consumeAction],
