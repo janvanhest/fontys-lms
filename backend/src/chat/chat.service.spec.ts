@@ -158,6 +158,56 @@ describe('ChatService', () => {
     expect(lastDeltaIndex).toBeLessThan(finalIndex);
   });
 
+  it('emits stream_reset when a tool_use iteration streamed text before the tool call', async () => {
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock(
+        ['Intermediate text that should be discarded.'],
+        { stop_reason: 'tool_use', content: [
+          { type: 'tool_use', id: 'tc-reset', name: 'search_activities', input: {} },
+        ] },
+      ))
+      .mockReturnValueOnce(makeStreamMock(
+        ['Final answer.'],
+        { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Final answer.' }] },
+      ));
+    mockSearchActivitiesTool.execute.mockResolvedValue('{}');
+
+    const events = await collectEvents({ message: 'Welke deadlines heb ik?' });
+
+    const resetIndex = events.findIndex((e) => e.event === 'stream_reset');
+    expect(resetIndex).toBeGreaterThanOrEqual(0);
+
+    // stream_reset must come after the intermediate text_delta
+    const lastIntermediateDeltaIndex = events.map((e) => e.event).lastIndexOf('text_delta', resetIndex - 1);
+    expect(lastIntermediateDeltaIndex).toBeGreaterThanOrEqual(0);
+    expect(lastIntermediateDeltaIndex).toBeLessThan(resetIndex);
+
+    // Final answer's text_delta events must come after the reset
+    const finalDeltaIndex = events.findIndex(
+      (e, i) => e.event === 'text_delta' && i > resetIndex,
+    );
+    expect(finalDeltaIndex).toBeGreaterThan(resetIndex);
+  });
+
+  it('does not emit stream_reset when tool_use iteration had no text', async () => {
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock(
+        [],
+        { stop_reason: 'tool_use', content: [
+          { type: 'tool_use', id: 'tc-no-text', name: 'search_activities', input: {} },
+        ] },
+      ))
+      .mockReturnValueOnce(makeStreamMock(
+        ['Clean answer.'],
+        { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Clean answer.' }] },
+      ));
+    mockSearchActivitiesTool.execute.mockResolvedValue('{}');
+
+    const events = await collectEvents({ message: 'Welke activiteiten heb ik?' });
+
+    expect(events.some((e) => e.event === 'stream_reset')).toBe(false);
+  });
+
   it('executes tool call and sends tool_call + tool_result events', async () => {
     mockAnthropicStream
       .mockReturnValueOnce(makeStreamMock([], { stop_reason: 'tool_use', content: [

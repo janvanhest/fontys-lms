@@ -93,8 +93,10 @@ export class ChatService {
         tools: this.getAvailableTools(),
       });
 
+      let iterationHasText = false;
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+          iterationHasText = true;
           yield { event: 'text_delta', data: event.delta.text };
         }
       }
@@ -120,6 +122,9 @@ export class ChatService {
       }
 
       if (finalMessage.stop_reason === 'tool_use') {
+        if (iterationHasText) {
+          yield { event: 'stream_reset', data: '' };
+        }
         const toolResults = await this.executeToolCalls(finalMessage.content, studentId);
         for (const event of toolResults.events) {
           yield event;

@@ -24,6 +24,7 @@ export function parseSseEventBlock(block: string): ChatSseEvent | null {
         value === 'tool_result' ||
         value === 'ui_action' ||
         value === 'text_delta' ||
+        value === 'stream_reset' ||
         value === 'final' ||
         value === 'error'
       ) {

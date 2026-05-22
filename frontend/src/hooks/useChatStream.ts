@@ -115,6 +115,11 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               );
               setStatus(null);
               break;
+            case 'stream_reset':
+              setMessages((prev) =>
+                prev.map((m) => (m.id === streamingId ? { ...m, content: '' } : m)),
+              );
+              break;
             case 'ui_action': {
               const uiPayload = JSON.parse(sseEvent.data) as {
                 action: string;
