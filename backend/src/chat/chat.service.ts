@@ -94,7 +94,7 @@ export class ChatService {
       try {
         const stream = this.anthropic.messages.stream({
           model: this.anthropicModel,
-          max_tokens: 2048,
+          max_tokens: 8192,
           system: [{ type: 'text', text: this.buildSystemPrompt(), cache_control: { type: 'ephemeral' } }],
           messages,
           tools: this.getAvailableTools(),
