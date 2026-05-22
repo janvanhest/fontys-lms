@@ -566,4 +566,39 @@ describe('ChatService', () => {
       }),
     );
   });
+
+  it('emits ui_action SSE event with activityId when highlight_activity is called', async () => {
+    mockAnthropicCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tool-ui-2',
+            name: 'perform_ui_action',
+            input: {
+              action: 'highlight_activity',
+              mode: 'auto',
+              label: 'Bekijk activiteit',
+              activityId: 'activity-123',
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Dit is de activiteit.' }],
+      });
+
+    const events = await collectEvents({ message: 'Laat me activiteit 123 zien' });
+
+    const uiActionEvent = events.find((e) => e.event === 'ui_action');
+    expect(uiActionEvent).toBeDefined();
+    expect(JSON.parse(uiActionEvent!.data)).toEqual({
+      action: 'highlight_activity',
+      mode: 'auto',
+      label: 'Bekijk activiteit',
+      activityId: 'activity-123',
+    });
+  });
 });
