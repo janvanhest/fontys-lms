@@ -12,6 +12,24 @@ import { PerformUiActionTool } from './tools/perform-ui-action.tool';
 
 const STUDENT_ID = 'student-uuid-001';
 
+function makeStreamMock(
+  textDeltas: string[],
+  finalMsg: { stop_reason: string; content: Array<{ type: string; [key: string]: unknown }> },
+) {
+  const events = textDeltas.map((text) => ({
+    type: 'content_block_delta' as const,
+    delta: { type: 'text_delta' as const, text },
+  }));
+  return {
+    [Symbol.asyncIterator]: async function* () {
+      for (const event of events) {
+        yield event;
+      }
+    },
+    finalMessage: jest.fn().mockResolvedValue(finalMsg),
+  };
+}
+
 const makeConversation = (
   messages: ConversationEntity['messages'] = [],
   overrides: Partial<ConversationEntity> = {},
@@ -42,7 +60,7 @@ describe('ChatService', () => {
   let mockRagTool: jest.Mocked<Pick<RagTool, 'execute'>>;
   let mockSearchActivitiesTool: jest.Mocked<Pick<SearchActivitiesTool, 'execute'>>;
   let mockPerformUiActionTool: jest.Mocked<Pick<PerformUiActionTool, 'execute'>>;
-  let mockAnthropicCreate: jest.Mock;
+  let mockAnthropicStream: jest.Mock;
   let loggerWarnSpy: jest.SpyInstance;
 
   beforeEach(async () => {
@@ -56,7 +74,7 @@ describe('ChatService', () => {
     mockRagTool = { execute: jest.fn().mockResolvedValue('') };
     mockSearchActivitiesTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockPerformUiActionTool = { execute: jest.fn().mockReturnValue(JSON.stringify({ ok: true })) };
-    mockAnthropicCreate = jest.fn();
+    mockAnthropicStream = jest.fn();
     mockConfigService = {
       get: jest.fn((key: string) => {
         if (key === 'ANTHROPIC_MODEL') return 'claude-sonnet-test';
@@ -78,8 +96,8 @@ describe('ChatService', () => {
     }).compile();
 
     service = module.get<ChatService>(ChatService);
-    (service as unknown as { anthropic: { messages: { create: jest.Mock } } }).anthropic = {
-      messages: { create: mockAnthropicCreate },
+    (service as unknown as { anthropic: { messages: { stream: jest.Mock } } }).anthropic = {
+      messages: { stream: mockAnthropicStream },
     };
     loggerWarnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
   });
@@ -97,10 +115,9 @@ describe('ChatService', () => {
   }
 
   it('sends status event at the start', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Answer.' }],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(['Answer.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Answer.' }] }),
+    );
 
     const events = await collectEvents({ message: 'Hello' });
 
@@ -108,10 +125,9 @@ describe('ChatService', () => {
   });
 
   it('sends final event with answer on end_turn', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'The answer.' }],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(['The answer.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'The answer.' }] }),
+    );
 
     const events = await collectEvents({ message: 'What is a professional task?' });
 
@@ -119,23 +135,38 @@ describe('ChatService', () => {
     expect(final?.data).toBe(JSON.stringify({ text: 'The answer.', conversationId: 'c1' }));
   });
 
+  it('emits text_delta events for each token chunk before the final event', async () => {
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(
+        ['Hello', ' world', '!'],
+        { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Hello world!' }] },
+      ),
+    );
+
+    const events = await collectEvents({ message: 'Say hello' });
+
+    const deltas = events.filter((e) => e.event === 'text_delta');
+    expect(deltas).toHaveLength(3);
+    expect(deltas.map((e) => e.data)).toEqual(['Hello', ' world', '!']);
+
+    const final = events.find((e) => e.event === 'final');
+    expect(final).toBeDefined();
+    const deltaIndex = events.findIndex((e) => e.event === 'text_delta');
+    const finalIndex = events.findIndex((e) => e.event === 'final');
+    expect(deltaIndex).toBeLessThan(finalIndex);
+  });
+
   it('executes tool call and sends tool_call + tool_result events', async () => {
-    mockAnthropicCreate
-      .mockResolvedValueOnce({
-        stop_reason: 'tool_use',
-        content: [
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock([], { stop_reason: 'tool_use', content: [
           {
             type: 'tool_use',
             id: 'tc1',
             name: 'search_course_content',
             input: { query: 'professional task' },
           },
-        ],
-      })
-      .mockResolvedValueOnce({
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Combined answer.' }],
-      });
+        ] }))
+      .mockReturnValueOnce(makeStreamMock(['Combined answer.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Combined answer.' }] }));
 
     mockRagTool.execute.mockResolvedValue({
       content: 'RAG result.',
@@ -156,17 +187,16 @@ describe('ChatService', () => {
   });
 
   it('bubbles up search unavailability as an error event path', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'tool_use',
-      content: [
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock([], { stop_reason: 'tool_use', content: [
         {
           type: 'tool_use',
           id: 'tc1',
           name: 'search_course_content',
           input: { query: 'professional task' },
         },
-      ],
-    });
+      ] }),
+    );
     mockRagTool.execute.mockRejectedValue(new Error('Course search unavailable'));
 
     await expect(collectEvents({ message: 'What is a professional task?' })).rejects.toThrow(
@@ -175,14 +205,13 @@ describe('ChatService', () => {
   });
 
   it('derives the disabled student-context policy in the Anthropic request', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Answer.' }],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(['Answer.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Answer.' }] }),
+    );
 
     await collectEvents({ message: 'How am I doing?' });
 
-    expect(mockAnthropicCreate).toHaveBeenCalledWith(
+    expect(mockAnthropicStream).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'claude-sonnet-test',
         system: expect.stringContaining('get_student_context is tijdelijk uitgeschakeld'),
@@ -193,28 +222,22 @@ describe('ChatService', () => {
         ]),
       }),
     );
-    expect(mockAnthropicCreate.mock.calls[0]?.[0]?.tools).not.toEqual(
+    expect(mockAnthropicStream.mock.calls[0]?.[0]?.tools).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ name: 'get_student_context' })]),
     );
   });
 
   it('executes search_activities tool calls with the student id and provided filters', async () => {
-    mockAnthropicCreate
-      .mockResolvedValueOnce({
-        stop_reason: 'tool_use',
-        content: [
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock([], { stop_reason: 'tool_use', content: [
           {
             type: 'tool_use',
             id: 'tc-activities',
             name: 'search_activities',
             input: { status: 'open', limit: 3 },
           },
-        ],
-      })
-      .mockResolvedValueOnce({
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Je hebt nog drie open activiteiten.' }],
-      });
+        ] }))
+      .mockReturnValueOnce(makeStreamMock(['Je hebt nog drie open activiteiten.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Je hebt nog drie open activiteiten.' }] }));
     mockSearchActivitiesTool.execute.mockResolvedValue(
       JSON.stringify({
         appliedFilters: { query: null, title: null, status: 'open', type: null, deadlineFrom: null, deadlineTo: null, limit: 3 },
@@ -234,22 +257,16 @@ describe('ChatService', () => {
   });
 
   it('returns the disabled student-context payload without executing the student tool', async () => {
-    mockAnthropicCreate
-      .mockResolvedValueOnce({
-        stop_reason: 'tool_use',
-        content: [
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock([], { stop_reason: 'tool_use', content: [
           {
             type: 'tool_use',
             id: 'tc-student-context',
             name: 'get_student_context',
             input: {},
           },
-        ],
-      })
-      .mockResolvedValueOnce({
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Ik kan alleen je activiteiten raadplegen.' }],
-      });
+        ] }))
+      .mockReturnValueOnce(makeStreamMock(['Ik kan alleen je activiteiten raadplegen.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Ik kan alleen je activiteiten raadplegen.' }] }));
 
     await collectEvents({ message: 'Hoe gaat het met mijn voortgang?' });
 
@@ -257,7 +274,7 @@ describe('ChatService', () => {
     expect(loggerWarnSpy).toHaveBeenCalledWith(
       expect.stringContaining('student context tool called while disabled'),
     );
-    expect(mockAnthropicCreate.mock.calls[1]?.[0]?.messages).toEqual(
+    expect(mockAnthropicStream.mock.calls[1]?.[0]?.messages).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           role: 'user',
@@ -279,12 +296,9 @@ describe('ChatService', () => {
   });
 
   it('stops after max 6 iterations and sends fallback final event', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'tool_use',
-      content: [
-        { type: 'tool_use', id: 'tc1', name: 'get_student_context', input: { studentId: 's1' } },
-      ],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock([], { stop_reason: 'tool_use', content: [{ type: 'tool_use', id: 'tc1', name: 'get_student_context', input: { studentId: 's1' } }] }),
+    );
 
     const events = await collectEvents({ message: 'Infinite loop?' });
 
@@ -296,17 +310,16 @@ describe('ChatService', () => {
         conversationId: 'c1',
       }),
     );
-    expect(mockAnthropicCreate).toHaveBeenCalledTimes(6);
+    expect(mockAnthropicStream).toHaveBeenCalledTimes(6);
     expect(loggerWarnSpy).toHaveBeenCalledWith(
       expect.stringContaining('tool loop iteration cap reached'),
     );
   });
 
   it('creates new conversation when conversationId is absent', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Hi.' }],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(['Hi.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Hi.' }] }),
+    );
 
     await collectEvents({ message: 'Hi' }, STUDENT_ID);
 
@@ -314,10 +327,9 @@ describe('ChatService', () => {
   });
 
   it('loads existing conversation when conversationId is present', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Hi.' }],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(['Hi.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Hi.' }] }),
+    );
 
     await collectEvents({ message: 'Follow up', conversationId: 'c-existing' });
 
@@ -328,10 +340,9 @@ describe('ChatService', () => {
   });
 
   it('generates an automatic title after the first complete assistant answer', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Je kunt starten met je semesterplan.' }],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(['Je kunt starten met je semesterplan.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Je kunt starten met je semesterplan.' }] }),
+    );
 
     await collectEvents({ message: 'Kun je helpen met mijn semesterplan?' });
 
@@ -365,10 +376,9 @@ describe('ChatService', () => {
         },
       ),
     );
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Portflow helpt je bewijzen structureren.' }],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(['Portflow helpt je bewijzen structureren.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Portflow helpt je bewijzen structureren.' }] }),
+    );
 
     await collectEvents({
       message: 'Wat moet ik met Portflow doen?',
@@ -383,22 +393,16 @@ describe('ChatService', () => {
   });
 
   it('includes retrieved sources in the final event payload', async () => {
-    mockAnthropicCreate
-      .mockResolvedValueOnce({
-        stop_reason: 'tool_use',
-        content: [
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock([], { stop_reason: 'tool_use', content: [
           {
             type: 'tool_use',
             id: 'tc1',
             name: 'search_course_content',
             input: { query: 'stappenplan' },
           },
-        ],
-      })
-      .mockResolvedValueOnce({
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Gebruik het stappenplan als leidraad.' }],
-      });
+        ] }))
+      .mockReturnValueOnce(makeStreamMock(['Gebruik het stappenplan als leidraad.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Gebruik het stappenplan als leidraad.' }] }));
 
     mockRagTool.execute.mockResolvedValue({
       content: 'Brontekst.',
@@ -442,14 +446,13 @@ describe('ChatService', () => {
   });
 
   it('advertises perform_ui_action in the Anthropic tools array', async () => {
-    mockAnthropicCreate.mockResolvedValue({
-      stop_reason: 'end_turn',
-      content: [{ type: 'text', text: 'Antwoord.' }],
-    });
+    mockAnthropicStream.mockReturnValue(
+      makeStreamMock(['Antwoord.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Antwoord.' }] }),
+    );
 
     await collectEvents({ message: 'Open mijn activiteiten' });
 
-    expect(mockAnthropicCreate).toHaveBeenCalledWith(
+    expect(mockAnthropicStream).toHaveBeenCalledWith(
       expect.objectContaining({
         tools: expect.arrayContaining([
           expect.objectContaining({ name: 'perform_ui_action' }),
@@ -459,22 +462,16 @@ describe('ChatService', () => {
   });
 
   it('emits ui_action SSE event before tool_result when perform_ui_action is called', async () => {
-    mockAnthropicCreate
-      .mockResolvedValueOnce({
-        stop_reason: 'tool_use',
-        content: [
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock([], { stop_reason: 'tool_use', content: [
           {
             type: 'tool_use',
             id: 'tool-ui-1',
             name: 'perform_ui_action',
             input: { action: 'open_activities_panel', mode: 'auto', label: 'Open activiteiten' },
           },
-        ],
-      })
-      .mockResolvedValueOnce({
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Ik open het activiteitenpaneel.' }],
-      });
+        ] }))
+      .mockReturnValueOnce(makeStreamMock(['Ik open het activiteitenpaneel.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Ik open het activiteitenpaneel.' }] }));
 
     const events = await collectEvents({ message: 'Open het activiteitenpaneel' });
 
@@ -491,22 +488,16 @@ describe('ChatService', () => {
   });
 
   it('deduplicates retrieved sources and limits them to the top 3', async () => {
-    mockAnthropicCreate
-      .mockResolvedValueOnce({
-        stop_reason: 'tool_use',
-        content: [
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock([], { stop_reason: 'tool_use', content: [
           {
             type: 'tool_use',
             id: 'tc1',
             name: 'search_course_content',
             input: { query: 'bronnen' },
           },
-        ],
-      })
-      .mockResolvedValueOnce({
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Hier zijn de belangrijkste bronnen.' }],
-      });
+        ] }))
+      .mockReturnValueOnce(makeStreamMock(['Hier zijn de belangrijkste bronnen.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Hier zijn de belangrijkste bronnen.' }] }));
 
     mockRagTool.execute.mockResolvedValue({
       content: 'Brontekst.',
@@ -568,10 +559,8 @@ describe('ChatService', () => {
   });
 
   it('emits ui_action SSE event with activityId when highlight_activity is called', async () => {
-    mockAnthropicCreate
-      .mockResolvedValueOnce({
-        stop_reason: 'tool_use',
-        content: [
+    mockAnthropicStream
+      .mockReturnValueOnce(makeStreamMock([], { stop_reason: 'tool_use', content: [
           {
             type: 'tool_use',
             id: 'tool-ui-2',
@@ -583,12 +572,8 @@ describe('ChatService', () => {
               activityId: 'activity-123',
             },
           },
-        ],
-      })
-      .mockResolvedValueOnce({
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Dit is de activiteit.' }],
-      });
+        ] }))
+      .mockReturnValueOnce(makeStreamMock(['Dit is de activiteit.'], { stop_reason: 'end_turn', content: [{ type: 'text', text: 'Dit is de activiteit.' }] }));
 
     const events = await collectEvents({ message: 'Laat me activiteit 123 zien' });
 

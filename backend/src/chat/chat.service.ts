@@ -85,19 +85,27 @@ export class ChatService {
     while (iterations < 6) {
       yield { event: 'status', data: iterations === 0 ? 'Nadenken...' : 'Tool uitvoeren...' };
 
-      const response = await this.anthropic.messages.create({
+      const stream = this.anthropic.messages.stream({
         model: this.anthropicModel,
         max_tokens: 2048,
         system: this.buildSystemPrompt(),
         messages,
         tools: this.getAvailableTools(),
       });
-      lastStopReason = response.stop_reason;
 
-      messages.push({ role: 'assistant', content: response.content });
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+          yield { event: 'text_delta', data: event.delta.text };
+        }
+      }
 
-      if (response.stop_reason === 'end_turn') {
-        const text = response.content
+      const finalMessage = await stream.finalMessage();
+      lastStopReason = finalMessage.stop_reason;
+
+      messages.push({ role: 'assistant', content: finalMessage.content });
+
+      if (finalMessage.stop_reason === 'end_turn') {
+        const text = finalMessage.content
           .filter((b): b is Anthropic.TextBlock => b.type === 'text')
           .map((b) => b.text)
           .join('');
@@ -111,8 +119,8 @@ export class ChatService {
         return;
       }
 
-      if (response.stop_reason === 'tool_use') {
-        const toolResults = await this.executeToolCalls(response.content, studentId);
+      if (finalMessage.stop_reason === 'tool_use') {
+        const toolResults = await this.executeToolCalls(finalMessage.content, studentId);
         for (const event of toolResults.events) {
           yield event;
         }
