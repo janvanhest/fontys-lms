@@ -13,6 +13,7 @@ import type { Activity } from '@/types/activity';
 type ActivityCardProps = {
   activity: Activity;
   deadlineLabel: string;
+  highlighted?: boolean;
   isSelected: boolean;
   menuOpen: boolean;
   statusColor: string;
@@ -26,6 +27,7 @@ type ActivityCardProps = {
 export function ActivityCard({
   activity,
   deadlineLabel,
+  highlighted = false,
   isSelected,
   menuOpen,
   statusColor,
@@ -40,10 +42,25 @@ export function ActivityCard({
       role="button"
       tabIndex={0}
       aria-pressed={isSelected}
+      data-activity-id={activity.id}
       onClick={() => { onSelect(activity.id); }}
       onKeyDown={(event) => { onKeyDown(event, activity.id); }}
       elevation={isSelected ? 4 : 1}
       sx={(theme) => ({
+        '@keyframes activityCardHighlight': {
+          '0%': { outline: '0px solid transparent', outlineOffset: '0px' },
+          '20%': {
+            outline: `3px solid ${theme.palette.primary.main}`,
+            outlineOffset: '2px',
+            backgroundColor: alpha(theme.palette.primary.main, 0.06),
+          },
+          '80%': {
+            outline: `3px solid ${theme.palette.primary.main}`,
+            outlineOffset: '2px',
+            backgroundColor: alpha(theme.palette.primary.main, 0.06),
+          },
+          '100%': { outline: '0px solid transparent', outlineOffset: '0px' },
+        },
         position: 'relative',
         overflow: 'hidden',
         borderLeft: `4px solid ${statusColor}`,
@@ -61,6 +78,9 @@ export function ActivityCard({
         '&:focus-visible': {
           boxShadow: `${theme.shadows[2]}, 0 0 0 3px ${alpha(theme.palette.primary.main, 0.34)}`,
         },
+        ...(highlighted && {
+          animation: 'activityCardHighlight 1.2s ease-in-out',
+        }),
       })}
     >
       <Tooltip title="Opties" placement="left" enterDelay={600}>
