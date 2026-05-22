@@ -107,6 +107,13 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
             case 'tool_result':
               setStatus(CHAT_WRITING_STATUS);
               break;
+            case 'text_delta':
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === streamingId ? { ...m, content: m.content + sseEvent.data } : m,
+                ),
+              );
+              break;
             case 'ui_action': {
               const uiPayload = JSON.parse(sseEvent.data) as {
                 action: string;
