@@ -6,7 +6,9 @@ import { ConversationService } from './conversation.service';
 import { ConversationEntity } from './entities/conversation.entity';
 import { SendMessageDto } from './dto/send-message.dto';
 import { RagTool } from './tools/rag.tool';
+import { SearchActivitiesTool } from './tools/search-activities.tool';
 import { StudentContextTool } from './tools/student-context.tool';
+import { PerformUiActionTool } from './tools/perform-ui-action.tool';
 
 const STUDENT_ID = 'student-uuid-001';
 
@@ -26,6 +28,7 @@ const makeConversation = (
 
 describe('ChatService', () => {
   let service: ChatService;
+  let mockConfigService: { get: jest.Mock; getOrThrow: jest.Mock };
   let mockConversationService: jest.Mocked<
     Pick<
       ConversationService,
@@ -37,6 +40,8 @@ describe('ChatService', () => {
   >;
   let mockStudentTool: jest.Mocked<Pick<StudentContextTool, 'execute'>>;
   let mockRagTool: jest.Mocked<Pick<RagTool, 'execute'>>;
+  let mockSearchActivitiesTool: jest.Mocked<Pick<SearchActivitiesTool, 'execute'>>;
+  let mockPerformUiActionTool: jest.Mocked<Pick<PerformUiActionTool, 'execute'>>;
   let mockAnthropicCreate: jest.Mock;
   let loggerWarnSpy: jest.SpyInstance;
 
@@ -49,7 +54,16 @@ describe('ChatService', () => {
     };
     mockStudentTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockRagTool = { execute: jest.fn().mockResolvedValue('') };
+    mockSearchActivitiesTool = { execute: jest.fn().mockResolvedValue('{}') };
+    mockPerformUiActionTool = { execute: jest.fn().mockReturnValue(JSON.stringify({ ok: true })) };
     mockAnthropicCreate = jest.fn();
+    mockConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'ANTHROPIC_MODEL') return 'claude-sonnet-test';
+        return undefined;
+      }),
+      getOrThrow: jest.fn().mockReturnValue('sk-ant-test'),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -57,10 +71,9 @@ describe('ChatService', () => {
         { provide: ConversationService, useValue: mockConversationService },
         { provide: StudentContextTool, useValue: mockStudentTool },
         { provide: RagTool, useValue: mockRagTool },
-        {
-          provide: ConfigService,
-          useValue: { getOrThrow: jest.fn().mockReturnValue('sk-ant-test') },
-        },
+        { provide: SearchActivitiesTool, useValue: mockSearchActivitiesTool },
+        { provide: PerformUiActionTool, useValue: mockPerformUiActionTool },
+        { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
 
@@ -161,7 +174,7 @@ describe('ChatService', () => {
     );
   });
 
-  it('does not advertise the temporary student context tool to Anthropic', async () => {
+  it('derives the disabled student-context policy in the Anthropic request', async () => {
     mockAnthropicCreate.mockResolvedValue({
       stop_reason: 'end_turn',
       content: [{ type: 'text', text: 'Answer.' }],
@@ -171,8 +184,97 @@ describe('ChatService', () => {
 
     expect(mockAnthropicCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        tools: [expect.objectContaining({ name: 'search_course_content' })],
+        model: 'claude-sonnet-test',
+        system: expect.stringContaining('get_student_context is tijdelijk uitgeschakeld'),
+        tools: expect.arrayContaining([
+          expect.objectContaining({ name: 'perform_ui_action' }),
+          expect.objectContaining({ name: 'search_activities' }),
+          expect.objectContaining({ name: 'search_course_content' }),
+        ]),
       }),
+    );
+    expect(mockAnthropicCreate.mock.calls[0]?.[0]?.tools).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'get_student_context' })]),
+    );
+  });
+
+  it('executes search_activities tool calls with the student id and provided filters', async () => {
+    mockAnthropicCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tc-activities',
+            name: 'search_activities',
+            input: { status: 'open', limit: 3 },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Je hebt nog drie open activiteiten.' }],
+      });
+    mockSearchActivitiesTool.execute.mockResolvedValue(
+      JSON.stringify({
+        appliedFilters: { query: null, title: null, status: 'open', type: null, deadlineFrom: null, deadlineTo: null, limit: 3 },
+        activities: [],
+      }),
+    );
+
+    const events = await collectEvents({ message: 'Welke open activiteiten heb ik?' });
+
+    expect(events.some((e) => e.event === 'tool_call')).toBe(true);
+    expect(events.some((e) => e.event === 'tool_result')).toBe(true);
+    expect(mockSearchActivitiesTool.execute).toHaveBeenCalledWith(STUDENT_ID, {
+      status: 'open',
+      limit: 3,
+    });
+    expect(mockRagTool.execute).not.toHaveBeenCalled();
+  });
+
+  it('returns the disabled student-context payload without executing the student tool', async () => {
+    mockAnthropicCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tc-student-context',
+            name: 'get_student_context',
+            input: {},
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Ik kan alleen je activiteiten raadplegen.' }],
+      });
+
+    await collectEvents({ message: 'Hoe gaat het met mijn voortgang?' });
+
+    expect(mockStudentTool.execute).not.toHaveBeenCalled();
+    expect(loggerWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('student context tool called while disabled'),
+    );
+    expect(mockAnthropicCreate.mock.calls[1]?.[0]?.messages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: 'user',
+          content: [
+            expect.objectContaining({
+              type: 'tool_result',
+              tool_use_id: 'tc-student-context',
+              content: JSON.stringify({
+                available: false,
+                temporary: true,
+                notitie:
+                  'Studentcontext is tijdelijk uitgeschakeld totdat echte studentdata beschikbaar is.',
+              }),
+            }),
+          ],
+        }),
+      ]),
     );
   });
 
@@ -339,6 +441,55 @@ describe('ChatService', () => {
     );
   });
 
+  it('advertises perform_ui_action in the Anthropic tools array', async () => {
+    mockAnthropicCreate.mockResolvedValue({
+      stop_reason: 'end_turn',
+      content: [{ type: 'text', text: 'Antwoord.' }],
+    });
+
+    await collectEvents({ message: 'Open mijn activiteiten' });
+
+    expect(mockAnthropicCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tools: expect.arrayContaining([
+          expect.objectContaining({ name: 'perform_ui_action' }),
+        ]),
+      }),
+    );
+  });
+
+  it('emits ui_action SSE event before tool_result when perform_ui_action is called', async () => {
+    mockAnthropicCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tool-ui-1',
+            name: 'perform_ui_action',
+            input: { action: 'open_activities_panel', mode: 'auto', label: 'Open activiteiten' },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Ik open het activiteitenpaneel.' }],
+      });
+
+    const events = await collectEvents({ message: 'Open het activiteitenpaneel' });
+
+    const uiActionIndex = events.findIndex((e) => e.event === 'ui_action');
+    const toolResultIndex = events.findIndex((e) => e.event === 'tool_result');
+    expect(uiActionIndex).toBeGreaterThanOrEqual(0);
+    expect(uiActionIndex).toBeLessThan(toolResultIndex);
+    expect(JSON.parse(events[uiActionIndex].data)).toEqual({
+      action: 'open_activities_panel',
+      mode: 'auto',
+      label: 'Open activiteiten',
+    });
+    expect(mockPerformUiActionTool.execute).toHaveBeenCalledTimes(1);
+  });
+
   it('deduplicates retrieved sources and limits them to the top 3', async () => {
     mockAnthropicCreate
       .mockResolvedValueOnce({
@@ -414,5 +565,40 @@ describe('ChatService', () => {
         ],
       }),
     );
+  });
+
+  it('emits ui_action SSE event with activityId when highlight_activity is called', async () => {
+    mockAnthropicCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tool-ui-2',
+            name: 'perform_ui_action',
+            input: {
+              action: 'highlight_activity',
+              mode: 'auto',
+              label: 'Bekijk activiteit',
+              activityId: 'activity-123',
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Dit is de activiteit.' }],
+      });
+
+    const events = await collectEvents({ message: 'Laat me activiteit 123 zien' });
+
+    const uiActionEvent = events.find((e) => e.event === 'ui_action');
+    expect(uiActionEvent).toBeDefined();
+    expect(JSON.parse(uiActionEvent!.data)).toEqual({
+      action: 'highlight_activity',
+      mode: 'auto',
+      label: 'Bekijk activiteit',
+      activityId: 'activity-123',
+    });
   });
 });

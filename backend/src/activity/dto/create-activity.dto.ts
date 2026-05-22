@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { ACTIVITY_STATUSES, ACTIVITY_TYPES } from '../activity.constants';
+import { ACTIVITY_STATUSES, ACTIVITY_TYPES } from '../activity.entity';
 import type { ActivityStatus, ActivityType } from '../activity.entity';
 import { IsActivityDeadline } from './is-activity-deadline.validator';
 

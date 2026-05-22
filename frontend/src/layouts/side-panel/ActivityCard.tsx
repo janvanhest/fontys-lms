@@ -1,6 +1,7 @@
 import type { KeyboardEvent, MouseEvent } from 'react';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
@@ -12,6 +13,7 @@ import type { Activity } from '@/types/activity';
 type ActivityCardProps = {
   activity: Activity;
   deadlineLabel: string;
+  highlighted?: boolean;
   isSelected: boolean;
   menuOpen: boolean;
   statusColor: string;
@@ -25,6 +27,7 @@ type ActivityCardProps = {
 export function ActivityCard({
   activity,
   deadlineLabel,
+  highlighted = false,
   isSelected,
   menuOpen,
   statusColor,
@@ -39,10 +42,18 @@ export function ActivityCard({
       role="button"
       tabIndex={0}
       aria-pressed={isSelected}
+      data-activity-id={activity.id}
       onClick={() => { onSelect(activity.id); }}
       onKeyDown={(event) => { onKeyDown(event, activity.id); }}
       elevation={isSelected ? 4 : 1}
       sx={(theme) => ({
+        '@keyframes activityCardHighlight': {
+          '0%, 100%': { boxShadow: 'none' },
+          '20%, 80%': {
+            boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.6)}`,
+            backgroundColor: alpha(theme.palette.primary.main, 0.06),
+          },
+        },
         position: 'relative',
         overflow: 'hidden',
         borderLeft: `4px solid ${statusColor}`,
@@ -60,18 +71,23 @@ export function ActivityCard({
         '&:focus-visible': {
           boxShadow: `${theme.shadows[2]}, 0 0 0 3px ${alpha(theme.palette.primary.main, 0.34)}`,
         },
+        ...(highlighted && {
+          animation: 'activityCardHighlight 1.2s ease-in-out',
+        }),
       })}
     >
-      <IconButton
-        size="small"
-        aria-label={`Open menu voor ${activity.title}`}
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        onClick={(event) => { onOpenMenu(event, activity.id); }}
-        sx={{ position: 'absolute', top: 8, right: 8 }}
-      >
-        <MoreVertIcon fontSize="small" />
-      </IconButton>
+      <Tooltip title="Opties" placement="left" enterDelay={600}>
+        <IconButton
+          size="small"
+          aria-label={`Open menu voor ${activity.title}`}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={(event) => { onOpenMenu(event, activity.id); }}
+          sx={{ position: 'absolute', top: 8, right: 8 }}
+        >
+          <MoreVertIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
 
       <Stack spacing={1.25}>
         <Chip label={typeLabel} color="primary" size="small" sx={{ alignSelf: 'flex-start' }} />

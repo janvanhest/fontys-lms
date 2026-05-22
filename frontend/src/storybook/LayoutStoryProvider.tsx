@@ -5,6 +5,7 @@ import {
   type LayoutTab,
   type SidePanelContent,
 } from '@/context/layout-context';
+import { useHighlightActivity } from '@/hooks/useHighlightActivity';
 
 type LayoutStoryProviderProps = PropsWithChildren<{
   activeTab?: LayoutTab;
@@ -27,6 +28,7 @@ export function LayoutStoryProvider({
   const [sidePanelContent, setSidePanelContent] = useState<SidePanelContent | null>(
     initialSidePanelContent,
   );
+  const { highlightedActivityId, highlightActivity } = useHighlightActivity();
 
   const selectTab = useCallback((tab: LayoutTab) => {
     setActiveTab(tab);
@@ -55,8 +57,10 @@ export function LayoutStoryProvider({
       setSidePanelOpen,
       sidePanelContent,
       openSidePanel,
+      highlightedActivityId,
+      highlightActivity,
     }),
-    [activeTab, selectTab, selectedConversationId, sidebarOpen, sidePanelOpen, sidePanelContent, openSidePanel],
+    [activeTab, selectTab, selectedConversationId, sidebarOpen, sidePanelOpen, sidePanelContent, openSidePanel, highlightedActivityId, highlightActivity],
   );
 
   return <LayoutContext value={value}>{children}</LayoutContext>;

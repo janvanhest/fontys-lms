@@ -1,14 +1,17 @@
+// frontend/src/hooks/useChatStream.ts
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  parseFinalChatPayload,
-  streamChatMessage,
-} from '@/api/chat';
+import { parseFinalChatPayload, streamChatMessage } from '@/api/chat';
 import {
   applyErrorMessage,
   applyFinalMessage,
+  CHAT_HISTORY_STATUS,
+  CHAT_WRITING_STATUS,
   createPendingMessages,
-  getStatusTextFromToolCall,
+  getStatusFromEventText,
+  getStatusFromToolCall,
   loadConversationHistory,
+  type ChatStatus,
+  type ChatUiAction,
   type Message,
 } from './chatStreamHelpers';
 
@@ -16,23 +19,21 @@ export type { Message } from './chatStreamHelpers';
 
 type UseChatStreamOptions = {
   onConversationEstablished?: (conversationId: string) => void;
+  onUiAction?: (action: string, payload?: Record<string, string>) => void;
 };
 
 export function useChatStream(conversationId?: string, options: UseChatStreamOptions = {}) {
-  const { onConversationEstablished } = options;
+  const { onConversationEstablished, onUiAction } = options;
   const hasConversation = Boolean(conversationId);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(hasConversation);
-  const [statusText, setStatusText] = useState<string | null>(
-    hasConversation ? 'Gesprek laden...' : null,
-  );
+  const [status, setStatus] = useState<ChatStatus | null>(hasConversation ? CHAT_HISTORY_STATUS : null);
   const streamAbortRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
     isMountedRef.current = true;
-
     return () => {
       isMountedRef.current = false;
       streamAbortRef.current?.abort();
@@ -41,10 +42,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
   useEffect(() => {
     streamAbortRef.current?.abort();
-
-    if (!conversationId) {
-      return;
-    }
+    if (!conversationId) return;
 
     const controller = new AbortController();
     let ignore = false;
@@ -52,16 +50,14 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
     void loadConversationHistory(conversationId, controller.signal)
       .then((historyMessages) => {
         if (ignore || !isMountedRef.current) return;
-
         setMessages(historyMessages);
-        setStatusText(null);
+        setStatus(null);
       })
       .catch((error: unknown) => {
         if (ignore || !isMountedRef.current) return;
         if (error instanceof DOMException && error.name === 'AbortError') return;
-
         setMessages([]);
-        setStatusText('Gesprek laden mislukt.');
+        setStatus({ label: 'Gesprek laden mislukt.', icon: 'history' });
       })
       .finally(() => {
         if (ignore || !isMountedRef.current) return;
@@ -74,6 +70,14 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
     };
   }, [conversationId]);
 
+  const consumeAction = useCallback((messageId: string, action: string) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId ? { ...m, actions: m.actions?.filter((a) => a.action !== action) } : m,
+      ),
+    );
+  }, []);
+
   const sendMessage = useCallback(
     async (text: string) => {
       if (isStreaming || isLoadingHistory) return;
@@ -83,10 +87,11 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       streamAbortRef.current = controller;
 
       const { streamingId, streamingMessage, userMessage } = createPendingMessages(text);
+      const pendingSuggestions: ChatUiAction[] = [];
 
       setMessages((prev) => [...prev, userMessage, streamingMessage]);
       setIsStreaming(true);
-      setStatusText(null);
+      setStatus(null);
 
       try {
         for await (const sseEvent of streamChatMessage(text, conversationId, controller.signal)) {
@@ -94,32 +99,57 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
           switch (sseEvent.event) {
             case 'status':
-              setStatusText(sseEvent.data);
+              setStatus(getStatusFromEventText(sseEvent.data));
               break;
             case 'tool_call':
-              setStatusText(getStatusTextFromToolCall(sseEvent.data));
+              setStatus(getStatusFromToolCall(sseEvent.data));
               break;
             case 'tool_result':
-              setStatusText('Antwoord opstellen...');
+              setStatus(CHAT_WRITING_STATUS);
               break;
+            case 'ui_action': {
+              const uiPayload = JSON.parse(sseEvent.data) as {
+                action: string;
+                mode: string;
+                label: string;
+                activityId?: string;
+              };
+              if (uiPayload.mode === 'auto') {
+                onUiAction?.(
+                  uiPayload.action,
+                  uiPayload.activityId ? { activityId: uiPayload.activityId } : undefined,
+                );
+              } else {
+                pendingSuggestions.push({
+                  action: uiPayload.action as ChatUiAction['action'],
+                  label: uiPayload.label,
+                  ...(uiPayload.activityId ? { payload: { activityId: uiPayload.activityId } } : {}),
+                });
+              }
+              break;
+            }
             case 'final': {
               const finalPayload = parseFinalChatPayload(sseEvent.data);
               if (finalPayload.conversationId) {
                 onConversationEstablished?.(finalPayload.conversationId);
               }
-              setMessages((prev) => applyFinalMessage(prev, streamingId, finalPayload));
-              setStatusText(null);
+              setMessages((prev) =>
+                applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions),
+              );
+              setStatus(null);
               break;
             }
             case 'error':
-              setMessages((prev) => applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`));
-              setStatusText(null);
+              setMessages((prev) =>
+                applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`),
+              );
+              setStatus(null);
               break;
           }
         }
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-          // Ignore aborted streams; cleanup happens in finally.
+          // Intentional abort — no action needed.
         } else if (isMountedRef.current) {
           setMessages((prev) =>
             applyErrorMessage(
@@ -128,7 +158,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               'Error: de chatverbinding is onderbroken. Probeer het opnieuw.',
             ),
           );
-          setStatusText(null);
+          setStatus(null);
         }
       } finally {
         if (streamAbortRef.current === controller) {
@@ -136,12 +166,12 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
         }
         if (isMountedRef.current) {
           setIsStreaming(false);
-          setStatusText(null);
+          setStatus(null);
         }
       }
     },
-    [isStreaming, isLoadingHistory, conversationId, onConversationEstablished],
+    [isStreaming, isLoadingHistory, conversationId, onConversationEstablished, onUiAction],
   );
 
-  return { messages, isStreaming, isLoadingHistory, statusText, sendMessage };
+  return { messages, isStreaming, isLoadingHistory, status, sendMessage, consumeAction };
 }

@@ -1,23 +1,54 @@
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
 import ChecklistRtlIcon from '@mui/icons-material/ChecklistRtl';
+import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
+import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
+import HandymanRoundedIcon from '@mui/icons-material/HandymanRounded';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import type { LayoutTab } from '@/context/layout-context';
+import type { ChatStatus, ChatStatusIcon } from '@/hooks/chatStreamHelpers';
 
 type ChatTabHeaderProps = {
   activeTab: LayoutTab;
   isLoadingHistory: boolean;
   onToggleActivities: () => void;
   sidePanelOpen: boolean;
-  statusText: string | null;
+  status: ChatStatus | null;
 };
+
+function getStatusIcon(icon: ChatStatusIcon) {
+  switch (icon) {
+    case 'activities':
+      return <ChecklistRtlIcon fontSize="small" />;
+    case 'sources':
+      return <AutoStoriesRoundedIcon fontSize="small" />;
+    case 'panel':
+      return <DescriptionRoundedIcon fontSize="small" />;
+    case 'writing':
+      return <EditNoteRoundedIcon fontSize="small" />;
+    case 'history':
+      return <HistoryRoundedIcon fontSize="small" />;
+    case 'thinking':
+      return <PsychologyRoundedIcon fontSize="small" />;
+    case 'tool':
+      return <HandymanRoundedIcon fontSize="small" />;
+    case 'spark':
+    default:
+      return <AutoAwesomeRoundedIcon fontSize="small" />;
+  }
+}
 
 export function ChatTabHeader({
   activeTab,
   isLoadingHistory,
   onToggleActivities,
   sidePanelOpen,
-  statusText,
+  status,
 }: ChatTabHeaderProps) {
   return (
     <Box
@@ -37,12 +68,28 @@ export function ChatTabHeader({
         <Typography variant="h4" component="h1">
           {activeTab === 'activities' ? 'Activiteiten' : 'Chat'}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {statusText ??
-            (isLoadingHistory
+        {status ? (
+          <Chip
+            icon={getStatusIcon(status.icon)}
+            label={status.label}
+            size="small"
+            sx={{
+              mt: 1,
+              borderRadius: 1.5,
+              bgcolor: 'action.hover',
+              color: 'text.secondary',
+              '& .MuiChip-icon': {
+                color: 'primary.main',
+              },
+            }}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            {isLoadingHistory
               ? 'Gesprek laden...'
-              : 'Stel een vraag over je challenge, activiteiten of cursusinhoud.')}
-        </Typography>
+              : 'Stel een vraag over je challenge, activiteiten of cursusinhoud.'}
+          </Typography>
+        )}
       </Box>
 
       <IconButton
