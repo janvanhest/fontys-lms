@@ -10,8 +10,8 @@ import type { ActivityGroupSection } from './types';
 import type { Activity } from '@/types/activity';
 
 // Dot is offset 12px from the item top (mt: 1.5). Dot height = 10px.
-const DOT_TOP = 12; // px
-const DOT_HEIGHT = 10; // px
+const DOT_TOP: number = 12; // px
+const DOT_HEIGHT: number = 10; // px
 
 type ActivityTimelineProps = {
   groups: ActivityGroupSection[];
