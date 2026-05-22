@@ -121,7 +121,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
                 );
               } else {
                 pendingSuggestions.push({
-                  action: uiPayload.action as 'open_activities_panel',
+                  action: uiPayload.action as ChatUiAction['action'],
                   label: uiPayload.label,
                 });
               }
