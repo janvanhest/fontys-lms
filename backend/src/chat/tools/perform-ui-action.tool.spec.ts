@@ -16,6 +16,7 @@ describe('PerformUiActionTool', () => {
     expect(PERFORM_UI_ACTION_TOOL_DEF.name).toBe('perform_ui_action');
     expect(PERFORM_UI_ACTION_TOOL_DEF.input_schema.properties.action.enum).toEqual([
       'open_activities_panel',
+      'highlight_activity',
     ]);
     expect(PERFORM_UI_ACTION_TOOL_DEF.input_schema.properties.mode.enum).toEqual([
       'auto',
@@ -25,6 +26,13 @@ describe('PerformUiActionTool', () => {
       expect.arrayContaining(['action', 'mode', 'label']),
     );
     expect(PERFORM_UI_ACTION_TOOL_DEF.input_schema.additionalProperties).toBe(false);
+  });
+
+  it('defines activityId as an optional string property not in required', () => {
+    expect(PERFORM_UI_ACTION_TOOL_DEF.input_schema.properties.activityId).toMatchObject({
+      type: 'string',
+    });
+    expect(PERFORM_UI_ACTION_TOOL_DEF.input_schema.required).not.toContain('activityId');
   });
 
   it('returns parseable ok result without calling any service', () => {
