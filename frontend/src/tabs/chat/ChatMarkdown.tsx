@@ -7,13 +7,14 @@ import { chatMarkdownComponents } from './chatMarkdownComponents';
 
 type ChatMarkdownProps = {
   content: string;
+  isStreaming?: boolean;
 };
 
-export function ChatMarkdown({ content }: ChatMarkdownProps) {
-  return <ChatMarkdownContent key={content} content={content} />;
+export function ChatMarkdown({ content, isStreaming }: ChatMarkdownProps) {
+  return <ChatMarkdownContent key={isStreaming ? 'streaming' : content} content={content} isStreaming={isStreaming} />;
 }
 
-function ChatMarkdownContent({ content }: ChatMarkdownProps) {
+function ChatMarkdownContent({ content, isStreaming }: ChatMarkdownProps) {
   const [expanded, setExpanded] = useState(false);
   const isLongContent = useMemo(
     () => content.length > 1400 || content.split('\n').length > 18,
@@ -32,12 +33,12 @@ function ChatMarkdownContent({ content }: ChatMarkdownProps) {
       <Box
         sx={{
           position: 'relative',
-          maxHeight: isLongContent && !expanded ? 320 : 'none',
+          maxHeight: isLongContent && !expanded && !isStreaming ? 320 : 'none',
           overflow: 'hidden',
         }}
       >
         <Markdown remarkPlugins={[remarkGfm]} components={chatMarkdownComponents}>{content}</Markdown>
-        {isLongContent && !expanded && (
+        {isLongContent && !expanded && !isStreaming && (
           <Box
             sx={{
               position: 'absolute',
@@ -51,7 +52,7 @@ function ChatMarkdownContent({ content }: ChatMarkdownProps) {
           />
         )}
       </Box>
-      {isLongContent && (
+      {isLongContent && !isStreaming && (
         <Button
           size="small"
           onClick={() => { setExpanded((prev) => !prev); }}

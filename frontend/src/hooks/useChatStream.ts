@@ -113,6 +113,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
                   m.id === streamingId ? { ...m, content: m.content + sseEvent.data } : m,
                 ),
               );
+              setStatus(null);
               break;
             case 'ui_action': {
               const uiPayload = JSON.parse(sseEvent.data) as {

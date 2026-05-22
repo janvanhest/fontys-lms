@@ -58,7 +58,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                   </Typography>
                 ) : (
                   <Box>
-                    <ChatMarkdown content={message.content} />
+                    <ChatMarkdown content={message.content} isStreaming={message.isStreaming} />
                     {message.sources && message.sources.length > 0 ? (
                       <Stack
                         direction="row"
