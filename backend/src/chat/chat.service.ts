@@ -17,7 +17,7 @@ import { ChatSource } from '../document/document-search.service';
 export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
 
-const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-5';
+const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-7';
 
 const BASE_SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
 Je helpt studenten hun leervoortgang te begrijpen en te verbeteren.
@@ -95,7 +95,7 @@ export class ChatService {
         const stream = this.anthropic.messages.stream({
           model: this.anthropicModel,
           max_tokens: 2048,
-          system: this.buildSystemPrompt(),
+          system: [{ type: 'text', text: this.buildSystemPrompt(), cache_control: { type: 'ephemeral' } }],
           messages,
           tools: this.getAvailableTools(),
         });
