@@ -15,6 +15,8 @@ export type LayoutContextValue = {
   setSidePanelOpen: (open: boolean) => void;
   sidePanelContent: SidePanelContent | null;
   openSidePanel: (content: SidePanelContent) => void;
+  highlightedActivityId: string | null;
+  highlightActivity: (id: string) => void;
 };
 
 export const LayoutContext = createContext<LayoutContextValue | null>(null);

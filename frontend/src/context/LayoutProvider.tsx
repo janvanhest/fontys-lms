@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type PropsWithChildren } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import {
   LayoutContext,
   type LayoutContextValue,
@@ -6,12 +6,22 @@ import {
   type SidePanelContent,
 } from '@/context/layout-context';
 
+const HIGHLIGHT_DURATION_MS = Number(import.meta.env.VITE_HIGHLIGHT_DURATION_MS) || 2000;
+
 export function LayoutProvider({ children }: PropsWithChildren) {
   const [activeTab, setActiveTab] = useState<LayoutTab>('chat');
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [sidePanelContent, setSidePanelContent] = useState<SidePanelContent | null>(null);
+  const [highlightedActivityId, setHighlightedActivityId] = useState<string | null>(null);
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+    };
+  }, []);
 
   const selectTab = useCallback((tab: LayoutTab) => {
     setActiveTab(tab);
@@ -32,6 +42,14 @@ export function LayoutProvider({ children }: PropsWithChildren) {
     setSidePanelOpen(true);
   }, []);
 
+  const highlightActivity = useCallback((id: string) => {
+    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+    setHighlightedActivityId(id);
+    highlightTimeoutRef.current = setTimeout(() => {
+      setHighlightedActivityId(null);
+    }, HIGHLIGHT_DURATION_MS);
+  }, []);
+
   const value = useMemo<LayoutContextValue>(
     () => ({
       activeTab,
@@ -44,8 +62,20 @@ export function LayoutProvider({ children }: PropsWithChildren) {
       setSidePanelOpen,
       sidePanelContent,
       openSidePanel,
+      highlightedActivityId,
+      highlightActivity,
     }),
-    [activeTab, selectTab, selectedConversationId, sidebarOpen, sidePanelOpen, sidePanelContent, openSidePanel],
+    [
+      activeTab,
+      selectTab,
+      selectedConversationId,
+      sidebarOpen,
+      sidePanelOpen,
+      sidePanelContent,
+      openSidePanel,
+      highlightedActivityId,
+      highlightActivity,
+    ],
   );
 
   return <LayoutContext value={value}>{children}</LayoutContext>;
