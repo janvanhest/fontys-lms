@@ -4,6 +4,7 @@ import {
   generateMessageId,
   getStatusFromEventText,
   getStatusFromToolCall,
+  toolCallToBubble,
 } from './chatStreamHelpers';
 import type { ChatUiAction, Message } from './chatStreamHelpers';
 
@@ -117,5 +118,35 @@ describe('applyFinalMessage', () => {
     const result = applyFinalMessage(messages, 'assistant-1', { text: 'Antwoord.', conversationId: 'c1' });
 
     expect(result.find((m) => m.id === 'assistant-1')?.actions).toBeUndefined();
+  });
+});
+
+describe('toolCallToBubble', () => {
+  it('returns a bubble for search_activities', () => {
+    expect(toolCallToBubble('search_activities')).toEqual({
+      name: 'search_activities',
+      label: '🔍 Activiteiten bekeken',
+      icon: 'activities',
+    });
+  });
+
+  it('returns a bubble for get_student_context', () => {
+    expect(toolCallToBubble('get_student_context')).toEqual({
+      name: 'get_student_context',
+      label: '👤 Studentprofiel bekeken',
+      icon: 'student',
+    });
+  });
+
+  it('returns null for search_course_content', () => {
+    expect(toolCallToBubble('search_course_content')).toBeNull();
+  });
+
+  it('returns null for perform_ui_action', () => {
+    expect(toolCallToBubble('perform_ui_action')).toBeNull();
+  });
+
+  it('returns null for unknown tools', () => {
+    expect(toolCallToBubble('unknown_tool')).toBeNull();
   });
 });
