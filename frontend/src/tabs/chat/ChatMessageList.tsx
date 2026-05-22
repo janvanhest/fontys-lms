@@ -33,6 +33,9 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
           const content = message.isStreaming ? displayedContent : message.content;
           const isAnimating =
             Boolean(message.isStreaming) && displayedContent.length < message.content.length;
+          const lastPara = isAnimating ? content.lastIndexOf('\n\n') : -1;
+          const renderedPart = lastPara >= 0 ? content.slice(0, lastPara + 2) : '';
+          const animatingPart = lastPara >= 0 ? content.slice(lastPara + 2) : content;
           return (
             <Box key={message.id}>
               {!isStudent && message.toolCalls && message.toolCalls.length > 0 && (
@@ -103,9 +106,12 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                   ) : (
                     <Box>
                       {isAnimating ? (
-                        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                          {content}
-                        </Typography>
+                        <>
+                          {renderedPart && <ChatMarkdown content={renderedPart} />}
+                          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                            {animatingPart}
+                          </Typography>
+                        </>
                       ) : (
                         <ChatMarkdown content={content} isStreaming={message.isStreaming} />
                       )}

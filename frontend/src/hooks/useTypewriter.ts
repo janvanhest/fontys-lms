@@ -1,34 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
-const BOUNDARY_RE = /[\s.,!?]/;
-const INTERVAL_MS = 60;
-const ADAPTIVE_THRESHOLD = 50;
-const ADAPTIVE_STEPS = 3;
-
-export function advanceToWordBoundary(content: string, fromIndex: number, steps: number): number {
-  let idx = fromIndex;
-
-  for (let step = 0; step < steps; step++) {
-    if (idx >= content.length) break;
-
-    // Skip any boundary characters at current position
-    while (idx < content.length && BOUNDARY_RE.test(content[idx])) {
-      idx++;
-    }
-
-    // Advance through the word
-    while (idx < content.length && !BOUNDARY_RE.test(content[idx])) {
-      idx++;
-    }
-
-    // Include the trailing boundary character (space/punctuation after the word)
-    if (idx < content.length) {
-      idx++;
-    }
-  }
-
-  return idx;
-}
+const INTERVAL_MS = 30;
+const ADAPTIVE_THRESHOLD = 100;
+const ADAPTIVE_STEPS = 5;
 
 export function useTypewriter(content: string, isStreaming: boolean): string {
   const [displayIndex, setDisplayIndex] = useState(0);
@@ -49,7 +23,7 @@ export function useTypewriter(content: string, isStreaming: boolean): string {
     }
   }, [isStreaming, content.length]);
 
-  // Animate word-by-word while streaming
+  // Animate letter-by-letter while streaming
   useEffect(() => {
     if (!isStreaming) return;
 
@@ -59,7 +33,7 @@ export function useTypewriter(content: string, isStreaming: boolean): string {
         if (prev >= current.length) return prev;
         const queue = current.length - prev;
         const steps = queue > ADAPTIVE_THRESHOLD ? ADAPTIVE_STEPS : 1;
-        return advanceToWordBoundary(current, prev, steps);
+        return Math.min(prev + steps, current.length);
       });
     }, INTERVAL_MS);
 
