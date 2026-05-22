@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -158,6 +158,152 @@ describe('ActivityService', () => {
 
       expect(repo.delete).toHaveBeenCalledWith({ studentId: STUDENT_A });
       expect(results).toHaveLength(SEED_ACTIVITIES.length);
+    });
+
+    it('throws in production before modifying data', async () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      try {
+        await expect(service.seed(STUDENT_A)).rejects.toThrow(
+          'ActivityService.seed() is not allowed in production',
+        );
+        expect(repo.delete).not.toHaveBeenCalled();
+        expect(repo.save).not.toHaveBeenCalled();
+      } finally {
+        process.env.NODE_ENV = originalNodeEnv;
+      }
+    });
+  });
+
+  describe('searchForChat', () => {
+    it('applies student ownership plus structured filters', async () => {
+      const activities = [makeActivity({ id: 'a-open', status: 'open', type: 'workshop' })];
+      const mockQb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(activities),
+      };
+      repo.createQueryBuilder.mockReturnValue(mockQb as any);
+
+      const result = await service.searchForChat(STUDENT_A, {
+        status: 'open',
+        type: 'workshop',
+        deadlineFrom: '2026-06-01',
+        deadlineTo: '2026-06-10',
+        limit: 5,
+      });
+
+      expect(mockQb.where).toHaveBeenCalledWith('activity.studentId = :studentId', {
+        studentId: STUDENT_A,
+      });
+      expect(mockQb.andWhere).toHaveBeenCalledWith('activity.status = :status', { status: 'open' });
+      expect(mockQb.andWhere).toHaveBeenCalledWith('activity.type = :type', { type: 'workshop' });
+      expect(mockQb.andWhere).toHaveBeenCalledWith('activity.deadline >= :deadlineFrom', {
+        deadlineFrom: '2026-06-01',
+      });
+      expect(mockQb.andWhere).toHaveBeenCalledWith('activity.deadline <= :deadlineTo', {
+        deadlineTo: '2026-06-10',
+      });
+      expect(mockQb.limit).toHaveBeenCalledWith(5);
+      expect(result).toEqual({
+        appliedFilters: {
+          query: null,
+          title: null,
+          status: 'open',
+          type: 'workshop',
+          deadlineFrom: '2026-06-01',
+          deadlineTo: '2026-06-10',
+          limit: 5,
+        },
+        activities: [
+          {
+            id: 'a-open',
+            title: 'Test activiteit',
+            type: 'workshop',
+            status: 'open',
+            deadline: null,
+            competencyLabel: null,
+            description: null,
+          },
+        ],
+      });
+    });
+
+    it('adds fuzzy query and title matching with stable ordering', async () => {
+      const mockQb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+      repo.createQueryBuilder.mockReturnValue(mockQb as any);
+
+      await service.searchForChat(STUDENT_A, {
+        query: ' Stakeholder ',
+        title: ' Analyse ',
+      });
+
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        "(LOWER(activity.title) LIKE :query OR LOWER(COALESCE(activity.description, '')) LIKE :query OR LOWER(COALESCE(activity.competencyLabel, '')) LIKE :query)",
+        { query: '%stakeholder%' },
+      );
+      expect(mockQb.andWhere).toHaveBeenCalledWith('LOWER(activity.title) LIKE :title', {
+        title: '%analyse%',
+      });
+      expect(mockQb.orderBy).toHaveBeenCalledWith(
+        expect.stringContaining("WHEN activity.status = 'bezig' THEN 0"),
+        'ASC',
+      );
+      expect(mockQb.addOrderBy).toHaveBeenNthCalledWith(1, 'activity.deadline', 'ASC', 'NULLS LAST');
+      expect(mockQb.addOrderBy).toHaveBeenNthCalledWith(2, 'activity.position', 'ASC');
+      expect(mockQb.addOrderBy).toHaveBeenNthCalledWith(3, 'activity.createdAt', 'ASC');
+    });
+
+    it('clamps limit server-side', async () => {
+      const mockQb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      };
+      repo.createQueryBuilder.mockReturnValue(mockQb as any);
+
+      const highLimitResult = await service.searchForChat(STUDENT_A, { limit: 999 });
+      const lowLimitResult = await service.searchForChat(STUDENT_A, { limit: 0 });
+
+      expect(mockQb.limit).toHaveBeenNthCalledWith(1, 10);
+      expect(mockQb.limit).toHaveBeenNthCalledWith(2, 1);
+      expect(highLimitResult.appliedFilters.limit).toBe(10);
+      expect(lowLimitResult.appliedFilters.limit).toBe(1);
+    });
+
+    it('rejects invalid date input before querying the database', async () => {
+      await expect(
+        service.searchForChat(STUDENT_A, {
+          deadlineFrom: '2026-99-99',
+        }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(repo.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('rejects inverted deadline ranges before querying the database', async () => {
+      await expect(
+        service.searchForChat(STUDENT_A, {
+          deadlineFrom: '2026-06-10',
+          deadlineTo: '2026-06-01',
+        }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(repo.createQueryBuilder).not.toHaveBeenCalled();
     });
   });
 });

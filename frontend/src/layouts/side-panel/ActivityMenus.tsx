@@ -1,10 +1,14 @@
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import { statusMeta, statusOptions, subtypeOptions } from './constants';
+import { statusMeta, statusOptions, typeOptions } from './constants';
 import type { ActivityStatus, ActivityType, OpenSubmenu } from './types';
 import type { Activity } from '@/types/activity';
 
@@ -55,22 +59,36 @@ export function ActivityMenus({
             onCloseMenus();
           }}
         >
-          Bewerken
+          <ListItemIcon>
+            <EditOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Bewerken</ListItemText>
         </MenuItem>
+
         <MenuItem
           onClick={(event) => {
             onOpenSubmenu(event, 'type');
           }}
         >
-          <SubmenuLabel label="Verander soort" />
+          <ListItemIcon>
+            <CategoryOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Verander soort</ListItemText>
+          <ChevronRightIcon fontSize="small" sx={{ ml: 1, color: 'text.secondary' }} />
         </MenuItem>
+
         <Divider />
+
         <MenuItem
           onClick={(event) => {
             onOpenSubmenu(event, 'status');
           }}
         >
-          <SubmenuLabel label="Markeer als..." />
+          <ListItemIcon>
+            <FlagOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Markeer als...</ListItemText>
+          <ChevronRightIcon fontSize="small" sx={{ ml: 1, color: 'text.secondary' }} />
         </MenuItem>
       </Menu>
 
@@ -82,14 +100,14 @@ export function ActivityMenus({
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         {openSubmenu === 'type'
-          ? subtypeOptions.map((option) => (
+          ? typeOptions.map((option) => (
               <MenuItem
                 key={option.value}
                 onClick={() => {
                   onTypeChange(option.value);
                 }}
               >
-                {option.label}
+                <ListItemText>{option.label}</ListItemText>
               </MenuItem>
             ))
           : null}
@@ -103,38 +121,21 @@ export function ActivityMenus({
                   onStatusChange(status);
                 }}
               >
-                <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    mr: 1.25,
-                    borderRadius: '50%',
-                    bgcolor: statusMeta[status].color,
-                    flexShrink: 0,
-                  }}
-                />
-                {statusMeta[status].label}
+                <ListItemIcon>
+                  <Box
+                    sx={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      bgcolor: statusMeta[status].color,
+                    }}
+                  />
+                </ListItemIcon>
+                <ListItemText>{statusMeta[status].label}</ListItemText>
               </MenuItem>
             ))
           : null}
       </Menu>
     </>
-  );
-}
-
-function SubmenuLabel({ label }: { label: string }) {
-  return (
-    <Box
-      sx={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 1,
-      }}
-    >
-      <Typography variant="inherit">{label}</Typography>
-      <ChevronRightIcon fontSize="small" />
-    </Box>
   );
 }

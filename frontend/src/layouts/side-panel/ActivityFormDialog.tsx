@@ -1,6 +1,7 @@
 import { useState, type SubmitEventHandler } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -23,7 +24,6 @@ type ActivityFormDialogProps = {
 
 export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDialogProps) {
   const isEdit = activity !== null;
-  const dialogKey = activity?.id ?? 'new';
   const initialFormState = getActivityFormState(activity);
 
   const [title, setTitle] = useState(() => initialFormState.title);
@@ -65,25 +65,16 @@ export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDial
   };
 
   return (
-    <Dialog key={dialogKey} open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <form onSubmit={handleSubmit}>
         <DialogTitle sx={{ pb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 44,
-                height: 44,
-                borderRadius: 2,
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-                flexShrink: 0,
-              }}
+            <Avatar
+              variant="rounded"
+              sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: 'primary.main', flexShrink: 0 }}
             >
               {isEdit ? <EditOutlinedIcon /> : <AddIcon />}
-            </Box>
+            </Avatar>
             <Box>
               <Typography variant="h6" component="div" sx={{ lineHeight: 1.2 }}>
                 {isEdit ? 'Activiteit bewerken' : 'Nieuwe activiteit'}

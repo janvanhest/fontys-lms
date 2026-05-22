@@ -10,6 +10,7 @@ import type { ActivityGroupSection } from './types';
 type ActivitiesPanelContentProps = {
   error: Error | null;
   groups: ActivityGroupSection[];
+  highlightedActivityId: string | null;
   isError: boolean;
   isLoading: boolean;
   menuActivityId: string | null;
@@ -35,6 +36,7 @@ function ActivityCardSkeleton() {
 export function ActivitiesPanelContent({
   error,
   groups,
+  highlightedActivityId,
   isError,
   isLoading,
   menuActivityId,
@@ -93,6 +95,7 @@ export function ActivitiesPanelContent({
     <Stack spacing={2}>
       <ActivityTimeline
         groups={groups}
+        highlightedActivityId={highlightedActivityId}
         selectedActivityId={selectedActivityId}
         menuActivityId={menuActivityId}
         menuAnchorEl={menuAnchorEl}

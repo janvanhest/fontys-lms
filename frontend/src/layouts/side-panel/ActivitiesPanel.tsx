@@ -2,8 +2,10 @@ import AddIcon from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { activitiesQueryOptions, useUpdateActivity } from '@/api/activities';
+import { useLayout } from '@/context/useLayout';
 import { ActivityDetails } from './ActivityDetails';
 import { ActivityFormDialog } from './ActivityFormDialog';
 import { ActivityMenus } from './ActivityMenus';
@@ -12,6 +14,8 @@ import { ActivitiesPanelHeader } from './ActivitiesPanelHeader';
 import { useActivitiesPanelState } from './useActivitiesPanelState';
 
 export function ActivitiesPanel() {
+  const { highlightedActivityId } = useLayout();
+
   const {
     data: activities = [],
     isLoading,
@@ -49,14 +53,38 @@ export function ActivitiesPanel() {
     },
   });
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!highlightedActivityId) return;
+
+    const activityExists = activities.some((a) => a.id === highlightedActivityId);
+    if (!activityExists) {
+      console.warn('highlight_activity: activity not found', highlightedActivityId);
+      return;
+    }
+
+    setSelectedActivityId(highlightedActivityId);
+
+    requestAnimationFrame(() => {
+      scrollContainerRef.current
+        ?.querySelector(`[data-activity-id="${highlightedActivityId}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [highlightedActivityId, activities, setSelectedActivityId]);
+
   return (
     <>
       <ActivitiesPanelHeader />
 
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1.5, py: 1.5 }}>
+      <Box
+        ref={scrollContainerRef}
+        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1.5, py: 1.5 }}
+      >
         <ActivitiesPanelContent
           error={error}
           groups={groupedActivities}
+          highlightedActivityId={highlightedActivityId}
           isError={isError}
           isLoading={isLoading}
           menuActivityId={menuActivityId}
@@ -114,6 +142,7 @@ export function ActivitiesPanel() {
       />
 
       <ActivityFormDialog
+        key={editActivity?.id ?? 'new'}
         open={formOpen}
         activity={editActivity}
         onClose={() => { setFormOpen(false); }}

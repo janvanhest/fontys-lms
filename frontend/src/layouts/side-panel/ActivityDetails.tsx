@@ -6,7 +6,12 @@ import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
@@ -21,18 +26,20 @@ type ActivityDetailsProps = {
 };
 
 export function ActivityDetails({ activity, onClose, onEdit }: ActivityDetailsProps) {
+  const status = statusMeta[activity.status];
+
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         px: 2,
         pt: 1.25,
         pb: 1.75,
         borderTop: '1px solid',
         borderColor: 'divider',
-        bgcolor: alpha('#1976d2', 0.015),
-      }}
+        bgcolor: alpha(theme.palette.primary.main, 0.03),
+      })}
     >
-      <Box sx={{ minHeight: 260, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Stack sx={{ minHeight: 260 }} spacing={1.5}>
         <Box
           sx={{
             display: 'flex',
@@ -61,30 +68,41 @@ export function ActivityDetails({ activity, onClose, onEdit }: ActivityDetailsPr
           </Typography>
         ) : null}
 
-        <Stack spacing={1}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <TodayOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-            <Typography variant="body2">
-              Deadline: {formatDeadlineLabel(activity.deadline)}
-            </Typography>
-          </Box>
+        <Divider />
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FlagOutlinedIcon sx={{ fontSize: 18, color: statusMeta[activity.status].color }} />
-            <Typography variant="body2">
-              Status: {statusMeta[activity.status].label}
-            </Typography>
-          </Box>
+        <List dense disablePadding>
+          <ListItem disableGutters disablePadding>
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <TodayOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+            </ListItemIcon>
+            <ListItemText
+              primary={`Deadline: ${formatDeadlineLabel(activity.deadline)}`}
+              slotProps={{ primary: { variant: 'body2' } }}
+            />
+          </ListItem>
+
+          <ListItem disableGutters disablePadding>
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <FlagOutlinedIcon sx={{ fontSize: 18, color: status.color }} />
+            </ListItemIcon>
+            <ListItemText
+              primary={`Status: ${status.label}`}
+              slotProps={{ primary: { variant: 'body2' } }}
+            />
+          </ListItem>
 
           {activity.competencyLabel ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <SchoolOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-              <Typography variant="body2">
-                Gekoppelde competentie: {activity.competencyLabel}
-              </Typography>
-            </Box>
+            <ListItem disableGutters disablePadding>
+              <ListItemIcon sx={{ minWidth: 32 }}>
+                <SchoolOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={`Gekoppelde competentie: ${activity.competencyLabel}`}
+                slotProps={{ primary: { variant: 'body2' } }}
+              />
+            </ListItem>
           ) : null}
-        </Stack>
+        </List>
 
         <Button
           sx={{ mt: 'auto' }}
@@ -95,7 +113,7 @@ export function ActivityDetails({ activity, onClose, onEdit }: ActivityDetailsPr
         >
           Bewerken
         </Button>
-      </Box>
+      </Stack>
     </Box>
   );
 }
