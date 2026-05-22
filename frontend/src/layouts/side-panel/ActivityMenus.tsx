@@ -1,14 +1,19 @@
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import { statusMeta, statusOptions, subtypeOptions } from './constants';
-import type { ActivityItem, ActivityStatus, ActivityType, OpenSubmenu } from './types';
+import { statusMeta, statusOptions, typeOptions } from './constants';
+import type { ActivityStatus, ActivityType, OpenSubmenu } from './types';
+import type { Activity } from '@/types/activity';
 
 type ActivityMenusProps = {
-  activities: ActivityItem[];
+  activities: Activity[];
   menuActivityId: string | null;
   menuAnchorEl: HTMLElement | null;
   submenuAnchorEl: HTMLElement | null;
@@ -18,6 +23,7 @@ type ActivityMenusProps = {
   onCloseSubmenu: () => void;
   onTypeChange: (nextType: ActivityType) => void;
   onStatusChange: (status: ActivityStatus) => void;
+  onEdit: (activity: Activity) => void;
 };
 
 export function ActivityMenus({
@@ -31,6 +37,7 @@ export function ActivityMenus({
   onCloseSubmenu,
   onTypeChange,
   onStatusChange,
+  onEdit,
 }: ActivityMenusProps) {
   const activity = activities.find((item) => item.id === menuActivityId);
 
@@ -46,22 +53,42 @@ export function ActivityMenus({
           },
         }}
       >
-        <MenuItem onClick={onCloseMenus}>Hernoem titel</MenuItem>
-        <MenuItem onClick={onCloseMenus}>Bewerk</MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (activity) onEdit(activity);
+            onCloseMenus();
+          }}
+        >
+          <ListItemIcon>
+            <EditOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Bewerken</ListItemText>
+        </MenuItem>
+
         <MenuItem
           onClick={(event) => {
             onOpenSubmenu(event, 'type');
           }}
         >
-          <SubmenuLabel label="Verander soort" />
+          <ListItemIcon>
+            <CategoryOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Verander soort</ListItemText>
+          <ChevronRightIcon fontSize="small" sx={{ ml: 1, color: 'text.secondary' }} />
         </MenuItem>
+
         <Divider />
+
         <MenuItem
           onClick={(event) => {
             onOpenSubmenu(event, 'status');
           }}
         >
-          <SubmenuLabel label="Markeer als..." />
+          <ListItemIcon>
+            <FlagOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Markeer als...</ListItemText>
+          <ChevronRightIcon fontSize="small" sx={{ ml: 1, color: 'text.secondary' }} />
         </MenuItem>
       </Menu>
 
@@ -73,14 +100,14 @@ export function ActivityMenus({
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         {openSubmenu === 'type'
-          ? subtypeOptions.map((option) => (
+          ? typeOptions.map((option) => (
               <MenuItem
                 key={option.value}
                 onClick={() => {
                   onTypeChange(option.value);
                 }}
               >
-                {option.label}
+                <ListItemText>{option.label}</ListItemText>
               </MenuItem>
             ))
           : null}
@@ -94,38 +121,21 @@ export function ActivityMenus({
                   onStatusChange(status);
                 }}
               >
-                <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    mr: 1.25,
-                    borderRadius: '50%',
-                    bgcolor: statusMeta[status].color,
-                    flexShrink: 0,
-                  }}
-                />
-                {statusMeta[status].label}
+                <ListItemIcon>
+                  <Box
+                    sx={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      bgcolor: statusMeta[status].color,
+                    }}
+                  />
+                </ListItemIcon>
+                <ListItemText>{statusMeta[status].label}</ListItemText>
               </MenuItem>
             ))
           : null}
       </Menu>
     </>
-  );
-}
-
-function SubmenuLabel({ label }: { label: string }) {
-  return (
-    <Box
-      sx={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 1,
-      }}
-    >
-      <Typography variant="inherit">{label}</Typography>
-      <ChevronRightIcon fontSize="small" />
-    </Box>
   );
 }

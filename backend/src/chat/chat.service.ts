@@ -3,7 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { ConversationEntity } from './entities/conversation.entity';
 import { ConversationService } from './conversation.service';
+import {
+  PERFORM_UI_ACTION_TOOL_DEF,
+  PerformUiActionTool,
+  type PerformUiActionInput,
+} from './tools/perform-ui-action.tool';
 import { RAG_TOOL_DEF, RagTool } from './tools/rag.tool';
+import { SEARCH_ACTIVITIES_TOOL_DEF, SearchActivitiesTool } from './tools/search-activities.tool';
 import { STUDENT_CONTEXT_TOOL_DEF, StudentContextTool } from './tools/student-context.tool';
 import {
   GET_STUDENT_COMPETENCES_TOOL_DEF,
@@ -20,14 +26,23 @@ import { ChatSource } from '../document/document-search.service';
 export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
 
-const SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
+const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-5';
+
+const BASE_SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
 Je helpt studenten hun leervoortgang en competenties te begrijpen en te verbeteren.
 
 Aanpak:
-1. Gebruik search_course_content voor vragen over begrippen, cursusinhoud of het stappenplan.
-2. Gebruik get_student_competences voor vragen over waar de student staat: zijn behaalde en gekozen competentieniveaus.
-3. Gebruik get_competence_framework om op te zoeken wat een competentie of niveau inhoudt.
-4. Combineer de voortgang van de student met de raamwerkdefinities tot concreet advies.
+1. Gebruik search_course_content voor vragen over begrippen, het HBO-i raamwerk of cursusinhoud.
+2. Gebruik search_activities voor vragen over activiteiten, deadlines, open taken, workshops of voortgang van de student.
+3. Gebruik get_student_competences voor vragen over waar de student staat: zijn behaalde en gekozen competentieniveaus.
+4. Gebruik get_competence_framework om op te zoeken wat een competentie of niveau inhoudt.
+5. Gebruik get_student_context voor aanvullende studentcontext wanneer dat nodig is.
+6. Gebruik perform_ui_action om de UI aan te sturen:
+   - action 'open_activities_panel', mode 'auto': als de student expliciet vraagt om het paneel te openen of te tonen.
+   - action 'open_activities_panel', mode 'suggest': als het tonen van het paneel nuttig zou zijn maar de student er niet om heeft gevraagd.
+   - action 'highlight_activity', mode 'auto': wanneer je verwijst naar een specifieke activiteit die de student direct wil zien of bewerken. Geef altijd het exacte activityId mee dat je via search_activities hebt gevonden.
+   Gebruik perform_ui_action nooit automatisch alleen omdat search_activities werd aangeroepen.
+7. Combineer de voortgang van de student met de raamwerkdefinities tot concreet advies.
 
 Het HBO-i raamwerk: een competentie is een combinatie van een laag (User Interaction, Software, Hardware Interfacing, Infrastructure, Organisational processes), een activiteit (Analysis, Advise, Design, Realisation, Manage&Control) en een niveau. Daarnaast staat Professional Development met Personal leadership en Professional standard.
 
@@ -35,11 +50,29 @@ Afstuderen: om door te mogen naar semester 7 toont een student een laag volledig
 
 Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
 
+const STUDENT_CONTEXT_DISABLED_RESULT = {
+  available: false,
+  temporary: true,
+  notitie: 'Studentcontext is tijdelijk uitgeschakeld totdat echte studentdata beschikbaar is.',
+} as const;
+
+type StudentContextPolicy = {
+  enabled: boolean;
+  disabledPromptNote: string;
+  disabledResult: typeof STUDENT_CONTEXT_DISABLED_RESULT;
+};
+
 @Injectable()
 export class ChatService {
   private readonly anthropic: Anthropic;
   private readonly logger = new Logger(ChatService.name);
-  private readonly studentContextEnabled = false;
+  private readonly anthropicModel: string;
+  private readonly studentContextPolicy: StudentContextPolicy = {
+    enabled: false,
+    disabledPromptNote:
+      'Let op: get_student_context is tijdelijk uitgeschakeld. Gebruik voor studentvragen over activiteiten, deadlines, open taken, workshops, competenties of voortgang dus search_activities.',
+    disabledResult: STUDENT_CONTEXT_DISABLED_RESULT,
+  };
 
   constructor(
     private readonly conversationService: ConversationService,
@@ -47,11 +80,15 @@ export class ChatService {
     private readonly ragTool: RagTool,
     private readonly getStudentCompetencesTool: GetStudentCompetencesTool,
     private readonly getCompetenceFrameworkTool: GetCompetenceFrameworkTool,
+    private readonly searchActivitiesTool: SearchActivitiesTool,
+    private readonly performUiActionTool: PerformUiActionTool,
     private readonly configService: ConfigService,
   ) {
     this.anthropic = new Anthropic({
       apiKey: this.configService.getOrThrow<string>('ANTHROPIC_API_KEY'),
     });
+    this.anthropicModel =
+      this.configService.get<string>('ANTHROPIC_MODEL') ?? DEFAULT_ANTHROPIC_MODEL;
   }
 
   async *streamResponse(dto: SendMessageDto, studentId: string): AsyncGenerator<ChatSseEvent> {
@@ -67,7 +104,7 @@ export class ChatService {
       yield { event: 'status', data: iterations === 0 ? 'Nadenken...' : 'Tool uitvoeren...' };
 
       const response = await this.anthropic.messages.create({
-        model: 'claude-opus-4-5',
+        model: this.anthropicModel,
         max_tokens: 2048,
         system: this.buildSystemPrompt(),
         messages,
@@ -118,16 +155,33 @@ export class ChatService {
   }
 
   private buildSystemPrompt(): string {
-    return SYSTEM_PROMPT;
+    const today = new Date().toISOString().slice(0, 10);
+    const dateNote = `Vandaag is het ${today}.`;
+
+    if (this.studentContextPolicy.enabled) {
+      return `${BASE_SYSTEM_PROMPT}\n${dateNote}`;
+    }
+
+    return `${BASE_SYSTEM_PROMPT}\n${dateNote}\n\n${this.studentContextPolicy.disabledPromptNote}`;
   }
 
   private getAvailableTools() {
-    const tools = [
-      RAG_TOOL_DEF,
-      GET_STUDENT_COMPETENCES_TOOL_DEF,
-      GET_COMPETENCE_FRAMEWORK_TOOL_DEF,
-    ];
-    return this.studentContextEnabled ? [STUDENT_CONTEXT_TOOL_DEF, ...tools] : tools;
+    return this.studentContextPolicy.enabled
+      ? [
+          PERFORM_UI_ACTION_TOOL_DEF,
+          SEARCH_ACTIVITIES_TOOL_DEF,
+          STUDENT_CONTEXT_TOOL_DEF,
+          RAG_TOOL_DEF,
+          GET_STUDENT_COMPETENCES_TOOL_DEF,
+          GET_COMPETENCE_FRAMEWORK_TOOL_DEF,
+        ]
+      : [
+          PERFORM_UI_ACTION_TOOL_DEF,
+          SEARCH_ACTIVITIES_TOOL_DEF,
+          RAG_TOOL_DEF,
+          GET_STUDENT_COMPETENCES_TOOL_DEF,
+          GET_COMPETENCE_FRAMEWORK_TOOL_DEF,
+        ];
   }
 
   private async getOrCreateConversation(
@@ -175,14 +229,9 @@ export class ChatService {
 
       let result: string;
       if (block.name === 'get_student_context') {
-        if (!this.studentContextEnabled) {
+        if (!this.studentContextPolicy.enabled) {
           this.logger.warn(`student context tool called while disabled for studentId=${studentId}`);
-          result = JSON.stringify({
-            available: false,
-            temporary: true,
-            notitie:
-              'Studentcontext is tijdelijk uitgeschakeld totdat echte studentdata beschikbaar is.',
-          });
+          result = JSON.stringify(this.studentContextPolicy.disabledResult);
         } else {
           result = await this.studentContextTool.execute(studentId);
         }
@@ -196,6 +245,23 @@ export class ChatService {
         result = await this.getCompetenceFrameworkTool.execute(
           block.input as GetCompetenceFrameworkInput,
         );
+      } else if (block.name === 'search_activities') {
+        result = await this.searchActivitiesTool.execute(
+          studentId,
+          block.input as Parameters<SearchActivitiesTool['execute']>[1],
+        );
+      } else if (block.name === 'perform_ui_action') {
+        const input = block.input as PerformUiActionInput;
+        const uiActionData: { action: string; mode: string; label: string; activityId?: string } = {
+          action: input.action,
+          mode: input.mode,
+          label: input.label,
+        };
+        if (input.activityId) {
+          uiActionData.activityId = input.activityId;
+        }
+        events.push({ event: 'ui_action', data: JSON.stringify(uiActionData) });
+        result = this.performUiActionTool.execute();
       } else {
         result = `Unknown tool: ${block.name}`;
       }

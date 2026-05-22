@@ -1,6 +1,10 @@
 import { createContext } from 'react';
 
+export const HIGHLIGHT_DURATION_MS = Number(import.meta.env.VITE_HIGHLIGHT_DURATION_MS) || 2000;
+
 export type LayoutTab = 'chat' | 'activities' | 'challenge' | 'competenties' | 'stappenplan';
+
+export type SidePanelContent = { type: 'activities' };
 
 export type LayoutContextValue = {
   activeTab: LayoutTab;
@@ -11,6 +15,10 @@ export type LayoutContextValue = {
   setSidebarOpen: (open: boolean) => void;
   sidePanelOpen: boolean;
   setSidePanelOpen: (open: boolean) => void;
+  sidePanelContent: SidePanelContent | null;
+  openSidePanel: (content: SidePanelContent) => void;
+  highlightedActivityId: string | null;
+  highlightActivity: (id: string) => void;
 };
 
 export const LayoutContext = createContext<LayoutContextValue | null>(null);

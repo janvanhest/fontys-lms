@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
+import type { Activity } from '@/types/activity';
+import { MOCK_ACTIVITIES } from '@/storybook/mock-activities';
 import { ActivityDetails } from './ActivityDetails';
-import { initialActivities } from './constants';
-import type { ActivityItem } from './types';
 
-const DEFAULT_ACTIVITY: ActivityItem =
-  initialActivities.find((activity) => activity.type === 'opdracht') ?? initialActivities[0];
+const DEFAULT_ACTIVITY: Activity =
+  MOCK_ACTIVITIES.find((activity) => activity.type === 'opdracht') ?? MOCK_ACTIVITIES[0];
 
-const WORKSHOP_ACTIVITY: ActivityItem = initialActivities.find(
+const WORKSHOP_ACTIVITY: Activity = MOCK_ACTIVITIES.find(
   (activity) => activity.type === 'workshop',
 ) ?? {
   ...DEFAULT_ACTIVITY,
@@ -17,7 +17,7 @@ const WORKSHOP_ACTIVITY: ActivityItem = initialActivities.find(
   description: 'Werk de ontwerpkeuzes uit en bespreek deze met je coach.',
 };
 
-const DONE_ACTIVITY: ActivityItem = initialActivities.find(
+const DONE_ACTIVITY: Activity = MOCK_ACTIVITIES.find(
   (activity) => activity.status === 'afgerond',
 ) ?? {
   ...DEFAULT_ACTIVITY,
@@ -25,7 +25,7 @@ const DONE_ACTIVITY: ActivityItem = initialActivities.find(
   status: 'afgerond',
 };
 
-const LONG_DESCRIPTION_ACTIVITY: ActivityItem = {
+const LONG_DESCRIPTION_ACTIVITY: Activity = {
   ...DEFAULT_ACTIVITY,
   id: 'long-description-story',
   title: 'Onderbouw je vervolgstappen',

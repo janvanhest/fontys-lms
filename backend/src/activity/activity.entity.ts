@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
@@ -7,20 +8,29 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export type ActivityStatus = 'open' | 'bezig' | 'feedback' | 'afgerond';
-export type ActivityType =
-  | 'opdracht'
-  | 'workshop'
-  | 'competentie'
-  | 'eigen activiteit'
-  | 'challenge'
-  | 'coaching'
-  | 'sprint review'
-  | 'semesterplan'
-  | 'posterpresentatie'
-  | 'overdracht';
+export const ACTIVITY_STATUSES = ['open', 'bezig', 'feedback', 'afgerond'] as const;
+export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
+
+export const ACTIVITY_TYPES = [
+  'opdracht',
+  'workshop',
+  'competentie',
+  'eigen activiteit',
+  'challenge',
+  'coaching',
+  'sprint review',
+  'semesterplan',
+  'posterpresentatie',
+  'overdracht',
+] as const;
+export type ActivityType = (typeof ACTIVITY_TYPES)[number];
+
+const ACTIVITY_STATUS_CHECK = `"status" IN (${ACTIVITY_STATUSES.map((status) => `'${status}'`).join(', ')})`;
+const ACTIVITY_TYPE_CHECK = `"type" IN (${ACTIVITY_TYPES.map((type) => `'${type}'`).join(', ')})`;
 
 @Entity('activities')
+@Check('CHK_activities_status', ACTIVITY_STATUS_CHECK)
+@Check('CHK_activities_type', ACTIVITY_TYPE_CHECK)
 export class Activity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

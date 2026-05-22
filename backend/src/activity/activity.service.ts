@@ -1,9 +1,79 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Activity } from './activity.entity';
+import { Activity, ActivityStatus, ActivityType } from './activity.entity';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
+
+export type SearchActivitiesFilters = {
+  query?: string;
+  title?: string;
+  status?: ActivityStatus;
+  type?: ActivityType;
+  deadlineFrom?: string;
+  deadlineTo?: string;
+  limit?: number;
+};
+
+export type SearchActivitiesResult = {
+  appliedFilters: {
+    query: string | null;
+    title: string | null;
+    status: ActivityStatus | null;
+    type: ActivityType | null;
+    deadlineFrom: string | null;
+    deadlineTo: string | null;
+    limit: number;
+  };
+  activities: Array<{
+    id: string;
+    title: string;
+    type: ActivityType;
+    status: ActivityStatus;
+    deadline: string | null;
+    competencyLabel: string | null;
+    description: string | null;
+  }>;
+};
+
+export const CHAT_ACTIVITY_STATUS_ORDER: readonly ActivityStatus[] = [
+  'bezig',
+  'open',
+  'feedback',
+  'afgerond',
+];
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseSearchDate(value: string, fieldName: 'deadlineFrom' | 'deadlineTo'): number {
+  if (!ISO_DATE_PATTERN.test(value)) {
+    throw new BadRequestException(`${fieldName} must be a valid YYYY-MM-DD date`);
+  }
+
+  const [year, month, day] = value.split('-').map(Number);
+  const parsedDate = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    parsedDate.getUTCFullYear() !== year ||
+    parsedDate.getUTCMonth() !== month - 1 ||
+    parsedDate.getUTCDate() !== day
+  ) {
+    throw new BadRequestException(`${fieldName} must be a valid YYYY-MM-DD date`);
+  }
+
+  return parsedDate.getTime();
+}
+
+function buildChatStatusOrderCase(): string {
+  const clauses = CHAT_ACTIVITY_STATUS_ORDER.map(
+    (status, index) => `WHEN activity.status = '${status}' THEN ${index}`,
+  ).join('\n        ');
+
+  return `CASE
+        ${clauses}
+        ELSE ${CHAT_ACTIVITY_STATUS_ORDER.length}
+      END`;
+}
 
 export const SEED_ACTIVITIES: Omit<Activity, 'id' | 'studentId' | 'createdAt' | 'updatedAt'>[] = [
   {
@@ -134,6 +204,88 @@ export class ActivityService {
       .addOrderBy('activity.position', 'ASC')
       .addOrderBy('activity.createdAt', 'ASC')
       .getMany();
+  }
+
+  async searchForChat(
+    studentId: string,
+    filters: SearchActivitiesFilters,
+  ): Promise<SearchActivitiesResult> {
+    const query = filters.query?.trim().toLowerCase();
+    const title = filters.title?.trim().toLowerCase();
+    const limit = Math.min(Math.max(filters.limit ?? 5, 1), 10);
+    const deadlineFromTime = filters.deadlineFrom
+      ? parseSearchDate(filters.deadlineFrom, 'deadlineFrom')
+      : null;
+    const deadlineToTime = filters.deadlineTo
+      ? parseSearchDate(filters.deadlineTo, 'deadlineTo')
+      : null;
+
+    if (deadlineFromTime !== null && deadlineToTime !== null && deadlineFromTime > deadlineToTime) {
+      throw new BadRequestException('deadlineFrom must be before or equal to deadlineTo');
+    }
+
+    const qb = this.repo
+      .createQueryBuilder('activity')
+      .where('activity.studentId = :studentId', { studentId });
+
+    if (filters.status) {
+      qb.andWhere('activity.status = :status', { status: filters.status });
+    }
+
+    if (filters.type) {
+      qb.andWhere('activity.type = :type', { type: filters.type });
+    }
+
+    if (filters.deadlineFrom) {
+      qb.andWhere('activity.deadline >= :deadlineFrom', { deadlineFrom: filters.deadlineFrom });
+    }
+
+    if (filters.deadlineTo) {
+      qb.andWhere('activity.deadline <= :deadlineTo', { deadlineTo: filters.deadlineTo });
+    }
+
+    if (query) {
+      qb.andWhere(
+        "(LOWER(activity.title) LIKE :query OR LOWER(COALESCE(activity.description, '')) LIKE :query OR LOWER(COALESCE(activity.competencyLabel, '')) LIKE :query)",
+        { query: `%${query}%` },
+      );
+    }
+
+    if (title) {
+      qb.andWhere('LOWER(activity.title) LIKE :title', { title: `%${title}%` });
+    }
+
+    qb.orderBy(
+      buildChatStatusOrderCase(),
+      'ASC',
+    )
+      .addOrderBy('activity.deadline', 'ASC', 'NULLS LAST')
+      .addOrderBy('activity.position', 'ASC')
+      .addOrderBy('activity.createdAt', 'ASC')
+      .limit(limit);
+
+    const activities = await qb.getMany();
+
+    return {
+      appliedFilters: {
+        query: query ?? null,
+        title: title ?? null,
+        status: filters.status ?? null,
+        type: filters.type ?? null,
+        deadlineFrom: filters.deadlineFrom ?? null,
+        deadlineTo: filters.deadlineTo ?? null,
+        limit,
+      },
+      activities: activities.map((activity) => ({
+        id: activity.id,
+        title: activity.title,
+        type: activity.type,
+        status: activity.status,
+        deadline: activity.deadline,
+        competencyLabel: activity.competencyLabel,
+        description: activity.description,
+      })),
+    };
   }
 
   /**
