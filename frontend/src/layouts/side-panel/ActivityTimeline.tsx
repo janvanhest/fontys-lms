@@ -9,9 +9,9 @@ import { getTypeLabel, statusMeta } from './constants';
 import type { ActivityGroupSection } from './types';
 import type { Activity } from '@/types/activity';
 
-// Dot is offset 12px from the item top (mt: 1.5). Dot height = 10px.
-const DOT_TOP: number = 12; // px
-const DOT_HEIGHT: number = 10; // px
+const DOT_TOP_MT = '12px';       // offset from item top (mt: 1.5)
+const DOT_CONNECT_TOP = '22px';  // DOT_TOP + DOT_HEIGHT
+const DOT_NEG_OFFSET = '-12px';  // -DOT_TOP, extends into next item
 
 type ActivityTimelineProps = {
   groups: ActivityGroupSection[];
@@ -82,9 +82,9 @@ export function ActivityTimeline({
                 {/* Dot */}
                 <Box
                   sx={{
-                    mt: `${DOT_TOP}px`,
-                    width: DOT_HEIGHT,
-                    height: DOT_HEIGHT,
+                    mt: DOT_TOP_MT,
+                    width: 10,
+                    height: 10,
                     borderRadius: '50%',
                     bgcolor: status.color,
                     flexShrink: 0,
@@ -98,9 +98,9 @@ export function ActivityTimeline({
                   <Box
                     sx={(theme) => ({
                       position: 'absolute',
-                      top: `${DOT_TOP + DOT_HEIGHT}px`,
+                      top: DOT_CONNECT_TOP,
                       // Extends into next item by DOT_TOP px to meet that item's dot
-                      bottom: `-${DOT_TOP}px`,
+                      bottom: DOT_NEG_OFFSET,
                       width: 2,
                       bgcolor: alpha(theme.palette.primary.main, 0.18),
                       borderRadius: '0 0 2px 2px',
