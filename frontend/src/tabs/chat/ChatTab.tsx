@@ -38,7 +38,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
     [openSidePanel],
   );
 
-  const { messages, isStreaming, isLoadingHistory, statusText, sendMessage, consumeAction } =
+  const { messages, isStreaming, isLoadingHistory, status, sendMessage, consumeAction } =
     useChatStream(conversationId, {
       onConversationEstablished: handleConversationEstablished,
       onUiAction: handleUiAction,
@@ -58,7 +58,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, statusText]);
+  }, [messages, status]);
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -94,7 +94,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
           }
         }}
         sidePanelOpen={sidePanelOpen}
-        statusText={statusText}
+        status={status}
       />
       <ChatMessageList
         bottomRef={bottomRef}

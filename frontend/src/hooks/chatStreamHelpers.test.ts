@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   applyFinalMessage,
   generateMessageId,
-  getStatusTextFromToolCall,
+  getStatusFromEventText,
+  getStatusFromToolCall,
 } from './chatStreamHelpers';
 import type { ChatUiAction, Message } from './chatStreamHelpers';
 
@@ -29,29 +30,58 @@ describe('generateMessageId', () => {
   });
 });
 
-describe('getStatusTextFromToolCall', () => {
-  it('returns the activity lookup status for search_activities', () => {
-    expect(getStatusTextFromToolCall(JSON.stringify({ name: 'search_activities' }))).toBe(
-      'Activiteiten raadplegen...',
-    );
+describe('getStatusFromToolCall', () => {
+  it('returns the activity lookup status metadata for search_activities', () => {
+    expect(getStatusFromToolCall(JSON.stringify({ name: 'search_activities' }))).toMatchObject({
+      label: 'Activiteiten bekijken...',
+      icon: 'activities',
+    });
   });
 
   it('preserves the source lookup status for search_course_content', () => {
-    expect(getStatusTextFromToolCall(JSON.stringify({ name: 'search_course_content' }))).toBe(
-      'Bronnen raadplegen...',
+    expect(getStatusFromToolCall(JSON.stringify({ name: 'search_course_content' }))).toMatchObject(
+      {
+        label: 'Bronnen bekijken...',
+        icon: 'sources',
+      },
     );
   });
 
-  it('returns the generic context status for unknown tools', () => {
-    expect(getStatusTextFromToolCall(JSON.stringify({ name: 'unknown_tool' }))).toBe(
-      'Extra context ophalen...',
-    );
+  it('returns generic context status metadata for unknown tools', () => {
+    expect(getStatusFromToolCall(JSON.stringify({ name: 'unknown_tool' }))).toMatchObject({
+      label: 'Extra context ophalen...',
+      icon: 'tool',
+    });
   });
 
   it('shows panel status for perform_ui_action', () => {
-    expect(getStatusTextFromToolCall(JSON.stringify({ name: 'perform_ui_action' }))).toBe(
-      'Paneel instellen...',
-    );
+    expect(getStatusFromToolCall(JSON.stringify({ name: 'perform_ui_action' }))).toMatchObject({
+      label: 'Paneel openen...',
+      icon: 'panel',
+    });
+  });
+});
+
+describe('getStatusFromEventText', () => {
+  it('maps nadenken status to a dedicated thinking icon', () => {
+    expect(getStatusFromEventText('Nadenken...')).toMatchObject({
+      label: 'Nadenken...',
+      icon: 'thinking',
+    });
+  });
+
+  it('maps tool uitvoeren status to a dedicated tool icon', () => {
+    expect(getStatusFromEventText('Tool uitvoeren...')).toMatchObject({
+      label: 'Tool uitvoeren...',
+      icon: 'tool',
+    });
+  });
+
+  it('keeps unknown status text readable with the default spark icon', () => {
+    expect(getStatusFromEventText('Bezig...')).toMatchObject({
+      label: 'Bezig...',
+      icon: 'spark',
+    });
   });
 });
 

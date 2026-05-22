@@ -4,9 +4,13 @@ import { parseFinalChatPayload, streamChatMessage } from '@/api/chat';
 import {
   applyErrorMessage,
   applyFinalMessage,
+  CHAT_HISTORY_STATUS,
+  CHAT_WRITING_STATUS,
   createPendingMessages,
-  getStatusTextFromToolCall,
+  getStatusFromEventText,
+  getStatusFromToolCall,
   loadConversationHistory,
+  type ChatStatus,
   type ChatUiAction,
   type Message,
 } from './chatStreamHelpers';
@@ -24,9 +28,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(hasConversation);
-  const [statusText, setStatusText] = useState<string | null>(
-    hasConversation ? 'Gesprek laden...' : null,
-  );
+  const [status, setStatus] = useState<ChatStatus | null>(hasConversation ? CHAT_HISTORY_STATUS : null);
   const streamAbortRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
 
@@ -49,13 +51,13 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       .then((historyMessages) => {
         if (ignore || !isMountedRef.current) return;
         setMessages(historyMessages);
-        setStatusText(null);
+        setStatus(null);
       })
       .catch((error: unknown) => {
         if (ignore || !isMountedRef.current) return;
         if (error instanceof DOMException && error.name === 'AbortError') return;
         setMessages([]);
-        setStatusText('Gesprek laden mislukt.');
+        setStatus({ label: 'Gesprek laden mislukt.', icon: 'history' });
       })
       .finally(() => {
         if (ignore || !isMountedRef.current) return;
@@ -89,7 +91,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
       setMessages((prev) => [...prev, userMessage, streamingMessage]);
       setIsStreaming(true);
-      setStatusText(null);
+      setStatus(null);
 
       try {
         for await (const sseEvent of streamChatMessage(text, conversationId, controller.signal)) {
@@ -97,13 +99,13 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
           switch (sseEvent.event) {
             case 'status':
-              setStatusText(sseEvent.data);
+              setStatus(getStatusFromEventText(sseEvent.data));
               break;
             case 'tool_call':
-              setStatusText(getStatusTextFromToolCall(sseEvent.data));
+              setStatus(getStatusFromToolCall(sseEvent.data));
               break;
             case 'tool_result':
-              setStatusText('Antwoord opstellen...');
+              setStatus(CHAT_WRITING_STATUS);
               break;
             case 'ui_action': {
               const payload = JSON.parse(sseEvent.data) as {
@@ -129,14 +131,14 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               setMessages((prev) =>
                 applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions),
               );
-              setStatusText(null);
+              setStatus(null);
               break;
             }
             case 'error':
               setMessages((prev) =>
                 applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`),
               );
-              setStatusText(null);
+              setStatus(null);
               break;
           }
         }
@@ -151,7 +153,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               'Error: de chatverbinding is onderbroken. Probeer het opnieuw.',
             ),
           );
-          setStatusText(null);
+          setStatus(null);
         }
       } finally {
         if (streamAbortRef.current === controller) {
@@ -159,12 +161,12 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
         }
         if (isMountedRef.current) {
           setIsStreaming(false);
-          setStatusText(null);
+          setStatus(null);
         }
       }
     },
     [isStreaming, isLoadingHistory, conversationId, onConversationEstablished, onUiAction],
   );
 
-  return { messages, isStreaming, isLoadingHistory, statusText, sendMessage, consumeAction };
+  return { messages, isStreaming, isLoadingHistory, status, sendMessage, consumeAction };
 }

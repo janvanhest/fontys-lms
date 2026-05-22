@@ -10,6 +10,21 @@ export type ChatUiAction = {
   label: string;
 };
 
+export type ChatStatusIcon =
+  | 'activities'
+  | 'sources'
+  | 'panel'
+  | 'spark'
+  | 'writing'
+  | 'history'
+  | 'thinking'
+  | 'tool';
+
+export type ChatStatus = {
+  label: string;
+  icon: ChatStatusIcon;
+};
+
 export type Message = {
   id: string;
   role: 'student' | 'assistant';
@@ -44,24 +59,46 @@ export function createPendingMessages(text: string) {
   return { streamingId, userMessage, streamingMessage };
 }
 
-export function getStatusTextFromToolCall(data: string): string {
+export function getStatusFromToolCall(data: string): ChatStatus {
   try {
     const payload = JSON.parse(data) as { name?: string };
     if (payload.name === 'search_activities') {
-      return 'Activiteiten raadplegen...';
+      return { label: 'Activiteiten bekijken...', icon: 'activities' };
     }
     if (payload.name === 'search_course_content') {
-      return 'Bronnen raadplegen...';
+      return { label: 'Bronnen bekijken...', icon: 'sources' };
     }
     if (payload.name === 'perform_ui_action') {
-      return 'Paneel instellen...';
+      return { label: 'Paneel openen...', icon: 'panel' };
     }
 
-    return 'Extra context ophalen...';
+    return { label: 'Extra context ophalen...', icon: 'tool' };
   } catch {
-    return 'Bronnen raadplegen...';
+    return { label: 'Bronnen bekijken...', icon: 'sources' };
   }
 }
+
+export function getStatusFromEventText(text: string): ChatStatus {
+  if (text === 'Nadenken...') {
+    return { label: text, icon: 'thinking' };
+  }
+
+  if (text === 'Tool uitvoeren...') {
+    return { label: text, icon: 'tool' };
+  }
+
+  return { label: text, icon: 'spark' };
+}
+
+export const CHAT_HISTORY_STATUS: ChatStatus = {
+  label: 'Gesprek laden...',
+  icon: 'history',
+};
+
+export const CHAT_WRITING_STATUS: ChatStatus = {
+  label: 'Antwoord voorbereiden...',
+  icon: 'writing',
+};
 
 export function applyFinalMessage(
   messages: Message[],
