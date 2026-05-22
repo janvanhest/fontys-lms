@@ -26,7 +26,7 @@ export const PERFORM_UI_ACTION_TOOL_DEF = {
       activityId: {
         type: 'string',
         description:
-          'Required when action is "highlight_activity". The exact id of the activity to highlight.',
+          'Used when action is "highlight_activity". The exact id of the activity to highlight.',
       },
     },
   },
