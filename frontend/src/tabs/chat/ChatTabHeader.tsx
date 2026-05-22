@@ -85,13 +85,15 @@ export function ChatTabHeader({
               },
             }}
           />
-        ) : !isStreaming ? (
+        ) : (
           <Typography variant="body2" color="text.secondary">
             {isLoadingHistory
               ? 'Gesprek laden...'
+              : isStreaming
+              ? 'Antwoord schrijven...'
               : 'Stel een vraag over je challenge, activiteiten of cursusinhoud.'}
           </Typography>
-        ) : null}
+        )}
       </Box>
 
       <IconButton
