@@ -13,7 +13,15 @@ type ChatTabProps = {
 };
 
 export function ChatTab({ conversationId }: ChatTabProps = {}) {
-  const { sidePanelOpen, setSidePanelOpen, openSidePanel, activeTab, setSelectedConversationId } = useLayout();
+  const {
+    sidePanelOpen,
+    setSidePanelOpen,
+    openSidePanel,
+    highlightActivity,
+    activeTab,
+    setSelectedConversationId,
+  } = useLayout();
+
   const handleConversationEstablished = useCallback(
     (nextConversationId: string) => {
       if (conversationId === nextConversationId) return;
@@ -21,17 +29,40 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
     },
     [conversationId, setSelectedConversationId],
   );
-  const { messages, isStreaming, isLoadingHistory, statusText, sendMessage } = useChatStream(
-    conversationId,
-    { onConversationEstablished: handleConversationEstablished },
+
+  const handleUiAction = useCallback(
+    (action: string, payload?: Record<string, string>) => {
+      if (action === 'open_activities_panel') {
+        openSidePanel({ type: 'activities' });
+      } else if (action === 'highlight_activity' && payload?.activityId) {
+        openSidePanel({ type: 'activities' });
+        highlightActivity(payload.activityId);
+      }
+    },
+    [openSidePanel, highlightActivity],
   );
+
+  const { messages, isStreaming, isLoadingHistory, status, sendMessage, consumeAction } =
+    useChatStream(conversationId, {
+      onConversationEstablished: handleConversationEstablished,
+      onUiAction: handleUiAction,
+    });
+
+  const handleAction = useCallback(
+    (messageId: string, action: string, payload?: Record<string, string>) => {
+      handleUiAction(action, payload);
+      consumeAction(messageId, action);
+    },
+    [handleUiAction, consumeAction],
+  );
+
   const { data: student } = useQuery(studentProfileOptions);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, statusText]);
+  }, [messages, status]);
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -67,9 +98,14 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
           }
         }}
         sidePanelOpen={sidePanelOpen}
-        statusText={statusText}
+        status={status}
       />
-      <ChatMessageList bottomRef={bottomRef} messages={messages} student={student} />
+      <ChatMessageList
+        bottomRef={bottomRef}
+        messages={messages}
+        student={student}
+        onAction={handleAction}
+      />
       <ChatComposer
         disabled={isStreaming || isLoadingHistory}
         input={input}

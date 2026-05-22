@@ -8,6 +8,7 @@ import { SendMessageDto } from './dto/send-message.dto';
 import { RagTool } from './tools/rag.tool';
 import { SearchActivitiesTool } from './tools/search-activities.tool';
 import { StudentContextTool } from './tools/student-context.tool';
+import { PerformUiActionTool } from './tools/perform-ui-action.tool';
 
 const STUDENT_ID = 'student-uuid-001';
 
@@ -40,6 +41,7 @@ describe('ChatService', () => {
   let mockStudentTool: jest.Mocked<Pick<StudentContextTool, 'execute'>>;
   let mockRagTool: jest.Mocked<Pick<RagTool, 'execute'>>;
   let mockSearchActivitiesTool: jest.Mocked<Pick<SearchActivitiesTool, 'execute'>>;
+  let mockPerformUiActionTool: jest.Mocked<Pick<PerformUiActionTool, 'execute'>>;
   let mockAnthropicCreate: jest.Mock;
   let loggerWarnSpy: jest.SpyInstance;
 
@@ -53,6 +55,7 @@ describe('ChatService', () => {
     mockStudentTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockRagTool = { execute: jest.fn().mockResolvedValue('') };
     mockSearchActivitiesTool = { execute: jest.fn().mockResolvedValue('{}') };
+    mockPerformUiActionTool = { execute: jest.fn().mockReturnValue(JSON.stringify({ ok: true })) };
     mockAnthropicCreate = jest.fn();
     mockConfigService = {
       get: jest.fn((key: string) => {
@@ -69,6 +72,7 @@ describe('ChatService', () => {
         { provide: StudentContextTool, useValue: mockStudentTool },
         { provide: RagTool, useValue: mockRagTool },
         { provide: SearchActivitiesTool, useValue: mockSearchActivitiesTool },
+        { provide: PerformUiActionTool, useValue: mockPerformUiActionTool },
         { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
@@ -182,10 +186,11 @@ describe('ChatService', () => {
       expect.objectContaining({
         model: 'claude-sonnet-test',
         system: expect.stringContaining('get_student_context is tijdelijk uitgeschakeld'),
-        tools: [
+        tools: expect.arrayContaining([
+          expect.objectContaining({ name: 'perform_ui_action' }),
           expect.objectContaining({ name: 'search_activities' }),
           expect.objectContaining({ name: 'search_course_content' }),
-        ],
+        ]),
       }),
     );
     expect(mockAnthropicCreate.mock.calls[0]?.[0]?.tools).not.toEqual(
@@ -436,6 +441,55 @@ describe('ChatService', () => {
     );
   });
 
+  it('advertises perform_ui_action in the Anthropic tools array', async () => {
+    mockAnthropicCreate.mockResolvedValue({
+      stop_reason: 'end_turn',
+      content: [{ type: 'text', text: 'Antwoord.' }],
+    });
+
+    await collectEvents({ message: 'Open mijn activiteiten' });
+
+    expect(mockAnthropicCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tools: expect.arrayContaining([
+          expect.objectContaining({ name: 'perform_ui_action' }),
+        ]),
+      }),
+    );
+  });
+
+  it('emits ui_action SSE event before tool_result when perform_ui_action is called', async () => {
+    mockAnthropicCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tool-ui-1',
+            name: 'perform_ui_action',
+            input: { action: 'open_activities_panel', mode: 'auto', label: 'Open activiteiten' },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Ik open het activiteitenpaneel.' }],
+      });
+
+    const events = await collectEvents({ message: 'Open het activiteitenpaneel' });
+
+    const uiActionIndex = events.findIndex((e) => e.event === 'ui_action');
+    const toolResultIndex = events.findIndex((e) => e.event === 'tool_result');
+    expect(uiActionIndex).toBeGreaterThanOrEqual(0);
+    expect(uiActionIndex).toBeLessThan(toolResultIndex);
+    expect(JSON.parse(events[uiActionIndex].data)).toEqual({
+      action: 'open_activities_panel',
+      mode: 'auto',
+      label: 'Open activiteiten',
+    });
+    expect(mockPerformUiActionTool.execute).toHaveBeenCalledTimes(1);
+  });
+
   it('deduplicates retrieved sources and limits them to the top 3', async () => {
     mockAnthropicCreate
       .mockResolvedValueOnce({
@@ -511,5 +565,40 @@ describe('ChatService', () => {
         ],
       }),
     );
+  });
+
+  it('emits ui_action SSE event with activityId when highlight_activity is called', async () => {
+    mockAnthropicCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'tool-ui-2',
+            name: 'perform_ui_action',
+            input: {
+              action: 'highlight_activity',
+              mode: 'auto',
+              label: 'Bekijk activiteit',
+              activityId: 'activity-123',
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Dit is de activiteit.' }],
+      });
+
+    const events = await collectEvents({ message: 'Laat me activiteit 123 zien' });
+
+    const uiActionEvent = events.find((e) => e.event === 'ui_action');
+    expect(uiActionEvent).toBeDefined();
+    expect(JSON.parse(uiActionEvent!.data)).toEqual({
+      action: 'highlight_activity',
+      mode: 'auto',
+      label: 'Bekijk activiteit',
+      activityId: 'activity-123',
+    });
   });
 });

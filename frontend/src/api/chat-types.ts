@@ -28,7 +28,7 @@ export type ConversationDetails = {
 };
 
 export type ChatSseEvent = {
-  event: 'status' | 'tool_call' | 'tool_result' | 'final' | 'error';
+  event: 'status' | 'tool_call' | 'tool_result' | 'ui_action' | 'final' | 'error';
   data: string;
 };
 

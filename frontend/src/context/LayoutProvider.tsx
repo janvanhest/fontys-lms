@@ -5,6 +5,7 @@ import {
   type LayoutTab,
   type SidePanelContent,
 } from '@/context/layout-context';
+import { useHighlightActivity } from '@/hooks/useHighlightActivity';
 
 export function LayoutProvider({ children }: PropsWithChildren) {
   const [activeTab, setActiveTab] = useState<LayoutTab>('chat');
@@ -12,6 +13,7 @@ export function LayoutProvider({ children }: PropsWithChildren) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [sidePanelContent, setSidePanelContent] = useState<SidePanelContent | null>(null);
+  const { highlightedActivityId, highlightActivity } = useHighlightActivity();
 
   const selectTab = useCallback((tab: LayoutTab) => {
     setActiveTab(tab);
@@ -44,8 +46,20 @@ export function LayoutProvider({ children }: PropsWithChildren) {
       setSidePanelOpen,
       sidePanelContent,
       openSidePanel,
+      highlightedActivityId,
+      highlightActivity,
     }),
-    [activeTab, selectTab, selectedConversationId, sidebarOpen, sidePanelOpen, sidePanelContent, openSidePanel],
+    [
+      activeTab,
+      selectTab,
+      selectedConversationId,
+      sidebarOpen,
+      sidePanelOpen,
+      sidePanelContent,
+      openSidePanel,
+      highlightedActivityId,
+      highlightActivity,
+    ],
   );
 
   return <LayoutContext value={value}>{children}</LayoutContext>;

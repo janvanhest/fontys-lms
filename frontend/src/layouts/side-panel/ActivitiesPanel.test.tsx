@@ -1,7 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { SidePanelContent } from '@/context/layout-context';
 import type { Activity } from '@/types/activity';
+import { useLayout } from '@/context/useLayout';
 import { ActivitiesPanel } from './ActivitiesPanel';
 import { PANEL_REGISTRY } from './panel-registry';
 
@@ -53,6 +54,10 @@ vi.mock('./ActivityMenus', () => ({
   ActivityMenus: () => null,
 }));
 
+vi.mock('@/context/useLayout', () => ({
+  useLayout: vi.fn(),
+}));
+
 function makeActivity(overrides: Partial<Activity> = {}): Activity {
   return {
     id: 'activity-1',
@@ -71,6 +76,12 @@ function makeActivity(overrides: Partial<Activity> = {}): Activity {
 }
 
 describe('ActivitiesPanel', () => {
+  beforeEach(() => {
+    vi.mocked(useLayout).mockReturnValue({
+      highlightedActivityId: null,
+    } as ReturnType<typeof useLayout>);
+  });
+
   it('renders a loading state while activities are being fetched', () => {
     useQueryMock.mockReturnValue({
       data: undefined,
@@ -82,7 +93,7 @@ describe('ActivitiesPanel', () => {
 
     const html = renderToStaticMarkup(<ActivitiesPanel />);
 
-    expect(html).toContain('Activiteiten laden');
+    expect(html).toContain('MuiSkeleton-root');
     expect(html).not.toContain('data-testid="activity-timeline"');
   });
 

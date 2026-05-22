@@ -22,6 +22,7 @@ function parseSseEventBlock(block: string): ChatSseEvent | null {
         value === 'status' ||
         value === 'tool_call' ||
         value === 'tool_result' ||
+        value === 'ui_action' ||
         value === 'final' ||
         value === 'error'
       ) {

@@ -24,7 +24,6 @@ type ActivityFormDialogProps = {
 
 export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDialogProps) {
   const isEdit = activity !== null;
-  const dialogKey = activity?.id ?? 'new';
   const initialFormState = getActivityFormState(activity);
 
   const [title, setTitle] = useState(() => initialFormState.title);
@@ -66,7 +65,7 @@ export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDial
   };
 
   return (
-    <Dialog key={dialogKey} open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <form onSubmit={handleSubmit}>
         <DialogTitle sx={{ pb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
