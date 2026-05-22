@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import type { RefObject } from 'react';
 import { studentInitials, type StudentProfile } from '@/api/student';
 import type { Message } from '@/hooks/useChatStream';
+import { useTypewriter } from '@/hooks/useTypewriter';
 import { ChatMarkdown } from './ChatMarkdown';
 
 type ChatMessageListProps = {
@@ -18,11 +19,20 @@ type ChatMessageListProps = {
 };
 
 export function ChatMessageList({ bottomRef, messages, student, onAction }: ChatMessageListProps) {
+  const streamingMessage = messages.find((m) => m.isStreaming);
+  const displayedContent = useTypewriter(
+    streamingMessage?.content ?? '',
+    Boolean(streamingMessage?.isStreaming),
+  );
+
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
       <Stack spacing={2.5}>
         {messages.map((message) => {
           const isStudent = message.role === 'student';
+          const content = message.isStreaming ? displayedContent : message.content;
+          const isAnimating =
+            Boolean(message.isStreaming) && displayedContent.length < message.content.length;
           return (
             <Box key={message.id}>
               {!isStudent && message.toolCalls && message.toolCalls.length > 0 && (
@@ -84,7 +94,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                     color: 'text.primary',
                   }}
                 >
-                  {message.isStreaming && !message.content ? (
+                  {message.isStreaming && !content ? (
                     <CircularProgress size={16} />
                   ) : isStudent ? (
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -92,7 +102,13 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                     </Typography>
                   ) : (
                     <Box>
-                      <ChatMarkdown content={message.content} isStreaming={message.isStreaming} />
+                      {isAnimating ? (
+                        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                          {content}
+                        </Typography>
+                      ) : (
+                        <ChatMarkdown content={content} isStreaming={message.isStreaming} />
+                      )}
                       {message.sources && message.sources.length > 0 ? (
                         <Stack
                           direction="row"
