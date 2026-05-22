@@ -115,11 +115,9 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
                 activityId?: string;
               };
               if (uiPayload.mode === 'auto') {
-                const extra: Record<string, string> = {};
-                if (uiPayload.activityId) extra.activityId = uiPayload.activityId;
                 onUiAction?.(
                   uiPayload.action,
-                  Object.keys(extra).length > 0 ? extra : undefined,
+                  uiPayload.activityId ? { activityId: uiPayload.activityId } : undefined,
                 );
               } else {
                 pendingSuggestions.push({
