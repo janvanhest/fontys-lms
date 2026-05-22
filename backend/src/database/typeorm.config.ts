@@ -6,8 +6,18 @@ import { MessageEntity } from '../chat/entities/message.entity';
 import { DocumentEntity } from '../document/document.entity';
 import { Student } from '../student/student.entity';
 import { Activity } from '../activity/activity.entity';
+import { CompetenceProgress } from '../competence/competence-progress.entity';
+import { CompetenceFramework } from '../competence/competence-framework.entity';
 
-const entities = [ConversationEntity, MessageEntity, DocumentEntity, Student, Activity];
+const entities = [
+  ConversationEntity,
+  MessageEntity,
+  DocumentEntity,
+  Student,
+  Activity,
+  CompetenceProgress,
+  CompetenceFramework,
+];
 const migrations = [join(__dirname, 'migrations', '*{.ts,.js}')];
 
 export function createTypeOrmOptions(databaseUrl: string): TypeOrmModuleOptions {

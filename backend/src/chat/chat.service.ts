@@ -11,6 +11,15 @@ import {
 import { RAG_TOOL_DEF, RagTool } from './tools/rag.tool';
 import { SEARCH_ACTIVITIES_TOOL_DEF, SearchActivitiesTool } from './tools/search-activities.tool';
 import { STUDENT_CONTEXT_TOOL_DEF, StudentContextTool } from './tools/student-context.tool';
+import {
+  GET_STUDENT_COMPETENCES_TOOL_DEF,
+  GetStudentCompetencesTool,
+} from './tools/get-student-competences.tool';
+import {
+  GET_COMPETENCE_FRAMEWORK_TOOL_DEF,
+  GetCompetenceFrameworkTool,
+  type GetCompetenceFrameworkInput,
+} from './tools/get-competence-framework.tool';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatSource } from '../document/document-search.service';
 
@@ -20,18 +29,25 @@ type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSo
 const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-5';
 
 const BASE_SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
-Je helpt studenten hun leervoortgang te begrijpen en te verbeteren.
+Je helpt studenten hun leervoortgang en competenties te begrijpen en te verbeteren.
 
 Aanpak:
 1. Gebruik search_course_content voor vragen over begrippen, het HBO-i raamwerk of cursusinhoud.
-2. Gebruik search_activities voor vragen over activiteiten, deadlines, open taken, workshops, competenties of voortgang van de student.
-3. Gebruik get_student_context voor aanvullende studentcontext wanneer dat nodig is.
-4. Gebruik perform_ui_action om de UI aan te sturen:
+2. Gebruik search_activities voor vragen over activiteiten, deadlines, open taken, workshops of voortgang van de student.
+3. Gebruik get_student_competences voor vragen over waar de student staat: zijn behaalde en gekozen competentieniveaus.
+4. Gebruik get_competence_framework om op te zoeken wat een competentie of niveau inhoudt.
+5. Gebruik get_student_context voor aanvullende studentcontext wanneer dat nodig is.
+6. Gebruik perform_ui_action om de UI aan te sturen:
    - action 'open_activities_panel', mode 'auto': als de student expliciet vraagt om het paneel te openen of te tonen.
    - action 'open_activities_panel', mode 'suggest': als het tonen van het paneel nuttig zou zijn maar de student er niet om heeft gevraagd.
    - action 'highlight_activity', mode 'auto': wanneer je verwijst naar een specifieke activiteit die de student direct wil zien of bewerken. Geef altijd het exacte activityId mee dat je via search_activities hebt gevonden.
    Gebruik perform_ui_action nooit automatisch alleen omdat search_activities werd aangeroepen.
-5. Combineer bronnen alleen als dat inhoudelijk helpt.
+7. Combineer de voortgang van de student met de raamwerkdefinities tot concreet advies.
+
+Het HBO-i raamwerk: een competentie is een combinatie van een laag (User Interaction, Software, Hardware Interfacing, Infrastructure, Organisational processes), een activiteit (Analysis, Advise, Design, Realisation, Manage&Control) en een niveau. Daarnaast staat Professional Development met Personal leadership en Professional standard.
+
+Afstuderen: om door te mogen naar semester 7 toont een student een laag volledig op niveau 3 aan (alle vijf activiteiten), een tweede laag als verbreding op niveau 2, en Personal leadership en Professional standard op niveau 2.
+
 Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
 
 const STUDENT_CONTEXT_DISABLED_RESULT = {
@@ -62,6 +78,8 @@ export class ChatService {
     private readonly conversationService: ConversationService,
     private readonly studentContextTool: StudentContextTool,
     private readonly ragTool: RagTool,
+    private readonly getStudentCompetencesTool: GetStudentCompetencesTool,
+    private readonly getCompetenceFrameworkTool: GetCompetenceFrameworkTool,
     private readonly searchActivitiesTool: SearchActivitiesTool,
     private readonly performUiActionTool: PerformUiActionTool,
     private readonly configService: ConfigService,
@@ -154,8 +172,16 @@ export class ChatService {
           SEARCH_ACTIVITIES_TOOL_DEF,
           STUDENT_CONTEXT_TOOL_DEF,
           RAG_TOOL_DEF,
+          GET_STUDENT_COMPETENCES_TOOL_DEF,
+          GET_COMPETENCE_FRAMEWORK_TOOL_DEF,
         ]
-      : [PERFORM_UI_ACTION_TOOL_DEF, SEARCH_ACTIVITIES_TOOL_DEF, RAG_TOOL_DEF];
+      : [
+          PERFORM_UI_ACTION_TOOL_DEF,
+          SEARCH_ACTIVITIES_TOOL_DEF,
+          RAG_TOOL_DEF,
+          GET_STUDENT_COMPETENCES_TOOL_DEF,
+          GET_COMPETENCE_FRAMEWORK_TOOL_DEF,
+        ];
   }
 
   private async getOrCreateConversation(
@@ -213,6 +239,12 @@ export class ChatService {
         const retrieval = await this.ragTool.execute((block.input as { query: string }).query);
         result = retrieval.content;
         sources.push(...retrieval.sources);
+      } else if (block.name === 'get_student_competences') {
+        result = await this.getStudentCompetencesTool.execute(studentId);
+      } else if (block.name === 'get_competence_framework') {
+        result = await this.getCompetenceFrameworkTool.execute(
+          block.input as GetCompetenceFrameworkInput,
+        );
       } else if (block.name === 'search_activities') {
         result = await this.searchActivitiesTool.execute(
           studentId,

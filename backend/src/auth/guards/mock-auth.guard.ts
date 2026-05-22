@@ -10,7 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { StudentService } from '../../student/student.service';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
-const MOCK_STUDENT = {
+export const MOCK_STUDENT = {
   canvasUserId: '31474',
   displayName: 'Hest, Jan J.H. van',
   email: 'jan.vanhest@student.fontys.nl',
