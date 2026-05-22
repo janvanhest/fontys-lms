@@ -10,7 +10,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-function parseSseEventBlock(block: string): ChatSseEvent | null {
+export function parseSseEventBlock(block: string): ChatSseEvent | null {
   const lines = block.split(/\r?\n/);
   let eventType: ChatSseEvent['event'] | null = null;
   const dataLines: string[] = [];
@@ -23,6 +23,7 @@ function parseSseEventBlock(block: string): ChatSseEvent | null {
         value === 'tool_call' ||
         value === 'tool_result' ||
         value === 'ui_action' ||
+        value === 'text_delta' ||
         value === 'final' ||
         value === 'error'
       ) {
