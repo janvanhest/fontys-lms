@@ -19,7 +19,7 @@ export type { Message } from './chatStreamHelpers';
 
 type UseChatStreamOptions = {
   onConversationEstablished?: (conversationId: string) => void;
-  onUiAction?: (action: string) => void;
+  onUiAction?: (action: string, payload?: Record<string, string>) => void;
 };
 
 export function useChatStream(conversationId?: string, options: UseChatStreamOptions = {}) {
@@ -108,17 +108,23 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               setStatus(CHAT_WRITING_STATUS);
               break;
             case 'ui_action': {
-              const payload = JSON.parse(sseEvent.data) as {
+              const uiPayload = JSON.parse(sseEvent.data) as {
                 action: string;
                 mode: string;
                 label: string;
+                activityId?: string;
               };
-              if (payload.mode === 'auto') {
-                onUiAction?.(payload.action);
+              if (uiPayload.mode === 'auto') {
+                const extra: Record<string, string> = {};
+                if (uiPayload.activityId) extra.activityId = uiPayload.activityId;
+                onUiAction?.(
+                  uiPayload.action,
+                  Object.keys(extra).length > 0 ? extra : undefined,
+                );
               } else {
                 pendingSuggestions.push({
-                  action: payload.action as 'open_activities_panel',
-                  label: payload.label,
+                  action: uiPayload.action as 'open_activities_panel',
+                  label: uiPayload.label,
                 });
               }
               break;

@@ -17,6 +17,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
     sidePanelOpen,
     setSidePanelOpen,
     openSidePanel,
+    highlightActivity,
     activeTab,
     setSelectedConversationId,
   } = useLayout();
@@ -30,12 +31,15 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
   );
 
   const handleUiAction = useCallback(
-    (action: string) => {
+    (action: string, payload?: Record<string, string>) => {
       if (action === 'open_activities_panel') {
         openSidePanel({ type: 'activities' });
+      } else if (action === 'highlight_activity' && payload?.activityId) {
+        openSidePanel({ type: 'activities' });
+        highlightActivity(payload.activityId);
       }
     },
-    [openSidePanel],
+    [openSidePanel, highlightActivity],
   );
 
   const { messages, isStreaming, isLoadingHistory, status, sendMessage, consumeAction } =
