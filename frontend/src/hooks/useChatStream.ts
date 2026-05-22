@@ -10,6 +10,7 @@ import {
   getStatusFromEventText,
   getStatusFromToolCall,
   loadConversationHistory,
+  toolCallToBubble,
   type ChatStatus,
   type ChatUiAction,
   type Message,
@@ -101,9 +102,21 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
             case 'status':
               setStatus(getStatusFromEventText(sseEvent.data));
               break;
-            case 'tool_call':
+            case 'tool_call': {
               setStatus(getStatusFromToolCall(sseEvent.data));
+              const payload = JSON.parse(sseEvent.data) as { name: string };
+              const bubble = toolCallToBubble(payload.name);
+              if (bubble) {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === streamingId
+                      ? { ...m, toolCalls: [...(m.toolCalls ?? []), bubble] }
+                      : m,
+                  ),
+                );
+              }
               break;
+            }
             case 'tool_result':
               setStatus(CHAT_WRITING_STATUS);
               break;
