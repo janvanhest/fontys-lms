@@ -30,6 +30,13 @@ export const PROFESSIONAL_DEVELOPMENT_AREAS: HboiActivity[] = [
   'Professional Standard',
 ];
 
+// Alle geldige waarden voor het activiteit-veld: de vijf reguliere
+// activiteiten plus de twee Professional Development-onderdelen.
+export const ALL_HBOI_ACTIVITIES: HboiActivity[] = [
+  ...HBOI_ACTIVITIES,
+  ...PROFESSIONAL_DEVELOPMENT_AREAS,
+];
+
 // Alle lagen, inclusief Professional Development.
 export const HBOI_LAYERS: HboiLayer[] = [
   ...ARCHITECTURE_LAYERS,
