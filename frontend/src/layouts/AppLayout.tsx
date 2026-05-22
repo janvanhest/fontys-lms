@@ -13,7 +13,7 @@ function assertUnreachable(tab: never): never {
 }
 
 export function AppLayout() {
-  const { activeTab, selectedConversationId } = useLayout();
+  const { activeTab, selectedConversationId, chatMountKey } = useLayout();
   const isChat = activeTab === 'chat' || activeTab === 'activities';
 
   function renderTab() {
@@ -22,7 +22,7 @@ export function AppLayout() {
       case 'activities':
         return (
           <ChatTab
-            key={selectedConversationId ?? 'new-conversation'}
+            key={chatMountKey}
             conversationId={selectedConversationId ?? undefined}
           />
         );

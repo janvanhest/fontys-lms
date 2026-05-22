@@ -18,7 +18,7 @@ import { SidebarConversationList } from './sidebar/SidebarConversationList';
 const sidebarWidth = 190;
 
 export function Sidebar() {
-  const { sidebarOpen, selectedConversationId, setSelectedConversationId, selectTab } = useLayout();
+  const { sidebarOpen, selectedConversationId, setSelectedConversationId, setChatMountKey, selectTab } = useLayout();
   const queryClient = useQueryClient();
   const { data: conversations = [], isLoading } = useQuery({
     ...conversationSummariesQueryOptions,
@@ -101,6 +101,7 @@ export function Sidebar() {
             startIcon={<AddIcon />}
             onClick={() => {
               setSelectedConversationId(null);
+              setChatMountKey('new-' + Date.now());
               selectTab('chat');
             }}
           >
@@ -125,6 +126,7 @@ export function Sidebar() {
               onSaveTitle={saveTitle}
               onSelectConversation={(conversationId) => {
                 setSelectedConversationId(conversationId);
+                setChatMountKey(conversationId);
                 selectTab('chat');
               }}
               onStartEditing={startEditing}

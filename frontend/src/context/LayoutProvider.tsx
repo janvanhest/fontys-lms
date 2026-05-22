@@ -10,6 +10,7 @@ import { useHighlightActivity } from '@/hooks/useHighlightActivity';
 export function LayoutProvider({ children }: PropsWithChildren) {
   const [activeTab, setActiveTab] = useState<LayoutTab>('chat');
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [chatMountKey, setChatMountKey] = useState<string>('init');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [sidePanelContent, setSidePanelContent] = useState<SidePanelContent | null>(null);
@@ -40,6 +41,8 @@ export function LayoutProvider({ children }: PropsWithChildren) {
       selectTab,
       selectedConversationId,
       setSelectedConversationId,
+      chatMountKey,
+      setChatMountKey,
       sidebarOpen,
       setSidebarOpen,
       sidePanelOpen,
@@ -53,6 +56,7 @@ export function LayoutProvider({ children }: PropsWithChildren) {
       activeTab,
       selectTab,
       selectedConversationId,
+      chatMountKey,
       sidebarOpen,
       sidePanelOpen,
       sidePanelContent,

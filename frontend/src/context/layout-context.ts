@@ -11,6 +11,8 @@ export type LayoutContextValue = {
   selectTab: (tab: LayoutTab) => void;
   selectedConversationId: string | null;
   setSelectedConversationId: (conversationId: string | null) => void;
+  chatMountKey: string;
+  setChatMountKey: (key: string) => void;
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   sidePanelOpen: boolean;

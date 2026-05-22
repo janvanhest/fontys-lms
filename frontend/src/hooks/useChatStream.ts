@@ -1,5 +1,8 @@
 // frontend/src/hooks/useChatStream.ts
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+const MIN_STATUS_DURATION_MS =
+  Number(import.meta.env.VITE_MIN_STATUS_DURATION_MS) || 2000;
 import { parseFinalChatPayload, streamChatMessage } from '@/api/chat';
 import {
   applyErrorMessage,
@@ -32,12 +35,42 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
   const [status, setStatus] = useState<ChatStatus | null>(hasConversation ? CHAT_HISTORY_STATUS : null);
   const streamAbortRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
+  const statusSetAtRef = useRef<number>(0);
+  const pendingStatusRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleStatus = useCallback((newStatus: ChatStatus | null) => {
+    if (pendingStatusRef.current !== null) {
+      clearTimeout(pendingStatusRef.current);
+      pendingStatusRef.current = null;
+    }
+    if (newStatus === null) {
+      statusSetAtRef.current = 0;
+      setStatus(null);
+      return;
+    }
+    const remaining = MIN_STATUS_DURATION_MS - (Date.now() - statusSetAtRef.current);
+    if (remaining <= 0 || statusSetAtRef.current === 0) {
+      statusSetAtRef.current = Date.now();
+      setStatus(newStatus);
+    } else {
+      pendingStatusRef.current = setTimeout(() => {
+        pendingStatusRef.current = null;
+        if (isMountedRef.current) {
+          statusSetAtRef.current = Date.now();
+          setStatus(newStatus);
+        }
+      }, remaining);
+    }
+  }, []);
 
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       streamAbortRef.current?.abort();
+      if (pendingStatusRef.current !== null) {
+        clearTimeout(pendingStatusRef.current);
+      }
     };
   }, []);
 
@@ -100,10 +133,10 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
           switch (sseEvent.event) {
             case 'status':
-              setStatus(getStatusFromEventText(sseEvent.data));
+              scheduleStatus(getStatusFromEventText(sseEvent.data));
               break;
             case 'tool_call': {
-              setStatus(getStatusFromToolCall(sseEvent.data));
+              scheduleStatus(getStatusFromToolCall(sseEvent.data));
               const payload = JSON.parse(sseEvent.data) as { name: string };
               const bubble = toolCallToBubble(payload.name);
               if (bubble) {
@@ -118,7 +151,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               break;
             }
             case 'tool_result':
-              setStatus(CHAT_WRITING_STATUS);
+              scheduleStatus(CHAT_WRITING_STATUS);
               break;
             case 'text_delta':
               setMessages((prev) =>
@@ -126,7 +159,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
                   m.id === streamingId ? { ...m, content: m.content + sseEvent.data } : m,
                 ),
               );
-              setStatus(null);
+              scheduleStatus(null);
               break;
             case 'stream_reset':
               setMessages((prev) =>
@@ -162,14 +195,14 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               setMessages((prev) =>
                 applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions),
               );
-              setStatus(null);
+              scheduleStatus(null);
               break;
             }
             case 'error':
               setMessages((prev) =>
                 applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`),
               );
-              setStatus(null);
+              scheduleStatus(null);
               break;
           }
         }
