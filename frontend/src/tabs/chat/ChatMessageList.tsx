@@ -5,6 +5,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Psychology from '@mui/icons-material/Psychology';
 import type { RefObject } from 'react';
 import { studentInitials, type StudentProfile } from '@/api/student';
 import type { Message } from '@/hooks/useChatStream';
@@ -78,11 +79,32 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                   flexDirection: 'row',
                   gap: 1.5,
                   justifyContent: isStudent ? 'flex-end' : 'flex-start',
-                  alignItems: 'flex-end',
+                  alignItems: 'flex-start',
                 }}
               >
                 {!isStudent && (
-                  <Avatar sx={{ bgcolor: 'primary.main', width: 34, height: 34 }}>L</Avatar>
+                  <Box sx={{ position: 'sticky', top: 16, alignSelf: 'flex-start' }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: 'primary.main',
+                      width: 34,
+                      height: 34,
+                      ...(message.isStreaming && {
+                        animation: 'rainbow 2s linear infinite, pulse 1.2s ease-in-out infinite',
+                        '@keyframes rainbow': {
+                          '0%':   { filter: 'hue-rotate(0deg)' },
+                          '100%': { filter: 'hue-rotate(360deg)' },
+                        },
+                        '@keyframes pulse': {
+                          '0%, 100%': { transform: 'scale(1)' },
+                          '50%':      { transform: 'scale(1.1)' },
+                        },
+                      }),
+                    }}
+                  >
+                    <Psychology sx={{ fontSize: 20 }} />
+                  </Avatar>
+                  </Box>
                 )}
                 <Paper
                   elevation={0}
