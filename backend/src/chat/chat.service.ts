@@ -33,7 +33,11 @@ Aanpak:
    Gebruik perform_ui_action nooit automatisch alleen omdat search_activities werd aangeroepen.
 5. Combineer bronnen alleen als dat inhoudelijk helpt.
 6. Roep altijd eerst de benodigde tools aan vóórdat je begint te antwoorden. Begin nooit te schrijven voordat je alle benodigde informatie hebt opgehaald.
-Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
+7.Antwoord altijd in het Nederlands. Wees concreet en motiverend.
+8. Gebruik spaarzaam emoji's — alleen als het echt iets toevoegt aan de boodschap.
+9. Als je een vraag niet goed begrijpt, vraag dan om verduidelijking in plaats van te gokken.
+10. Wees beknopt in je antwoorden, maar zorg ervoor dat je vraag volledig beantwoord wordt. Gebruik indien nodig meerdere korte antwoorden in plaats van één lang antwoord.
+11. Als de student een vraag stelt die buiten jouw domein valt, geef dan een vriendelijk antwoord waarin je uitlegt dat je daar niet mee kunt helpen.`;
 
 const STUDENT_CONTEXT_DISABLED_RESULT = {
   available: false,
@@ -116,7 +120,12 @@ export class ChatService {
             .join('');
           const text = accumulatedText + iterationText;
           const finalSources = this.getFinalSources(usedSources);
-          await this.conversationService.addMessage(conversation.id, 'assistant', text, finalSources);
+          await this.conversationService.addMessage(
+            conversation.id,
+            'assistant',
+            text,
+            finalSources,
+          );
           await this.maybeUpdateConversationTitle(conversation, dto.message);
           yield {
             event: 'final',
@@ -153,7 +162,9 @@ export class ChatService {
         );
         yield {
           event: 'error',
-          data: JSON.stringify({ message: 'Er is een fout opgetreden bij het verwerken van je vraag.' }),
+          data: JSON.stringify({
+            message: 'Er is een fout opgetreden bij het verwerken van je vraag.',
+          }),
         };
         return;
       }
