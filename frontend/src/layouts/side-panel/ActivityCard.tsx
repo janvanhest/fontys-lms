@@ -48,18 +48,11 @@ export function ActivityCard({
       elevation={isSelected ? 4 : 1}
       sx={(theme) => ({
         '@keyframes activityCardHighlight': {
-          '0%': { outline: '0px solid transparent', outlineOffset: '0px' },
-          '20%': {
-            outline: `3px solid ${theme.palette.primary.main}`,
-            outlineOffset: '2px',
+          '0%, 100%': { boxShadow: 'none' },
+          '20%, 80%': {
+            boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.6)}`,
             backgroundColor: alpha(theme.palette.primary.main, 0.06),
           },
-          '80%': {
-            outline: `3px solid ${theme.palette.primary.main}`,
-            outlineOffset: '2px',
-            backgroundColor: alpha(theme.palette.primary.main, 0.06),
-          },
-          '100%': { outline: '0px solid transparent', outlineOffset: '0px' },
         },
         position: 'relative',
         overflow: 'hidden',
