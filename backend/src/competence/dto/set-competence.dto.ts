@@ -3,7 +3,7 @@ import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import {
   ALL_HBOI_ACTIVITIES,
   HBOI_LAYERS,
-  MAX_LEVEL_REGULAR,
+  MAX_LEVEL,
   MIN_LEVEL,
 } from '../competence.constants';
 import type { HboiActivity, HboiLayer } from '../competence-progress.entity';
@@ -19,17 +19,17 @@ export class SetCompetenceDto {
   @IsIn(ALL_HBOI_ACTIVITIES)
   hboiActivity!: HboiActivity;
 
-  @ApiPropertyOptional({ minimum: MIN_LEVEL, maximum: MAX_LEVEL_REGULAR, example: 1 })
+  @ApiPropertyOptional({ minimum: MIN_LEVEL, maximum: MAX_LEVEL, example: 1 })
   @IsInt()
   @Min(MIN_LEVEL)
-  @Max(MAX_LEVEL_REGULAR)
+  @Max(MAX_LEVEL)
   @IsOptional()
   achievedLevel?: number | null;
 
-  @ApiPropertyOptional({ minimum: MIN_LEVEL, maximum: MAX_LEVEL_REGULAR, example: 2 })
+  @ApiPropertyOptional({ minimum: MIN_LEVEL, maximum: MAX_LEVEL, example: 2 })
   @IsInt()
   @Min(MIN_LEVEL)
-  @Max(MAX_LEVEL_REGULAR)
+  @Max(MAX_LEVEL)
   @IsOptional()
   targetLevel?: number | null;
 

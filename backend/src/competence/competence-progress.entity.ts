@@ -11,7 +11,7 @@ import {
 // geen activiteiten-uitsplitsing maar Personal Leadership / Professional Standard.
 export type HboiLayer =
   | 'User Interaction'
-  | 'Organisational Processes'
+  | 'Organisational processes'
   | 'Infrastructure'
   | 'Software'
   | 'Hardware Interfacing'
@@ -24,10 +24,10 @@ export type HboiActivity =
   | 'Analysis'
   | 'Advise'
   | 'Design'
-  | 'Realise'
-  | 'Manage & Control'
-  | 'Personal Leadership'
-  | 'Professional Standard';
+  | 'Realisation'
+  | 'Manage&Control'
+  | 'Personal leadership'
+  | 'Professional standard';
 
 // Eén rij = de voortgang van één student op één cel (laag x activiteit) van het
 // HBO-i raamwerk. achievedLevel is groen (al behaald), targetLevel is geel

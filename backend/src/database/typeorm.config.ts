@@ -7,6 +7,7 @@ import { DocumentEntity } from '../document/document.entity';
 import { Student } from '../student/student.entity';
 import { Activity } from '../activity/activity.entity';
 import { CompetenceProgress } from '../competence/competence-progress.entity';
+import { CompetenceFramework } from '../competence/competence-framework.entity';
 
 const entities = [
   ConversationEntity,
@@ -15,6 +16,7 @@ const entities = [
   Student,
   Activity,
   CompetenceProgress,
+  CompetenceFramework,
 ];
 const migrations = [join(__dirname, 'migrations', '*{.ts,.js}')];
 

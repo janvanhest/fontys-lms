@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CompetenceProgress } from './competence-progress.entity';
 import { CompetenceController } from './competence.controller';
 import { CompetenceService } from './competence.service';
+import { CompetenceFrameworkDto } from './dto/competence-framework.dto';
 import { SetCompetenceDto } from './dto/set-competence.dto';
 import { Student } from '../student/student.entity';
 
@@ -22,10 +23,12 @@ const makeRow = (overrides: Partial<CompetenceProgress> = {}): CompetenceProgres
 
 describe('CompetenceController', () => {
   let controller: CompetenceController;
-  let service: jest.Mocked<Pick<CompetenceService, 'findAll' | 'setCompetence'>>;
+  let service: jest.Mocked<
+    Pick<CompetenceService, 'findAll' | 'setCompetence' | 'getFramework'>
+  >;
 
   beforeEach(async () => {
-    service = { findAll: jest.fn(), setCompetence: jest.fn() };
+    service = { findAll: jest.fn(), setCompetence: jest.fn(), getFramework: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CompetenceController],
@@ -59,5 +62,27 @@ describe('CompetenceController', () => {
     expect(service.setCompetence).toHaveBeenCalledWith('student-a-uuid', dto);
     expect(result.achievedLevel).toBe(2);
     expect(result).not.toHaveProperty('studentId');
+  });
+
+  it('returns the framework structure from the service', async () => {
+    const framework: CompetenceFrameworkDto = {
+      layers: ['Infrastructure'],
+      activities: ['Analysis'],
+      professionalDevelopmentAreas: ['Personal leadership'],
+      cells: [
+        {
+          layer: 'Infrastructure',
+          hboiActivity: 'Analysis',
+          minLevel: 1,
+          maxLevel: 3,
+          levels: [{ level: 1, description: 'Voer basisanalyses uit.' }],
+        },
+      ],
+    };
+    service.getFramework.mockResolvedValue(framework);
+
+    const result = await controller.getFramework();
+
+    expect(result).toBe(framework);
   });
 });

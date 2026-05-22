@@ -10,6 +10,7 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentStudent } from '../auth/decorators/current-student.decorator';
 import { Student } from '../student/student.entity';
 import { CompetenceService } from './competence.service';
+import { CompetenceFrameworkDto } from './dto/competence-framework.dto';
 import { CompetenceResponseDto } from './dto/competence-response.dto';
 import {
   toCompetenceResponseDto,
@@ -28,6 +29,13 @@ export class CompetenceController {
   @ApiOkResponse({ type: [CompetenceResponseDto] })
   findAll(@CurrentStudent() student: Student): Promise<CompetenceResponseDto[]> {
     return this.competenceService.findAll(student.id).then(toCompetenceResponseDtos);
+  }
+
+  @Get('framework')
+  @ApiOperation({ summary: 'De HBO-i raamwerkstructuur: lagen, activiteiten en cellen' })
+  @ApiOkResponse({ type: CompetenceFrameworkDto })
+  getFramework(): Promise<CompetenceFrameworkDto> {
+    return this.competenceService.getFramework();
   }
 
   @Put()
