@@ -11,7 +11,7 @@ type ChatMarkdownProps = {
 };
 
 export function ChatMarkdown({ content, isStreaming }: ChatMarkdownProps) {
-  return <ChatMarkdownContent key={isStreaming ? 'streaming' : content} content={content} isStreaming={isStreaming} />;
+  return <ChatMarkdownContent content={content} isStreaming={isStreaming} />;
 }
 
 function ChatMarkdownContent({ content, isStreaming }: ChatMarkdownProps) {
