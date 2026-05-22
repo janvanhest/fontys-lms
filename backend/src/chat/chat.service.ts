@@ -32,6 +32,7 @@ Aanpak:
    - action 'highlight_activity', mode 'auto': wanneer je verwijst naar een specifieke activiteit die de student direct wil zien of bewerken. Geef altijd het exacte activityId mee dat je via search_activities hebt gevonden.
    Gebruik perform_ui_action nooit automatisch alleen omdat search_activities werd aangeroepen.
 5. Combineer bronnen alleen als dat inhoudelijk helpt.
+6. Roep altijd eerst de benodigde tools aan vóórdat je begint te antwoorden. Begin nooit te schrijven voordat je alle benodigde informatie hebt opgehaald.
 Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
 
 const STUDENT_CONTEXT_DISABLED_RESULT = {
@@ -83,7 +84,7 @@ export class ChatService {
     let lastStopReason: string | null = null;
 
     while (iterations < 6) {
-      yield { event: 'status', data: iterations === 0 ? 'Nadenken...' : 'Tool uitvoeren...' };
+      yield { event: 'status', data: 'Nadenken...' };
 
       const stream = this.anthropic.messages.stream({
         model: this.anthropicModel,
@@ -124,6 +125,11 @@ export class ChatService {
       if (finalMessage.stop_reason === 'tool_use') {
         if (iterationHasText) {
           yield { event: 'stream_reset', data: '' };
+        }
+        for (const block of finalMessage.content) {
+          if (block.type === 'tool_use') {
+            yield { event: 'tool_call', data: JSON.stringify({ name: block.name }) };
+          }
         }
         const toolResults = await this.executeToolCalls(finalMessage.content, studentId);
         for (const event of toolResults.events) {
@@ -211,8 +217,6 @@ export class ChatService {
 
     for (const block of content) {
       if (block.type !== 'tool_use') continue;
-
-      events.push({ event: 'tool_call', data: JSON.stringify({ name: block.name }) });
 
       let result: string;
       if (block.name === 'get_student_context') {
