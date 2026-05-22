@@ -9,9 +9,11 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
+import { formatDeadlineLabel } from '@/utils/activity-grouping';
 import { ActivityCard } from './ActivityCard';
 import { getTypeLabel, statusMeta } from './constants';
 import type { ActivityGroupSection } from './types';
+import type { Activity } from '@/types/activity';
 
 type ActivityTimelineProps = {
   groups: ActivityGroupSection[];
@@ -61,24 +63,15 @@ export function ActivityTimeline({
         sx={{
           m: 0,
           p: 0,
-          [`& .MuiTimelineItem-root:before`]: {
-            flex: 0,
-            padding: 0,
-          },
+          [`& .MuiTimelineItem-root:before`]: { flex: 0, padding: 0 },
         }}
       >
-        {group.items.map((activity, index) => {
+        {group.items.map((activity: Activity, index) => {
           const isSelected = selectedActivityId === activity.id;
           const status = statusMeta[activity.status];
 
           return (
-            <TimelineItem
-              key={activity.id}
-              sx={{
-                alignItems: 'stretch',
-                minHeight: 0,
-              }}
-            >
+            <TimelineItem key={activity.id} sx={{ alignItems: 'stretch', minHeight: 0 }}>
               <TimelineSeparator sx={{ minWidth: 20 }}>
                 <TimelineDot
                   sx={{
@@ -93,11 +86,7 @@ export function ActivityTimeline({
                 />
                 {index < group.items.length - 1 ? (
                   <TimelineConnector
-                    sx={{
-                      bgcolor: alpha('#1976d2', 0.14),
-                      width: 2,
-                      borderRadius: 999,
-                    }}
+                    sx={{ bgcolor: alpha('#1976d2', 0.14), width: 2, borderRadius: 999 }}
                   />
                 ) : null}
               </TimelineSeparator>
@@ -105,6 +94,7 @@ export function ActivityTimeline({
               <TimelineContent sx={{ py: 0.5, pr: 0 }}>
                 <ActivityCard
                   activity={activity}
+                  deadlineLabel={formatDeadlineLabel(activity.deadline)}
                   isSelected={isSelected}
                   menuOpen={menuActivityId === activity.id && Boolean(menuAnchorEl)}
                   statusColor={status.color}

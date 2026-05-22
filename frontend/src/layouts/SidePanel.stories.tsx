@@ -1,74 +1,53 @@
+import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { ReactNode } from 'react';
+import { activitiesQueryOptions } from '@/api/activities';
 import { LayoutStoryProvider } from '@/storybook/LayoutStoryProvider';
-import { initialActivities } from './side-panel/constants';
+import { MOCK_ACTIVITIES } from '@/storybook/mock-activities';
 import { SidePanel } from './SidePanel';
 
-const SELECTED_ACTIVITY_ID =
-  initialActivities.find((activity) => activity.status === 'open')?.id ?? initialActivities[0].id;
+function SidePanelFrame({ sidePanelOpen }: { sidePanelOpen: boolean }) {
+  const [client] = useState(() => {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } } });
+    qc.setQueryData(activitiesQueryOptions.queryKey, MOCK_ACTIVITIES);
+    return qc;
+  });
+
+  return (
+    <LayoutStoryProvider
+      activeTab={sidePanelOpen ? 'activities' : 'chat'}
+      sidePanelOpen={sidePanelOpen}
+      sidePanelContent={sidePanelOpen ? { type: 'activities' } : null}
+    >
+      <QueryClientProvider client={client}>
+        <Box
+          sx={{
+            height: 720,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            bgcolor: 'background.default',
+          }}
+        >
+          <SidePanel />
+        </Box>
+      </QueryClientProvider>
+    </LayoutStoryProvider>
+  );
+}
 
 const meta: Meta<typeof SidePanel> = {
   title: 'Layouts/SidePanel',
   component: SidePanel,
-  args: {
-    initialActivityItems: initialActivities,
-    initialSelectedActivityId: null,
-  },
 };
 
 export default meta;
 type Story = StoryObj<typeof SidePanel>;
 
-function SidePanelFrame({
-  sidePanelOpen,
-  children,
-}: {
-  sidePanelOpen: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <LayoutStoryProvider
-      activeTab={sidePanelOpen ? 'activities' : 'chat'}
-      sidePanelOpen={sidePanelOpen}
-    >
-      <Box
-        sx={{
-          height: 720,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          bgcolor: 'background.default',
-        }}
-      >
-        {children}
-      </Box>
-    </LayoutStoryProvider>
-  );
-}
-
 export const Default: Story = {
-  render: (args) => (
-    <SidePanelFrame sidePanelOpen>
-      <SidePanel {...args} />
-    </SidePanelFrame>
-  ),
-};
-
-export const WithSelectedActivity: Story = {
-  args: {
-    initialSelectedActivityId: SELECTED_ACTIVITY_ID,
-  },
-  render: (args) => (
-    <SidePanelFrame sidePanelOpen>
-      <SidePanel {...args} />
-    </SidePanelFrame>
-  ),
+  render: () => <SidePanelFrame sidePanelOpen />,
 };
 
 export const Collapsed: Story = {
-  render: (args) => (
-    <SidePanelFrame sidePanelOpen={false}>
-      <SidePanel {...args} />
-    </SidePanelFrame>
-  ),
+  render: () => <SidePanelFrame sidePanelOpen={false} />,
 };

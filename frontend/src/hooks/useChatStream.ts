@@ -1,34 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  fetchConversation,
-  mapConversationMessageToUiMessage,
   parseFinalChatPayload,
   streamChatMessage,
-  type ChatSource,
 } from '@/api/chat';
+import {
+  applyErrorMessage,
+  applyFinalMessage,
+  createPendingMessages,
+  getStatusTextFromToolCall,
+  loadConversationHistory,
+  type Message,
+} from './chatStreamHelpers';
 
-export type Message = {
-  id: string;
-  role: 'student' | 'assistant';
-  content: string;
-  isStreaming?: boolean;
-  sources?: ChatSource[];
-};
+export type { Message } from './chatStreamHelpers';
 
 type UseChatStreamOptions = {
   onConversationEstablished?: (conversationId: string) => void;
 };
-
-let messageIdCounter = 0;
-
-function generateMessageId(prefix: string): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `${prefix}-${crypto.randomUUID()}`;
-  }
-
-  messageIdCounter += 1;
-  return `${prefix}-${String(Date.now())}-${String(messageIdCounter)}`;
-}
 
 export function useChatStream(conversationId?: string, options: UseChatStreamOptions = {}) {
   const { onConversationEstablished } = options;
@@ -61,13 +49,11 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
     const controller = new AbortController();
     let ignore = false;
 
-    void fetchConversation(conversationId, controller.signal)
-      .then((conversation) => {
+    void loadConversationHistory(conversationId, controller.signal)
+      .then((historyMessages) => {
         if (ignore || !isMountedRef.current) return;
 
-        setMessages(
-          conversation.messages.map(mapConversationMessageToUiMessage),
-        );
+        setMessages(historyMessages);
         setStatusText(null);
       })
       .catch((error: unknown) => {
@@ -96,20 +82,9 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       const controller = new AbortController();
       streamAbortRef.current = controller;
 
-      const userMsg: Message = {
-        id: generateMessageId('user'),
-        role: 'student',
-        content: text,
-      };
-      const streamingId = generateMessageId('assistant');
-      const streamingMsg: Message = {
-        id: streamingId,
-        role: 'assistant',
-        content: '',
-        isStreaming: true,
-      };
+      const { streamingId, streamingMessage, userMessage } = createPendingMessages(text);
 
-      setMessages((prev) => [...prev, userMsg, streamingMsg]);
+      setMessages((prev) => [...prev, userMessage, streamingMessage]);
       setIsStreaming(true);
       setStatusText(null);
 
@@ -122,16 +97,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               setStatusText(sseEvent.data);
               break;
             case 'tool_call':
-              try {
-                const payload = JSON.parse(sseEvent.data) as { name?: string };
-                setStatusText(
-                  payload.name === 'search_course_content'
-                    ? 'Bronnen raadplegen...'
-                    : 'Extra context ophalen...',
-                );
-              } catch {
-                setStatusText('Bronnen raadplegen...');
-              }
+              setStatusText(getStatusTextFromToolCall(sseEvent.data));
               break;
             case 'tool_result':
               setStatusText('Antwoord opstellen...');
@@ -141,29 +107,12 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               if (finalPayload.conversationId) {
                 onConversationEstablished?.(finalPayload.conversationId);
               }
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === streamingId
-                    ? {
-                        ...m,
-                        content: finalPayload.text,
-                        sources: finalPayload.sources,
-                        isStreaming: false,
-                      }
-                    : m,
-                ),
-              );
+              setMessages((prev) => applyFinalMessage(prev, streamingId, finalPayload));
               setStatusText(null);
               break;
             }
             case 'error':
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === streamingId
-                    ? { ...m, content: `Error: ${sseEvent.data}`, isStreaming: false }
-                    : m,
-                ),
-              );
+              setMessages((prev) => applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`));
               setStatusText(null);
               break;
           }
@@ -173,14 +122,10 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
           // Ignore aborted streams; cleanup happens in finally.
         } else if (isMountedRef.current) {
           setMessages((prev) =>
-            prev.map((m) =>
-              m.id === streamingId
-                ? {
-                    ...m,
-                    content: 'Error: de chatverbinding is onderbroken. Probeer het opnieuw.',
-                    isStreaming: false,
-                  }
-                : m,
+            applyErrorMessage(
+              prev,
+              streamingId,
+              'Error: de chatverbinding is onderbroken. Probeer het opnieuw.',
             ),
           );
           setStatusText(null);

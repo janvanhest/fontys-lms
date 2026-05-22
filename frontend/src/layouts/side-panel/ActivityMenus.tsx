@@ -5,10 +5,11 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { statusMeta, statusOptions, subtypeOptions } from './constants';
-import type { ActivityItem, ActivityStatus, ActivityType, OpenSubmenu } from './types';
+import type { ActivityStatus, ActivityType, OpenSubmenu } from './types';
+import type { Activity } from '@/types/activity';
 
 type ActivityMenusProps = {
-  activities: ActivityItem[];
+  activities: Activity[];
   menuActivityId: string | null;
   menuAnchorEl: HTMLElement | null;
   submenuAnchorEl: HTMLElement | null;
@@ -18,6 +19,7 @@ type ActivityMenusProps = {
   onCloseSubmenu: () => void;
   onTypeChange: (nextType: ActivityType) => void;
   onStatusChange: (status: ActivityStatus) => void;
+  onEdit: (activity: Activity) => void;
 };
 
 export function ActivityMenus({
@@ -31,6 +33,7 @@ export function ActivityMenus({
   onCloseSubmenu,
   onTypeChange,
   onStatusChange,
+  onEdit,
 }: ActivityMenusProps) {
   const activity = activities.find((item) => item.id === menuActivityId);
 
@@ -46,8 +49,14 @@ export function ActivityMenus({
           },
         }}
       >
-        <MenuItem onClick={onCloseMenus}>Hernoem titel</MenuItem>
-        <MenuItem onClick={onCloseMenus}>Bewerk</MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (activity) onEdit(activity);
+            onCloseMenus();
+          }}
+        >
+          Bewerken
+        </MenuItem>
         <MenuItem
           onClick={(event) => {
             onOpenSubmenu(event, 'type');

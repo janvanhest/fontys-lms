@@ -7,10 +7,11 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
-import type { ActivityItem } from './types';
+import type { Activity } from '@/types/activity';
 
 type ActivityCardProps = {
-  activity: ActivityItem;
+  activity: Activity;
+  deadlineLabel: string;
   isSelected: boolean;
   menuOpen: boolean;
   statusColor: string;
@@ -23,6 +24,7 @@ type ActivityCardProps = {
 
 export function ActivityCard({
   activity,
+  deadlineLabel,
   isSelected,
   menuOpen,
   statusColor,
@@ -37,12 +39,8 @@ export function ActivityCard({
       role="button"
       tabIndex={0}
       aria-pressed={isSelected}
-      onClick={() => {
-        onSelect(activity.id);
-      }}
-      onKeyDown={(event) => {
-        onKeyDown(event, activity.id);
-      }}
+      onClick={() => { onSelect(activity.id); }}
+      onKeyDown={(event) => { onKeyDown(event, activity.id); }}
       elevation={isSelected ? 4 : 1}
       sx={(theme) => ({
         position: 'relative',
@@ -58,9 +56,7 @@ export function ActivityCard({
           ? theme.shadows[4]
           : '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
         transition: 'background-color 160ms ease, box-shadow 160ms ease, border-color 160ms ease',
-        '&:hover': {
-          boxShadow: theme.shadows[2],
-        },
+        '&:hover': { boxShadow: theme.shadows[2] },
         '&:focus-visible': {
           boxShadow: `${theme.shadows[2]}, 0 0 0 3px ${alpha(theme.palette.primary.main, 0.34)}`,
         },
@@ -71,14 +67,8 @@ export function ActivityCard({
         aria-label={`Open menu voor ${activity.title}`}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
-        onClick={(event) => {
-          onOpenMenu(event, activity.id);
-        }}
-        sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-        }}
+        onClick={(event) => { onOpenMenu(event, activity.id); }}
+        sx={{ position: 'absolute', top: 8, right: 8 }}
       >
         <MoreVertIcon fontSize="small" />
       </IconButton>
@@ -100,16 +90,9 @@ export function ActivityCard({
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            {activity.deadlineLabel}
+            {deadlineLabel}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: statusColor,
-              fontWeight: 600,
-              textAlign: 'right',
-            }}
-          >
+          <Typography variant="body2" sx={{ color: statusColor, fontWeight: 600, textAlign: 'right' }}>
             {statusLabel}
           </Typography>
         </Box>
