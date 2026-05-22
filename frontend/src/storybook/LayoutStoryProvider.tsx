@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import {
+  HIGHLIGHT_DURATION_MS,
   LayoutContext,
   type LayoutContextValue,
   type LayoutTab,
   type SidePanelContent,
 } from '@/context/layout-context';
-
-const HIGHLIGHT_DURATION_MS = Number(import.meta.env.VITE_HIGHLIGHT_DURATION_MS) || 2000;
 
 type LayoutStoryProviderProps = PropsWithChildren<{
   activeTab?: LayoutTab;

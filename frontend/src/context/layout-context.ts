@@ -1,5 +1,7 @@
 import { createContext } from 'react';
 
+export const HIGHLIGHT_DURATION_MS = Number(import.meta.env.VITE_HIGHLIGHT_DURATION_MS) || 2000;
+
 export type LayoutTab = 'chat' | 'activities' | 'challenge' | 'competenties' | 'stappenplan';
 
 export type SidePanelContent = { type: 'activities' };
