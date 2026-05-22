@@ -15,6 +15,7 @@ const DOT_HEIGHT = 10; // px
 
 type ActivityTimelineProps = {
   groups: ActivityGroupSection[];
+  highlightedActivityId: string | null;
   selectedActivityId: string | null;
   menuActivityId: string | null;
   menuAnchorEl: HTMLElement | null;
@@ -25,6 +26,7 @@ type ActivityTimelineProps = {
 
 export function ActivityTimeline({
   groups,
+  highlightedActivityId,
   selectedActivityId,
   menuActivityId,
   menuAnchorEl,
@@ -112,6 +114,7 @@ export function ActivityTimeline({
                 <ActivityCard
                   activity={activity}
                   deadlineLabel={formatDeadlineLabel(activity.deadline)}
+                  highlighted={highlightedActivityId === activity.id}
                   isSelected={isSelected}
                   menuOpen={menuActivityId === activity.id && Boolean(menuAnchorEl)}
                   statusColor={status.color}
