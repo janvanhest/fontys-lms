@@ -50,7 +50,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                   color: 'text.primary',
                 }}
               >
-                {message.isStreaming ? (
+                {message.isStreaming && !message.content ? (
                   <CircularProgress size={16} />
                 ) : isStudent ? (
                   <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
