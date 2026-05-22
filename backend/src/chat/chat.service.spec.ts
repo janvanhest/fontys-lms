@@ -7,6 +7,8 @@ import { ConversationEntity } from './entities/conversation.entity';
 import { SendMessageDto } from './dto/send-message.dto';
 import { RagTool } from './tools/rag.tool';
 import { StudentContextTool } from './tools/student-context.tool';
+import { GetStudentCompetencesTool } from './tools/get-student-competences.tool';
+import { GetCompetenceFrameworkTool } from './tools/get-competence-framework.tool';
 
 const STUDENT_ID = 'student-uuid-001';
 
@@ -37,6 +39,8 @@ describe('ChatService', () => {
   >;
   let mockStudentTool: jest.Mocked<Pick<StudentContextTool, 'execute'>>;
   let mockRagTool: jest.Mocked<Pick<RagTool, 'execute'>>;
+  let mockGetStudentCompetencesTool: jest.Mocked<Pick<GetStudentCompetencesTool, 'execute'>>;
+  let mockGetCompetenceFrameworkTool: jest.Mocked<Pick<GetCompetenceFrameworkTool, 'execute'>>;
   let mockAnthropicCreate: jest.Mock;
   let loggerWarnSpy: jest.SpyInstance;
 
@@ -49,6 +53,8 @@ describe('ChatService', () => {
     };
     mockStudentTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockRagTool = { execute: jest.fn().mockResolvedValue('') };
+    mockGetStudentCompetencesTool = { execute: jest.fn().mockResolvedValue('{}') };
+    mockGetCompetenceFrameworkTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockAnthropicCreate = jest.fn();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -57,6 +63,8 @@ describe('ChatService', () => {
         { provide: ConversationService, useValue: mockConversationService },
         { provide: StudentContextTool, useValue: mockStudentTool },
         { provide: RagTool, useValue: mockRagTool },
+        { provide: GetStudentCompetencesTool, useValue: mockGetStudentCompetencesTool },
+        { provide: GetCompetenceFrameworkTool, useValue: mockGetCompetenceFrameworkTool },
         {
           provide: ConfigService,
           useValue: { getOrThrow: jest.fn().mockReturnValue('sk-ant-test') },
@@ -161,7 +169,7 @@ describe('ChatService', () => {
     );
   });
 
-  it('does not advertise the temporary student context tool to Anthropic', async () => {
+  it('advertises the competence tools but not the disabled student context tool', async () => {
     mockAnthropicCreate.mockResolvedValue({
       stop_reason: 'end_turn',
       content: [{ type: 'text', text: 'Answer.' }],
@@ -169,11 +177,33 @@ describe('ChatService', () => {
 
     await collectEvents({ message: 'How am I doing?' });
 
-    expect(mockAnthropicCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tools: [expect.objectContaining({ name: 'search_course_content' })],
-      }),
+    const { tools } = mockAnthropicCreate.mock.calls[0][0] as { tools: { name: string }[] };
+    const names = tools.map((tool) => tool.name);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'search_course_content',
+        'get_student_competences',
+        'get_competence_framework',
+      ]),
     );
+    expect(names).not.toContain('get_student_context');
+  });
+
+  it('routes a get_student_competences tool call to the competence tool', async () => {
+    mockAnthropicCreate
+      .mockResolvedValueOnce({
+        stop_reason: 'tool_use',
+        content: [{ type: 'tool_use', id: 'tc1', name: 'get_student_competences', input: {} }],
+      })
+      .mockResolvedValueOnce({
+        stop_reason: 'end_turn',
+        content: [{ type: 'text', text: 'Je staat er goed voor.' }],
+      });
+    mockGetStudentCompetencesTool.execute.mockResolvedValue('{"competences":[]}');
+
+    await collectEvents({ message: 'Waar sta ik?' });
+
+    expect(mockGetStudentCompetencesTool.execute).toHaveBeenCalledWith(STUDENT_ID);
   });
 
   it('stops after max 6 iterations and sends fallback final event', async () => {

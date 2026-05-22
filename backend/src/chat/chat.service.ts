@@ -5,6 +5,15 @@ import { ConversationEntity } from './entities/conversation.entity';
 import { ConversationService } from './conversation.service';
 import { RAG_TOOL_DEF, RagTool } from './tools/rag.tool';
 import { STUDENT_CONTEXT_TOOL_DEF, StudentContextTool } from './tools/student-context.tool';
+import {
+  GET_STUDENT_COMPETENCES_TOOL_DEF,
+  GetStudentCompetencesTool,
+} from './tools/get-student-competences.tool';
+import {
+  GET_COMPETENCE_FRAMEWORK_TOOL_DEF,
+  GetCompetenceFrameworkTool,
+  type GetCompetenceFrameworkInput,
+} from './tools/get-competence-framework.tool';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatSource } from '../document/document-search.service';
 
@@ -12,12 +21,18 @@ export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
 
 const SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
-Je helpt studenten hun leervoortgang te begrijpen en te verbeteren.
+Je helpt studenten hun leervoortgang en competenties te begrijpen en te verbeteren.
 
 Aanpak:
-1. Gebruik search_course_content voor vragen over begrippen, het HBO-i raamwerk of cursusinhoud.
-2. Gebruik get_student_context voor vragen over de voortgang, challenge of activiteiten van de student.
-3. Combineer beide bronnen voor een volledig antwoord.
+1. Gebruik search_course_content voor vragen over begrippen, cursusinhoud of het stappenplan.
+2. Gebruik get_student_competences voor vragen over waar de student staat: zijn behaalde en gekozen competentieniveaus.
+3. Gebruik get_competence_framework om op te zoeken wat een competentie of niveau inhoudt.
+4. Combineer de voortgang van de student met de raamwerkdefinities tot concreet advies.
+
+Het HBO-i raamwerk: een competentie is een combinatie van een laag (User Interaction, Software, Hardware Interfacing, Infrastructure, Organisational processes), een activiteit (Analysis, Advise, Design, Realisation, Manage&Control) en een niveau. Daarnaast staat Professional Development met Personal leadership en Professional standard.
+
+Afstuderen: om door te mogen naar semester 7 toont een student een laag volledig op niveau 3 aan (alle vijf activiteiten), een tweede laag als verbreding op niveau 2, en Personal leadership en Professional standard op niveau 2.
+
 Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
 
 @Injectable()
@@ -30,6 +45,8 @@ export class ChatService {
     private readonly conversationService: ConversationService,
     private readonly studentContextTool: StudentContextTool,
     private readonly ragTool: RagTool,
+    private readonly getStudentCompetencesTool: GetStudentCompetencesTool,
+    private readonly getCompetenceFrameworkTool: GetCompetenceFrameworkTool,
     private readonly configService: ConfigService,
   ) {
     this.anthropic = new Anthropic({
@@ -101,15 +118,16 @@ export class ChatService {
   }
 
   private buildSystemPrompt(): string {
-    if (this.studentContextEnabled) return SYSTEM_PROMPT;
-
-    return `${SYSTEM_PROMPT}
-
-Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet beschikbaar. Baseer je dus niet op get_student_context tenzij dit later expliciet wordt aangezet.`;
+    return SYSTEM_PROMPT;
   }
 
   private getAvailableTools() {
-    return this.studentContextEnabled ? [STUDENT_CONTEXT_TOOL_DEF, RAG_TOOL_DEF] : [RAG_TOOL_DEF];
+    const tools = [
+      RAG_TOOL_DEF,
+      GET_STUDENT_COMPETENCES_TOOL_DEF,
+      GET_COMPETENCE_FRAMEWORK_TOOL_DEF,
+    ];
+    return this.studentContextEnabled ? [STUDENT_CONTEXT_TOOL_DEF, ...tools] : tools;
   }
 
   private async getOrCreateConversation(
@@ -172,6 +190,12 @@ Let op: student-specifieke challenge- en activiteitsdata zijn tijdelijk nog niet
         const retrieval = await this.ragTool.execute((block.input as { query: string }).query);
         result = retrieval.content;
         sources.push(...retrieval.sources);
+      } else if (block.name === 'get_student_competences') {
+        result = await this.getStudentCompetencesTool.execute(studentId);
+      } else if (block.name === 'get_competence_framework') {
+        result = await this.getCompetenceFrameworkTool.execute(
+          block.input as GetCompetenceFrameworkInput,
+        );
       } else {
         result = `Unknown tool: ${block.name}`;
       }
