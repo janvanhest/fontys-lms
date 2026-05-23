@@ -2,15 +2,46 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Psychology from '@mui/icons-material/Psychology';
 import type { RefObject } from 'react';
+import { useRef } from 'react';
 import { studentInitials, type StudentProfile } from '@/api/student';
 import type { Message } from '@/hooks/useChatStream';
-import { useTypewriter } from '@/hooks/useTypewriter';
+import { useTypewriter, CURSOR_FADE_DURATION_MS } from '@/hooks/useTypewriter';
 import { ChatMarkdown } from './ChatMarkdown';
+
+function CursorSpan({ phase }: { phase: 'blinking' | 'fading' }) {
+  return (
+    <Box
+      component="span"
+      sx={{
+        color: 'primary.main',
+        fontWeight: 'bold',
+        ml: '1px',
+        animation:
+          phase === 'blinking'
+            ? 'cursorBlink 0.8s step-end infinite'
+            : `cursorFade ${CURSOR_FADE_DURATION_MS}ms ease forwards`,
+        '@keyframes cursorBlink': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0 },
+        },
+        '@keyframes cursorFade': {
+          '0%': { opacity: 1 },
+          '55%': { opacity: 1 },
+          '100%': { opacity: 0 },
+        },
+      }}
+    >
+      │
+    </Box>
+  );
+}
 
 type ChatMessageListProps = {
   bottomRef: RefObject<HTMLDivElement | null>;
@@ -21,9 +52,16 @@ type ChatMessageListProps = {
 
 export function ChatMessageList({ bottomRef, messages, student, onAction }: ChatMessageListProps) {
   const streamingMessage = messages.find((m) => m.isStreaming);
-  const displayedContent = useTypewriter(
-    streamingMessage?.content ?? '',
-    Boolean(streamingMessage?.isStreaming),
+
+  const lastStreamingRef = useRef<{ id: string; content: string } | null>(null);
+  if (streamingMessage) {
+    lastStreamingRef.current = { id: streamingMessage.id, content: streamingMessage.content };
+  }
+
+  const typewriterContent = streamingMessage?.content ?? lastStreamingRef.current?.content ?? '';
+  const { displayed: displayedContent, isAtEnd, cursorPhase } = useTypewriter(
+    typewriterContent,
+    Boolean(streamingMessage),
   );
 
   return (
@@ -31,12 +69,12 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
       <Stack spacing={2.5}>
         {messages.map((message) => {
           const isStudent = message.role === 'student';
-          const content = message.isStreaming ? displayedContent : message.content;
-          const isAnimating =
-            Boolean(message.isStreaming) && displayedContent.length < message.content.length;
-          const lastPara = isAnimating ? content.lastIndexOf('\n\n') : -1;
-          const renderedPart = lastPara >= 0 ? content.slice(0, lastPara + 2) : '';
-          const animatingPart = lastPara >= 0 ? content.slice(lastPara + 2) : content;
+          const isAnimatedMsg = message.id === lastStreamingRef.current?.id && cursorPhase !== 'hidden';
+          const isStillTyping = isAnimatedMsg && !isAtEnd && Boolean(streamingMessage);
+          const content = isAnimatedMsg ? displayedContent : message.content;
+          const lastPara = isStillTyping ? displayedContent.lastIndexOf('\n\n') : -1;
+          const renderedPart = lastPara >= 0 ? displayedContent.slice(0, lastPara + 2) : '';
+          const animatingPart = lastPara >= 0 ? displayedContent.slice(lastPara + 2) : displayedContent;
           return (
             <Box key={message.id}>
               {!isStudent && message.toolCalls && message.toolCalls.length > 0 && (
@@ -125,7 +163,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                     color: 'text.primary',
                   }}
                 >
-                  {message.isStreaming && !content ? (
+                  {isAnimatedMsg && !content ? (
                     <CircularProgress size={16} />
                   ) : isStudent ? (
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -133,7 +171,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                     </Typography>
                   ) : (
                     <Box>
-                      {isAnimating ? (
+                      {isAnimatedMsg ? (
                         <>
                           {renderedPart && <ChatMarkdown content={renderedPart} />}
                           <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
