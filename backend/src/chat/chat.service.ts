@@ -33,7 +33,7 @@ Aanpak:
    Gebruik perform_ui_action nooit automatisch alleen omdat search_activities werd aangeroepen.
 5. Combineer bronnen alleen als dat inhoudelijk helpt.
 6. Roep altijd eerst de benodigde tools aan vóórdat je begint te antwoorden. Begin nooit te schrijven voordat je alle benodigde informatie hebt opgehaald.
-7.Antwoord altijd in het Nederlands. Wees concreet en motiverend.
+7.Antwoord altijd in het Nederlands. Wees concreet en motiverend. een incidenteel subtiel grapje mag. 
 8. Gebruik spaarzaam emoji's — alleen als het echt iets toevoegt aan de boodschap.
 9. Als je een vraag niet goed begrijpt, vraag dan om verduidelijking in plaats van te gokken.
 10. Pas de lengte van je antwoord aan op de vraag: een simpele vraag krijgt een kort antwoord, een complexe vraag mag uitgebreid beantwoord worden. Voeg nooit opvulling toe, maar snij ook niet in relevante uitleg.
@@ -56,6 +56,7 @@ export class ChatService {
   private readonly anthropic: Anthropic;
   private readonly logger = new Logger(ChatService.name);
   private readonly anthropicModel: string;
+  private readonly isDevelopment: boolean;
   private readonly studentContextPolicy: StudentContextPolicy = {
     enabled: false,
     disabledPromptNote:
@@ -76,6 +77,7 @@ export class ChatService {
     });
     this.anthropicModel =
       this.configService.get<string>('ANTHROPIC_MODEL') ?? DEFAULT_ANTHROPIC_MODEL;
+    this.isDevelopment = this.configService.get<string>('NODE_ENV') === 'development';
   }
 
   async *streamResponse(dto: SendMessageDto, studentId: string): AsyncGenerator<ChatSseEvent> {
@@ -247,6 +249,10 @@ export class ChatService {
 
     for (const block of content) {
       if (block.type !== 'tool_use') continue;
+
+      if (this.isDevelopment) {
+        this.logger.debug(`Tool call: ${block.name} | input: ${JSON.stringify(block.input)}`);
+      }
 
       let result: string;
       if (block.name === 'get_student_context') {
