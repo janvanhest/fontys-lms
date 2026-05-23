@@ -58,22 +58,25 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
   }
 
   const typewriterContent = streamingMessage?.content ?? lastStreamingRef.current?.content ?? '';
-  const { displayed: displayedContent, isAtEnd, cursorPhase } = useTypewriter(
-    typewriterContent,
-    Boolean(streamingMessage),
-  );
+  const {
+    displayed: displayedContent,
+    isAtEnd,
+    cursorPhase,
+  } = useTypewriter(typewriterContent, Boolean(streamingMessage));
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
       <Stack spacing={2.5}>
         {messages.map((message) => {
           const isStudent = message.role === 'student';
-          const isAnimatedMsg = message.id === lastStreamingRef.current?.id && cursorPhase !== 'hidden';
+          const isAnimatedMsg =
+            message.id === lastStreamingRef.current?.id && cursorPhase !== 'hidden';
           const isStillTyping = isAnimatedMsg && !isAtEnd && Boolean(streamingMessage);
           const content = isAnimatedMsg ? displayedContent : message.content;
           const lastPara = isStillTyping ? displayedContent.lastIndexOf('\n\n') : -1;
           const renderedPart = lastPara >= 0 ? displayedContent.slice(0, lastPara + 2) : '';
-          const animatingPart = lastPara >= 0 ? displayedContent.slice(lastPara + 2) : displayedContent;
+          const animatingPart =
+            lastPara >= 0 ? displayedContent.slice(lastPara + 2) : displayedContent;
           return (
             <Box key={message.id}>
               {!isStudent && message.toolCalls && message.toolCalls.length > 0 && (
@@ -121,32 +124,32 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
               >
                 {!isStudent && (
                   <Box sx={{ position: 'sticky', top: 16, alignSelf: 'flex-start' }}>
-                  <Avatar
-                    sx={{
-                      bgcolor: 'primary.main',
-                      width: 34,
-                      height: 34,
-                      ...(message.isStreaming && {
-                        animation: 'rainbow 2s linear infinite, pulse 1.2s ease-in-out infinite',
-                        '@keyframes rainbow': {
-                          '0%':    { backgroundColor: 'hsl(0,   90%, 52%)' },
-                          '14%':   { backgroundColor: 'hsl(30,  95%, 50%)' },
-                          '28%':   { backgroundColor: 'hsl(55,  90%, 45%)' },
-                          '42%':   { backgroundColor: 'hsl(130, 70%, 40%)' },
-                          '57%':   { backgroundColor: 'hsl(190, 85%, 42%)' },
-                          '71%':   { backgroundColor: 'hsl(240, 80%, 58%)' },
-                          '85%':   { backgroundColor: 'hsl(290, 75%, 52%)' },
-                          '100%':  { backgroundColor: 'hsl(0,   90%, 52%)' },
-                        },
-                        '@keyframes pulse': {
-                          '0%, 100%': { transform: 'scale(1)' },
-                          '50%':      { transform: 'scale(1.1)' },
-                        },
-                      }),
-                    }}
-                  >
-                    <Psychology sx={{ fontSize: 20 }} />
-                  </Avatar>
+                    <Avatar
+                      sx={{
+                        bgcolor: 'primary.main',
+                        width: 34,
+                        height: 34,
+                        ...(message.isStreaming && {
+                          animation: 'rainbow 2s linear infinite, pulse 1.2s ease-in-out infinite',
+                          '@keyframes rainbow': {
+                            '0%': { backgroundColor: 'hsl(0,   90%, 52%)' },
+                            '14%': { backgroundColor: 'hsl(30,  95%, 50%)' },
+                            '28%': { backgroundColor: 'hsl(55,  90%, 45%)' },
+                            '42%': { backgroundColor: 'hsl(130, 70%, 40%)' },
+                            '57%': { backgroundColor: 'hsl(190, 85%, 42%)' },
+                            '71%': { backgroundColor: 'hsl(240, 80%, 58%)' },
+                            '85%': { backgroundColor: 'hsl(290, 75%, 52%)' },
+                            '100%': { backgroundColor: 'hsl(0,   90%, 52%)' },
+                          },
+                          '@keyframes pulse': {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.1)' },
+                          },
+                        }),
+                      }}
+                    >
+                      <Psychology sx={{ fontSize: 20 }} />
+                    </Avatar>
                   </Box>
                 )}
                 <Paper
@@ -184,8 +187,17 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                           />
                         ))}
                       </Box>
-                      <Skeleton variant="text" animation="wave" sx={{ fontSize: '0.875rem', borderRadius: 1 }} />
-                      <Skeleton variant="text" animation="wave" width="62%" sx={{ fontSize: '0.875rem', borderRadius: 1 }} />
+                      <Skeleton
+                        variant="text"
+                        animation="wave"
+                        sx={{ fontSize: '0.875rem', borderRadius: 1 }}
+                      />
+                      <Skeleton
+                        variant="text"
+                        animation="wave"
+                        width="62%"
+                        sx={{ fontSize: '0.875rem', borderRadius: 1 }}
+                      />
                     </Box>
                   ) : isStudent ? (
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
@@ -195,10 +207,37 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                     <Box>
                       {isAnimatedMsg ? (
                         <>
-                          {renderedPart && <ChatMarkdown content={renderedPart} />}
-                          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                            {animatingPart}
-                          </Typography>
+                          {renderedPart
+                            .split('\n\n')
+                            .filter(Boolean)
+                            .map((para, i, arr) => {
+                              const isLast = i === arr.length - 1;
+                              const showCursor =
+                                isLast &&
+                                !animatingPart &&
+                                !isStillTyping &&
+                                cursorPhase !== 'hidden';
+                              return (
+                                <Fade key={i} in appear timeout={350}>
+                                  <Box sx={{ mb: 1 }}>
+                                    <ChatMarkdown content={para} />
+                                    {showCursor && <CursorSpan phase={cursorPhase} />}
+                                  </Box>
+                                </Fade>
+                              );
+                            })}
+                          {animatingPart && (
+                            <Typography
+                              variant="body1"
+                              component="span"
+                              sx={{ whiteSpace: 'pre-wrap', display: 'block' }}
+                            >
+                              {animatingPart}
+                              {!isStillTyping && cursorPhase !== 'hidden' && (
+                                <CursorSpan phase={cursorPhase} />
+                              )}
+                            </Typography>
+                          )}
                         </>
                       ) : (
                         <ChatMarkdown content={content} isStreaming={message.isStreaming} />

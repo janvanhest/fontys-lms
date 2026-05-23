@@ -126,7 +126,7 @@ describe('toolCallToBubble', () => {
   it('returns a bubble for search_activities', () => {
     expect(toolCallToBubble('search_activities')).toEqual({
       name: 'search_activities',
-      label: '🔍 Activiteiten bekeken',
+      label: 'Activiteiten bekeken',
       icon: 'activities',
     });
   });
@@ -134,13 +134,17 @@ describe('toolCallToBubble', () => {
   it('returns a bubble for get_student_context', () => {
     expect(toolCallToBubble('get_student_context')).toEqual({
       name: 'get_student_context',
-      label: '👤 Studentprofiel bekeken',
+      label: 'Studentprofiel bekeken',
       icon: 'student',
     });
   });
 
-  it('returns null for search_course_content', () => {
-    expect(toolCallToBubble('search_course_content')).toBeNull();
+  it('returns a bubble for search_course_content', () => {
+    expect(toolCallToBubble('search_course_content')).toEqual({
+      name: 'search_course_content',
+      label: 'Bronnen bekeken',
+      icon: 'sources',
+    });
   });
 
   it('returns null for perform_ui_action', () => {
