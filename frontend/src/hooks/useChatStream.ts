@@ -136,13 +136,21 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               scheduleStatus(getStatusFromEventText(sseEvent.data));
               break;
             case 'tool_call': {
-              scheduleStatus(getStatusFromToolCall(sseEvent.data));
+              // Bypass scheduleStatus: always show tool status immediately and reset
+              // the minimum-duration clock so rapid subsequent events (e.g. the next
+              // iteration's 'status') cannot wipe this before it's ever rendered.
+              if (pendingStatusRef.current !== null) {
+                clearTimeout(pendingStatusRef.current);
+                pendingStatusRef.current = null;
+              }
+              statusSetAtRef.current = Date.now();
+              setStatus(getStatusFromToolCall(sseEvent.data));
               const payload = JSON.parse(sseEvent.data) as { name: string };
               const bubble = toolCallToBubble(payload.name);
               if (bubble) {
                 setMessages((prev) =>
                   prev.map((m) =>
-                    m.id === streamingId
+                    m.id === streamingId && !m.toolCalls?.some((tc) => tc.name === bubble.name)
                       ? { ...m, toolCalls: [...(m.toolCalls ?? []), bubble] }
                       : m,
                   ),
