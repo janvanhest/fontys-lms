@@ -107,7 +107,7 @@ export function Sidebar() {
             startIcon={<AddIcon />}
             onClick={() => {
               setSelectedConversationId(null);
-              setChatMountKey('new-' + Date.now());
+              setChatMountKey(`new-${String(Date.now())}`);
               selectTab('chat');
             }}
           >
