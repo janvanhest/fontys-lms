@@ -37,7 +37,9 @@ export function useTypewriter(content: string, isStreaming: boolean): string {
       });
     }, INTERVAL_MS);
 
-    return () => { clearInterval(id); };
+    return () => {
+      clearInterval(id);
+    };
   }, [isStreaming]);
 
   return content.slice(0, displayIndex);

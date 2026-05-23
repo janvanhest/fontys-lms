@@ -84,32 +84,32 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
               >
                 {!isStudent && (
                   <Box sx={{ position: 'sticky', top: 16, alignSelf: 'flex-start' }}>
-                  <Avatar
-                    sx={{
-                      bgcolor: 'primary.main',
-                      width: 34,
-                      height: 34,
-                      ...(message.isStreaming && {
-                        animation: 'rainbow 2s linear infinite, pulse 1.2s ease-in-out infinite',
-                        '@keyframes rainbow': {
-                          '0%':    { backgroundColor: 'hsl(0,   90%, 52%)' },
-                          '14%':   { backgroundColor: 'hsl(30,  95%, 50%)' },
-                          '28%':   { backgroundColor: 'hsl(55,  90%, 45%)' },
-                          '42%':   { backgroundColor: 'hsl(130, 70%, 40%)' },
-                          '57%':   { backgroundColor: 'hsl(190, 85%, 42%)' },
-                          '71%':   { backgroundColor: 'hsl(240, 80%, 58%)' },
-                          '85%':   { backgroundColor: 'hsl(290, 75%, 52%)' },
-                          '100%':  { backgroundColor: 'hsl(0,   90%, 52%)' },
-                        },
-                        '@keyframes pulse': {
-                          '0%, 100%': { transform: 'scale(1)' },
-                          '50%':      { transform: 'scale(1.1)' },
-                        },
-                      }),
-                    }}
-                  >
-                    <Psychology sx={{ fontSize: 20 }} />
-                  </Avatar>
+                    <Avatar
+                      sx={{
+                        bgcolor: 'primary.main',
+                        width: 34,
+                        height: 34,
+                        ...(message.isStreaming && {
+                          animation: 'rainbow 2s linear infinite, pulse 1.2s ease-in-out infinite',
+                          '@keyframes rainbow': {
+                            '0%': { backgroundColor: 'hsl(0,   90%, 52%)' },
+                            '14%': { backgroundColor: 'hsl(30,  95%, 50%)' },
+                            '28%': { backgroundColor: 'hsl(55,  90%, 45%)' },
+                            '42%': { backgroundColor: 'hsl(130, 70%, 40%)' },
+                            '57%': { backgroundColor: 'hsl(190, 85%, 42%)' },
+                            '71%': { backgroundColor: 'hsl(240, 80%, 58%)' },
+                            '85%': { backgroundColor: 'hsl(290, 75%, 52%)' },
+                            '100%': { backgroundColor: 'hsl(0,   90%, 52%)' },
+                          },
+                          '@keyframes pulse': {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.1)' },
+                          },
+                        }),
+                      }}
+                    >
+                      <Psychology sx={{ fontSize: 20 }} />
+                    </Avatar>
                   </Box>
                 )}
                 <Paper
@@ -133,7 +133,11 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                           variant="circular"
                           width={8}
                           height={8}
-                          sx={{ animationDelay: `${i * 0.15}s`, bgcolor: 'primary.main', opacity: 0.4 }}
+                          sx={{
+                            animationDelay: `${i * 0.15}s`,
+                            bgcolor: 'primary.main',
+                            opacity: 0.4,
+                          }}
                         />
                       ))}
                     </Box>
