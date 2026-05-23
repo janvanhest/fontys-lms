@@ -1,7 +1,6 @@
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
@@ -164,7 +163,30 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                   }}
                 >
                   {isAnimatedMsg && !content ? (
-                    <CircularProgress size={16} />
+                    <Box sx={{ py: 0.25 }}>
+                      <Box sx={{ display: 'flex', gap: 0.75, mb: 1 }}>
+                        {[0, 1, 2].map((i) => (
+                          <Box
+                            key={i}
+                            sx={{
+                              width: 7,
+                              height: 7,
+                              borderRadius: '50%',
+                              bgcolor: 'primary.main',
+                              opacity: 0.35,
+                              animation: 'pulseDot 1.2s ease-in-out infinite',
+                              animationDelay: `${i * 0.2}s`,
+                              '@keyframes pulseDot': {
+                                '0%, 100%': { opacity: 0.35, transform: 'scale(1)' },
+                                '50%': { opacity: 1, transform: 'scale(1.35)' },
+                              },
+                            }}
+                          />
+                        ))}
+                      </Box>
+                      <Skeleton variant="text" animation="wave" sx={{ fontSize: '0.875rem', borderRadius: 1 }} />
+                      <Skeleton variant="text" animation="wave" width="62%" sx={{ fontSize: '0.875rem', borderRadius: 1 }} />
+                    </Box>
                   ) : isStudent ? (
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                       {message.content}
