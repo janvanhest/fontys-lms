@@ -70,10 +70,12 @@ export function ChatTabHeader({
         <Typography variant="h4" component="h1">
           {activeTab === 'activities' ? 'Activiteiten' : 'Chat'}
         </Typography>
-        {status ? (
+        {status || isStreaming || isLoadingHistory ? (
           <Chip
-            icon={getStatusIcon(status.icon)}
-            label={status.label}
+            icon={getStatusIcon(
+              status?.icon ?? (isLoadingHistory ? 'history' : 'writing'),
+            )}
+            label={status?.label ?? (isLoadingHistory ? 'Gesprek laden...' : 'Antwoord schrijven...')}
             size="small"
             sx={{
               mt: 1,
@@ -87,11 +89,7 @@ export function ChatTabHeader({
           />
         ) : (
           <Typography variant="body2" color="text.secondary">
-            {isLoadingHistory
-              ? 'Gesprek laden...'
-              : isStreaming
-              ? 'Antwoord schrijven...'
-              : 'Stel een vraag over je challenge, activiteiten of cursusinhoud.'}
+            Stel een vraag over je challenge, activiteiten of cursusinhoud.
           </Typography>
         )}
       </Box>
