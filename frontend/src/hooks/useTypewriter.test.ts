@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { CURSOR_FADE_DURATION_MS } from './useTypewriter';
 
 // The hook itself requires a DOM environment; we test the slicing logic inline.
 describe('useTypewriter slicing', () => {
@@ -26,34 +25,5 @@ describe('useTypewriter slicing', () => {
     const lastParaEnd = displayed.lastIndexOf('\n\n');
     const animatingPart = lastParaEnd >= 0 ? displayed.slice(lastParaEnd + 2) : displayed;
     expect(animatingPart).toBe('Just one line');
-  });
-});
-
-describe('useTypewriter return shape — isAtEnd logic', () => {
-  it('isAtEnd is false when displayIndex < content length', () => {
-    const content = 'Hello world';
-    const displayIndex = 5;
-    const isAtEnd = content.length > 0 && displayIndex >= content.length;
-    expect(isAtEnd).toBe(false);
-  });
-
-  it('isAtEnd is true when displayIndex reaches content length', () => {
-    const content = 'Hello world';
-    const displayIndex = 11;
-    const isAtEnd = content.length > 0 && displayIndex >= content.length;
-    expect(isAtEnd).toBe(true);
-  });
-
-  it('isAtEnd is false when content is empty', () => {
-    const content = '';
-    const displayIndex = 0;
-    const isAtEnd = content.length > 0 && displayIndex >= content.length;
-    expect(isAtEnd).toBe(false);
-  });
-});
-
-describe('CURSOR_FADE_DURATION_MS', () => {
-  it('is 2500ms', () => {
-    expect(CURSOR_FADE_DURATION_MS).toBe(2500);
   });
 });
