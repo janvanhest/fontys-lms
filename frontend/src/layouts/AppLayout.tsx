@@ -20,12 +20,7 @@ export function AppLayout() {
     switch (activeTab) {
       case 'chat':
       case 'activities':
-        return (
-          <ChatTab
-            key={chatMountKey}
-            conversationId={selectedConversationId ?? undefined}
-          />
-        );
+        return <ChatTab key={chatMountKey} conversationId={selectedConversationId ?? undefined} />;
       case 'challenge':
         return <ChallengeTab />;
       case 'competenties':

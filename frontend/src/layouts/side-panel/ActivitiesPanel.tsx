@@ -16,12 +16,7 @@ import { useActivitiesPanelState } from './useActivitiesPanelState';
 export function ActivitiesPanel() {
   const { highlightedActivityId } = useLayout();
 
-  const {
-    data: activities = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery(activitiesQueryOptions);
+  const { data: activities = [], isLoading, isError, error } = useQuery(activitiesQueryOptions);
 
   const updateActivity = useUpdateActivity();
   const {
@@ -101,7 +96,9 @@ export function ActivitiesPanel() {
         {selectedActivity ? (
           <ActivityDetails
             activity={selectedActivity}
-            onClose={() => { setSelectedActivityId(null); }}
+            onClose={() => {
+              setSelectedActivityId(null);
+            }}
             onEdit={handleEdit}
           />
         ) : null}
@@ -117,12 +114,7 @@ export function ActivitiesPanel() {
           bgcolor: 'background.paper',
         }}
       >
-        <Button
-          fullWidth
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreate}
-        >
+        <Button fullWidth variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
           Nieuwe activiteit
         </Button>
       </Box>
@@ -135,7 +127,10 @@ export function ActivitiesPanel() {
         openSubmenu={openSubmenu}
         onCloseMenus={closeMenus}
         onOpenSubmenu={handleOpenSubmenu}
-        onCloseSubmenu={() => { setSubmenuAnchorEl(null); setOpenSubmenu(null); }}
+        onCloseSubmenu={() => {
+          setSubmenuAnchorEl(null);
+          setOpenSubmenu(null);
+        }}
         onTypeChange={handleTypeChange}
         onStatusChange={handleStatusChange}
         onEdit={handleEdit}
@@ -145,7 +140,9 @@ export function ActivitiesPanel() {
         key={editActivity?.id ?? 'new'}
         open={formOpen}
         activity={editActivity}
-        onClose={() => { setFormOpen(false); }}
+        onClose={() => {
+          setFormOpen(false);
+        }}
       />
     </>
   );

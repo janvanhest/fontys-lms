@@ -9,7 +9,12 @@ import { SidePanel } from './SidePanel';
 
 function SidePanelFrame({ sidePanelOpen }: { sidePanelOpen: boolean }) {
   const [client] = useState(() => {
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } } });
+    const qc = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, staleTime: Infinity },
+        mutations: { retry: false },
+      },
+    });
     qc.setQueryData(activitiesQueryOptions.queryKey, MOCK_ACTIVITIES);
     return qc;
   });

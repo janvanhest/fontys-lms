@@ -18,7 +18,13 @@ import { SidebarConversationList } from './sidebar/SidebarConversationList';
 const sidebarWidth = 190;
 
 export function Sidebar() {
-  const { sidebarOpen, selectedConversationId, setSelectedConversationId, setChatMountKey, selectTab } = useLayout();
+  const {
+    sidebarOpen,
+    selectedConversationId,
+    setSelectedConversationId,
+    setChatMountKey,
+    selectTab,
+  } = useLayout();
   const queryClient = useQueryClient();
   const { data: conversations = [], isLoading } = useQuery({
     ...conversationSummariesQueryOptions,

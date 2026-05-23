@@ -28,7 +28,15 @@ export type ConversationDetails = {
 };
 
 export type ChatSseEvent = {
-  event: 'status' | 'tool_call' | 'tool_result' | 'ui_action' | 'text_delta' | 'stream_reset' | 'final' | 'error';
+  event:
+    | 'status'
+    | 'tool_call'
+    | 'tool_result'
+    | 'ui_action'
+    | 'text_delta'
+    | 'stream_reset'
+    | 'final'
+    | 'error';
   data: string;
 };
 

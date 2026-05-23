@@ -24,7 +24,8 @@ export const MOCK_ACTIVITIES: Activity[] = [
     id: 'activity-1',
     portflowId: 101,
     title: 'Analyseer gebruikerswensen',
-    description: 'Inventariseer en analyseer de wensen van de opdrachtgever en beschrijf deze in een requirementsdocument.',
+    description:
+      'Inventariseer en analyseer de wensen van de opdrachtgever en beschrijf deze in een requirementsdocument.',
     position: 1,
     type: 'opdracht',
     status: 'afgerond',

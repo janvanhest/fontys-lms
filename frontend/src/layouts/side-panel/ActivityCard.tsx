@@ -43,8 +43,12 @@ export function ActivityCard({
       tabIndex={0}
       aria-pressed={isSelected}
       data-activity-id={activity.id}
-      onClick={() => { onSelect(activity.id); }}
-      onKeyDown={(event) => { onKeyDown(event, activity.id); }}
+      onClick={() => {
+        onSelect(activity.id);
+      }}
+      onKeyDown={(event) => {
+        onKeyDown(event, activity.id);
+      }}
       elevation={isSelected ? 4 : 1}
       sx={(theme) => ({
         '@keyframes activityCardHighlight': {
@@ -82,7 +86,9 @@ export function ActivityCard({
           aria-label={`Open menu voor ${activity.title}`}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          onClick={(event) => { onOpenMenu(event, activity.id); }}
+          onClick={(event) => {
+            onOpenMenu(event, activity.id);
+          }}
           sx={{ position: 'absolute', top: 8, right: 8 }}
         >
           <MoreVertIcon fontSize="small" />
@@ -108,7 +114,10 @@ export function ActivityCard({
           <Typography variant="body2" color="text.secondary">
             {deadlineLabel}
           </Typography>
-          <Typography variant="body2" sx={{ color: statusColor, fontWeight: 600, textAlign: 'right' }}>
+          <Typography
+            variant="body2"
+            sx={{ color: statusColor, fontWeight: 600, textAlign: 'right' }}
+          >
             {statusLabel}
           </Typography>
         </Box>

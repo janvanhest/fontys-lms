@@ -40,12 +40,10 @@ describe('getStatusFromToolCall', () => {
   });
 
   it('preserves the source lookup status for search_course_content', () => {
-    expect(getStatusFromToolCall(JSON.stringify({ name: 'search_course_content' }))).toMatchObject(
-      {
-        label: 'Bronnen bekijken...',
-        icon: 'sources',
-      },
-    );
+    expect(getStatusFromToolCall(JSON.stringify({ name: 'search_course_content' }))).toMatchObject({
+      label: 'Bronnen bekijken...',
+      icon: 'sources',
+    });
   });
 
   it('returns generic context status metadata for unknown tools', () => {
@@ -115,7 +113,10 @@ describe('applyFinalMessage', () => {
       { id: 'assistant-1', role: 'assistant', content: '', isStreaming: true },
     ];
 
-    const result = applyFinalMessage(messages, 'assistant-1', { text: 'Antwoord.', conversationId: 'c1' });
+    const result = applyFinalMessage(messages, 'assistant-1', {
+      text: 'Antwoord.',
+      conversationId: 'c1',
+    });
 
     expect(result.find((m) => m.id === 'assistant-1')?.actions).toBeUndefined();
   });

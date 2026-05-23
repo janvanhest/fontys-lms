@@ -1,8 +1,7 @@
 // frontend/src/hooks/useChatStream.ts
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const MIN_STATUS_DURATION_MS =
-  Number(import.meta.env.VITE_MIN_STATUS_DURATION_MS) || 2000;
+const MIN_STATUS_DURATION_MS = Number(import.meta.env.VITE_MIN_STATUS_DURATION_MS) || 2000;
 import { parseFinalChatPayload, streamChatMessage } from '@/api/chat';
 import {
   applyErrorMessage,
@@ -32,7 +31,9 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(hasConversation);
-  const [status, setStatus] = useState<ChatStatus | null>(hasConversation ? CHAT_HISTORY_STATUS : null);
+  const [status, setStatus] = useState<ChatStatus | null>(
+    hasConversation ? CHAT_HISTORY_STATUS : null,
+  );
   const streamAbortRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
   const statusSetAtRef = useRef<number>(0);
@@ -190,7 +191,9 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
                 pendingSuggestions.push({
                   action: uiPayload.action as ChatUiAction['action'],
                   label: uiPayload.label,
-                  ...(uiPayload.activityId ? { payload: { activityId: uiPayload.activityId } } : {}),
+                  ...(uiPayload.activityId
+                    ? { payload: { activityId: uiPayload.activityId } }
+                    : {}),
                 });
               }
               break;

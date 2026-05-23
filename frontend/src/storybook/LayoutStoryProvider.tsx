@@ -60,7 +60,17 @@ export function LayoutStoryProvider({
       highlightedActivityId,
       highlightActivity,
     }),
-    [activeTab, selectTab, selectedConversationId, sidebarOpen, sidePanelOpen, sidePanelContent, openSidePanel, highlightedActivityId, highlightActivity],
+    [
+      activeTab,
+      selectTab,
+      selectedConversationId,
+      sidebarOpen,
+      sidePanelOpen,
+      sidePanelContent,
+      openSidePanel,
+      highlightedActivityId,
+      highlightActivity,
+    ],
   );
 
   return <LayoutContext value={value}>{children}</LayoutContext>;

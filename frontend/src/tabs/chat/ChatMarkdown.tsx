@@ -18,7 +18,9 @@ export function ChatMarkdown({ content }: ChatMarkdownProps) {
         '& ul + p, & ol + p, & blockquote + p, & pre + p': { mt: 1.25 },
       }}
     >
-      <Markdown remarkPlugins={[remarkGfm]} components={chatMarkdownComponents}>{content}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]} components={chatMarkdownComponents}>
+        {content}
+      </Markdown>
     </Box>
   );
 }

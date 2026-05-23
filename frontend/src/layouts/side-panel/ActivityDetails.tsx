@@ -52,7 +52,9 @@ export function ActivityDetails({ activity, onClose, onEdit }: ActivityDetailsPr
           <IconButton
             size="small"
             aria-label="Sluit detailweergave"
-            onClick={() => { onClose(); }}
+            onClick={() => {
+              onClose();
+            }}
           >
             <CloseIcon fontSize="small" />
           </IconButton>
@@ -109,7 +111,9 @@ export function ActivityDetails({ activity, onClose, onEdit }: ActivityDetailsPr
           variant="contained"
           fullWidth
           startIcon={<EditOutlinedIcon />}
-          onClick={() => { onEdit(activity); }}
+          onClick={() => {
+            onEdit(activity);
+          }}
         >
           Bewerken
         </Button>

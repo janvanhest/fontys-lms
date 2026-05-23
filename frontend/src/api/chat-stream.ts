@@ -65,7 +65,8 @@ export function parseFinalChatPayload(data: string): FinalChatPayload {
 
       return {
         text: parsed.text,
-        conversationId: typeof parsed.conversationId === 'string' ? parsed.conversationId : undefined,
+        conversationId:
+          typeof parsed.conversationId === 'string' ? parsed.conversationId : undefined,
         sources: sources?.length ? sources : undefined,
       };
     }

@@ -72,10 +72,10 @@ export function ChatTabHeader({
         </Typography>
         {status || isStreaming || isLoadingHistory ? (
           <Chip
-            icon={getStatusIcon(
-              status?.icon ?? (isLoadingHistory ? 'history' : 'writing'),
-            )}
-            label={status?.label ?? (isLoadingHistory ? 'Gesprek laden...' : 'Antwoord schrijven...')}
+            icon={getStatusIcon(status?.icon ?? (isLoadingHistory ? 'history' : 'writing'))}
+            label={
+              status?.label ?? (isLoadingHistory ? 'Gesprek laden...' : 'Antwoord schrijven...')
+            }
             size="small"
             sx={{
               mt: 1,

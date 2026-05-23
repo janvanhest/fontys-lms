@@ -71,7 +71,13 @@ export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDial
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar
               variant="rounded"
-              sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: 'primary.main', flexShrink: 0 }}
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: 2,
+                bgcolor: 'primary.main',
+                flexShrink: 0,
+              }}
             >
               {isEdit ? <EditOutlinedIcon /> : <AddIcon />}
             </Avatar>
@@ -80,9 +86,7 @@ export function ActivityFormDialog({ open, activity, onClose }: ActivityFormDial
                 {isEdit ? 'Activiteit bewerken' : 'Nieuwe activiteit'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {isEdit
-                  ? activity.title
-                  : 'Vul de gegevens in voor de nieuwe activiteit'}
+                {isEdit ? activity.title : 'Vul de gegevens in voor de nieuwe activiteit'}
               </Typography>
             </Box>
           </Box>
