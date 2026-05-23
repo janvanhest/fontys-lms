@@ -1,7 +1,7 @@
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
+import Skeleton from '@mui/material/Skeleton';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -126,7 +126,17 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
                   }}
                 >
                   {message.isStreaming && !content ? (
-                    <CircularProgress size={16} />
+                    <Box sx={{ display: 'flex', gap: 0.75, py: 0.5 }}>
+                      {[0, 1, 2].map((i) => (
+                        <Skeleton
+                          key={i}
+                          variant="circular"
+                          width={8}
+                          height={8}
+                          sx={{ animationDelay: `${i * 0.15}s`, bgcolor: 'primary.main', opacity: 0.4 }}
+                        />
+                      ))}
+                    </Box>
                   ) : isStudent ? (
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                       {message.content}
