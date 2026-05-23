@@ -12,7 +12,7 @@ export type ChatUiAction = {
 };
 
 export type ToolCallBubble = {
-  name: 'search_activities' | 'get_student_context';
+  name: 'search_activities' | 'get_student_context' | 'search_course_content';
   label: string;
   icon: string;
 };
@@ -56,6 +56,9 @@ export function toolCallToBubble(name: string): ToolCallBubble | null {
   }
   if (name === 'get_student_context') {
     return { name, label: 'Studentprofiel bekeken', icon: 'student' };
+  }
+  if (name === 'search_course_content') {
+    return { name, label: 'Bronnen bekeken', icon: 'sources' };
   }
   return null;
 }
