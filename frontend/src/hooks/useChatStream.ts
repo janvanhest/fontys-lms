@@ -1,22 +1,15 @@
-// frontend/src/hooks/useChatStream.ts
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-const MIN_STATUS_DURATION_MS = Number(import.meta.env.VITE_MIN_STATUS_DURATION_MS) || 2000;
-import { parseFinalChatPayload, streamChatMessage } from '@/api/chat';
+import { streamChatMessage } from '@/api/chat';
 import {
   applyErrorMessage,
-  applyFinalMessage,
   CHAT_HISTORY_STATUS,
-  CHAT_WRITING_STATUS,
   createPendingMessages,
-  getStatusFromEventText,
-  getStatusFromToolCall,
   loadConversationHistory,
-  toolCallToBubble,
-  type ChatStatus,
   type ChatUiAction,
   type Message,
 } from './chatStreamHelpers';
+import { handleStreamEvent } from './chatStreamEventHandler';
+import { useScheduledStatus } from './useScheduledStatus';
 
 export type { Message } from './chatStreamHelpers';
 
@@ -31,47 +24,18 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(hasConversation);
-  const [status, setStatus] = useState<ChatStatus | null>(
+  const isMountedRef = useRef(true);
+  const streamAbortRef = useRef<AbortController | null>(null);
+  const { status, scheduleStatus, forceStatus } = useScheduledStatus(
+    isMountedRef,
     hasConversation ? CHAT_HISTORY_STATUS : null,
   );
-  const streamAbortRef = useRef<AbortController | null>(null);
-  const isMountedRef = useRef(true);
-  const statusSetAtRef = useRef<number>(0);
-  const pendingStatusRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const scheduleStatus = useCallback((newStatus: ChatStatus | null) => {
-    if (pendingStatusRef.current !== null) {
-      clearTimeout(pendingStatusRef.current);
-      pendingStatusRef.current = null;
-    }
-    if (newStatus === null) {
-      statusSetAtRef.current = 0;
-      setStatus(null);
-      return;
-    }
-    const remaining = MIN_STATUS_DURATION_MS - (Date.now() - statusSetAtRef.current);
-    if (remaining <= 0 || statusSetAtRef.current === 0) {
-      statusSetAtRef.current = Date.now();
-      setStatus(newStatus);
-    } else {
-      pendingStatusRef.current = setTimeout(() => {
-        pendingStatusRef.current = null;
-        if (isMountedRef.current) {
-          statusSetAtRef.current = Date.now();
-          setStatus(newStatus);
-        }
-      }, remaining);
-    }
-  }, []);
 
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       streamAbortRef.current?.abort();
-      if (pendingStatusRef.current !== null) {
-        clearTimeout(pendingStatusRef.current);
-      }
     };
   }, []);
 
@@ -86,13 +50,13 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       .then((historyMessages) => {
         if (ignore || !isMountedRef.current) return;
         setMessages(historyMessages);
-        setStatus(null);
+        scheduleStatus(null);
       })
       .catch((error: unknown) => {
         if (ignore || !isMountedRef.current) return;
         if (error instanceof DOMException && error.name === 'AbortError') return;
         setMessages([]);
-        setStatus({ label: 'Gesprek laden mislukt.', icon: 'history' });
+        scheduleStatus({ label: 'Gesprek laden mislukt.', icon: 'history' });
       })
       .finally(() => {
         if (!isMountedRef.current) return;
@@ -103,7 +67,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       ignore = true;
       controller.abort();
     };
-  }, [conversationId]);
+  }, [conversationId, scheduleStatus]);
 
   const consumeAction = useCallback((messageId: string, action: string) => {
     setMessages((prev) =>
@@ -126,96 +90,18 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
       setMessages((prev) => [...prev, userMessage, streamingMessage]);
       setIsStreaming(true);
-      setStatus(null);
+      scheduleStatus(null);
 
       try {
         for await (const sseEvent of streamChatMessage(text, conversationId, controller.signal)) {
           if (!isMountedRef.current) return;
-
-          switch (sseEvent.event) {
-            case 'status':
-              scheduleStatus(getStatusFromEventText(sseEvent.data));
-              break;
-            case 'tool_call': {
-              // Bypass scheduleStatus: always show tool status immediately and reset
-              // the minimum-duration clock so rapid subsequent events (e.g. the next
-              // iteration's 'status') cannot wipe this before it's ever rendered.
-              if (pendingStatusRef.current !== null) {
-                clearTimeout(pendingStatusRef.current);
-                pendingStatusRef.current = null;
-              }
-              statusSetAtRef.current = Date.now();
-              setStatus(getStatusFromToolCall(sseEvent.data));
-              const payload = JSON.parse(sseEvent.data) as { name: string };
-              const bubble = toolCallToBubble(payload.name);
-              if (bubble) {
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === streamingId && !m.toolCalls?.some((tc) => tc.name === bubble.name)
-                      ? { ...m, toolCalls: [...(m.toolCalls ?? []), bubble] }
-                      : m,
-                  ),
-                );
-              }
-              break;
-            }
-            case 'tool_result':
-              scheduleStatus(CHAT_WRITING_STATUS);
-              break;
-            case 'text_delta':
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === streamingId ? { ...m, content: m.content + sseEvent.data } : m,
-                ),
-              );
-              scheduleStatus(null);
-              break;
-            case 'stream_reset':
-              setMessages((prev) =>
-                prev.map((m) => (m.id === streamingId ? { ...m, content: '' } : m)),
-              );
-              break;
-            case 'ui_action': {
-              const uiPayload = JSON.parse(sseEvent.data) as {
-                action: string;
-                mode: string;
-                label: string;
-                activityId?: string;
-              };
-              if (uiPayload.mode === 'auto') {
-                onUiAction?.(
-                  uiPayload.action,
-                  uiPayload.activityId ? { activityId: uiPayload.activityId } : undefined,
-                );
-              } else {
-                pendingSuggestions.push({
-                  action: uiPayload.action as ChatUiAction['action'],
-                  label: uiPayload.label,
-                  ...(uiPayload.activityId
-                    ? { payload: { activityId: uiPayload.activityId } }
-                    : {}),
-                });
-              }
-              break;
-            }
-            case 'final': {
-              const finalPayload = parseFinalChatPayload(sseEvent.data);
-              if (finalPayload.conversationId) {
-                onConversationEstablished?.(finalPayload.conversationId);
-              }
-              setMessages((prev) =>
-                applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions),
-              );
-              scheduleStatus(null);
-              break;
-            }
-            case 'error':
-              setMessages((prev) =>
-                applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`),
-              );
-              scheduleStatus(null);
-              break;
-          }
+          handleStreamEvent(sseEvent, streamingId, pendingSuggestions, {
+            scheduleStatus,
+            forceStatus,
+            setMessages,
+            onConversationEstablished,
+            onUiAction,
+          });
         }
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -228,7 +114,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
               'Error: de chatverbinding is onderbroken. Probeer het opnieuw.',
             ),
           );
-          setStatus(null);
+          scheduleStatus(null);
         }
       } finally {
         if (streamAbortRef.current === controller) {
@@ -236,11 +122,19 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
         }
         if (isMountedRef.current) {
           setIsStreaming(false);
-          setStatus(null);
+          scheduleStatus(null);
         }
       }
     },
-    [isStreaming, isLoadingHistory, conversationId, onConversationEstablished, onUiAction],
+    [
+      isStreaming,
+      isLoadingHistory,
+      conversationId,
+      onConversationEstablished,
+      onUiAction,
+      scheduleStatus,
+      forceStatus,
+    ],
   );
 
   return { messages, isStreaming, isLoadingHistory, status, sendMessage, consumeAction };
