@@ -23,6 +23,7 @@ export function LayoutStoryProvider({
 }: LayoutStoryProviderProps) {
   const [activeTab, setActiveTab] = useState(initialActiveTab);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [chatMountKey, setChatMountKey] = useState<string>('init');
   const [sidebarOpen, setSidebarOpen] = useState(initialSidebarOpen);
   const [sidePanelOpen, setSidePanelOpen] = useState(initialSidePanelOpen);
   const [sidePanelContent, setSidePanelContent] = useState<SidePanelContent | null>(
@@ -51,6 +52,8 @@ export function LayoutStoryProvider({
       selectTab,
       selectedConversationId,
       setSelectedConversationId,
+      chatMountKey,
+      setChatMountKey,
       sidebarOpen,
       setSidebarOpen,
       sidePanelOpen,
@@ -64,6 +67,7 @@ export function LayoutStoryProvider({
       activeTab,
       selectTab,
       selectedConversationId,
+      chatMountKey,
       sidebarOpen,
       sidePanelOpen,
       sidePanelContent,
