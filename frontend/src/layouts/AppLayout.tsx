@@ -4,7 +4,7 @@ import { ChatTab } from '@/tabs/chat/ChatTab';
 import { ChallengeTab } from '@/tabs/ChallengeTab';
 import { CompetentiesTab } from '@/tabs/CompetentiesTab';
 import { StappenplanTab } from '@/tabs/StappenplanTab';
-import { Sidebar } from './Sidebar';
+import { Sidebar } from './sidebar/Sidebar';
 import { SidePanel } from './SidePanel';
 import { Topbar } from '@/layouts/topbar/Topbar';
 

@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 're
 import { useQuery } from '@tanstack/react-query';
 import { studentProfileOptions } from '@/api/student';
 import { useLayout } from '@/context/useLayout';
-import { useChatStream } from '@/hooks/useChatStream';
+import { useChatStream } from './messages/useChatStream';
 import { ChatComposer } from './ChatComposer';
-import { ChatMessageList } from './ChatMessageList';
-import { ChatTabHeader } from './ChatTabHeader';
+import { ChatMessageList } from './messages/ChatMessageList';
+import { ChatTabHeader } from './header/ChatTabHeader';
 
 type ChatTabProps = {
   conversationId?: string;

@@ -97,7 +97,7 @@ export function handleStreamEvent(
       break;
     }
     case 'error':
-      setMessages((prev) => applyErrorMessage(prev, streamingId, `Error: ${sseEvent.data}`));
+      setMessages((prev) => applyErrorMessage(prev, streamingId, sseEvent.data));
       scheduleStatus(null);
       break;
   }
