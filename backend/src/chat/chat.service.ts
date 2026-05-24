@@ -184,9 +184,7 @@ export class ChatService {
         );
         yield {
           event: 'error',
-          data: JSON.stringify({
-            message: 'Er is een fout opgetreden bij het verwerken van je vraag.',
-          }),
+          data: 'Er is een fout opgetreden bij het verwerken van je vraag.',
         };
         return;
       }
