@@ -1,7 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
-import Anthropic from '@anthropic-ai/sdk';
 import { ChatService, ChatSseEvent } from './chat.service';
 import { ConversationService } from './conversation.service';
 import { ConversationEntity } from './entities/conversation.entity';
@@ -15,16 +14,18 @@ import { PerformUiActionTool } from './tools/perform-ui-action.tool';
 
 const STUDENT_ID = 'student-uuid-001';
 
+type LooseContentBlock = { type: string; [key: string]: unknown };
+
 function makeStreamMock(
   textDeltas: string[],
-  finalMsg: { stop_reason: string; content: Anthropic.ContentBlock[] },
+  finalMsg: { stop_reason: string; content: LooseContentBlock[] },
 ) {
   const events = textDeltas.map((text) => ({
     type: 'content_block_delta' as const,
     delta: { type: 'text_delta' as const, text },
   }));
   return {
-    [Symbol.asyncIterator]: async function* () {
+    [Symbol.asyncIterator]: function* () {
       for (const event of events) {
         yield event;
       }
@@ -300,12 +301,15 @@ describe('ChatService', () => {
     expect(mockAnthropicStream).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'claude-sonnet-test',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         system: expect.arrayContaining([
           expect.objectContaining({
             type: 'text',
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             text: expect.stringContaining('get_student_context is tijdelijk uitgeschakeld'),
           }),
         ]),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         tools: expect.arrayContaining([
           expect.objectContaining({ name: 'perform_ui_action' }),
           expect.objectContaining({ name: 'search_activities' }),
@@ -313,7 +317,9 @@ describe('ChatService', () => {
         ]),
       }),
     );
-    expect(mockAnthropicStream.mock.calls[0]?.[0]?.tools).not.toEqual(
+    const firstCallTools = (mockAnthropicStream.mock.calls as Array<[{ tools: unknown[] }]>)[0]?.[0]
+      ?.tools;
+    expect(firstCallTools).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ name: 'get_student_context' })]),
     );
   });
@@ -366,15 +372,19 @@ describe('ChatService', () => {
   });
 
   it('routes a get_student_competences tool call to the competence tool', async () => {
-    mockAnthropicCreate
-      .mockResolvedValueOnce({
-        stop_reason: 'tool_use',
-        content: [{ type: 'tool_use', id: 'tc1', name: 'get_student_competences', input: {} }],
-      })
-      .mockResolvedValueOnce({
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'Je staat er goed voor.' }],
-      });
+    mockAnthropicStream
+      .mockReturnValueOnce(
+        makeStreamMock([], {
+          stop_reason: 'tool_use',
+          content: [{ type: 'tool_use', id: 'tc1', name: 'get_student_competences', input: {} }],
+        }),
+      )
+      .mockReturnValueOnce(
+        makeStreamMock(['Je staat er goed voor.'], {
+          stop_reason: 'end_turn',
+          content: [{ type: 'text', text: 'Je staat er goed voor.' }],
+        }),
+      );
     mockGetStudentCompetencesTool.execute.mockResolvedValue('{"competences":[]}');
 
     await collectEvents({ message: 'Waar sta ik?' });
@@ -410,7 +420,10 @@ describe('ChatService', () => {
     expect(loggerWarnSpy).toHaveBeenCalledWith(
       expect.stringContaining('student context tool called while disabled'),
     );
-    expect(mockAnthropicStream.mock.calls[1]?.[0]?.messages).toEqual(
+    const secondCallMessages = (
+      mockAnthropicStream.mock.calls as Array<[{ messages: unknown[] }]>
+    )[1]?.[0]?.messages;
+    expect(secondCallMessages).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           role: 'user',
@@ -620,6 +633,7 @@ describe('ChatService', () => {
 
     expect(mockAnthropicStream).toHaveBeenCalledWith(
       expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         tools: expect.arrayContaining([expect.objectContaining({ name: 'perform_ui_action' })]),
       }),
     );
