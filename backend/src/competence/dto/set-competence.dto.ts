@@ -1,11 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import {
-  ALL_HBOI_ACTIVITIES,
-  HBOI_LAYERS,
-  MAX_LEVEL,
-  MIN_LEVEL,
-} from '../competence.constants';
+import { ALL_HBOI_ACTIVITIES, HBOI_LAYERS, MAX_LEVEL, MIN_LEVEL } from '../competence.constants';
 import type { HboiActivity, HboiLayer } from '../competence-progress.entity';
 
 // Zet het behaalde en gekozen niveau voor één cel (laag x activiteit). Een

@@ -8,9 +8,7 @@ export function toCompetenceResponseDto(entity: CompetenceProgress): CompetenceR
   });
 }
 
-export function toCompetenceResponseDtos(
-  entities: CompetenceProgress[],
-): CompetenceResponseDto[] {
+export function toCompetenceResponseDtos(entities: CompetenceProgress[]): CompetenceResponseDto[] {
   return plainToInstance(CompetenceResponseDto, entities, {
     excludeExtraneousValues: true,
   });

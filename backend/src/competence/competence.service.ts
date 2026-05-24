@@ -57,8 +57,7 @@ export class CompetenceService {
     }
 
     const layerOrder = (layer: HboiLayer): number => HBOI_LAYERS.indexOf(layer);
-    const activityOrder = (activity: HboiActivity): number =>
-      ALL_HBOI_ACTIVITIES.indexOf(activity);
+    const activityOrder = (activity: HboiActivity): number => ALL_HBOI_ACTIVITIES.indexOf(activity);
 
     const cells = [...cellsByKey.values()].sort(
       (a, b) =>

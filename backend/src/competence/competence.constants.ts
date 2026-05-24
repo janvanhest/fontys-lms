@@ -15,10 +15,7 @@ export const ARCHITECTURE_LAYERS: HboiLayer[] = [
 export const PROFESSIONAL_DEVELOPMENT_LAYER: HboiLayer = 'Professional Development';
 
 // Alle lagen, Professional Development eerst (zoals in de competence tool).
-export const HBOI_LAYERS: HboiLayer[] = [
-  PROFESSIONAL_DEVELOPMENT_LAYER,
-  ...ARCHITECTURE_LAYERS,
-];
+export const HBOI_LAYERS: HboiLayer[] = [PROFESSIONAL_DEVELOPMENT_LAYER, ...ARCHITECTURE_LAYERS];
 
 export const HBOI_ACTIVITIES: HboiActivity[] = [
   'Analysis',

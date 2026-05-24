@@ -22,9 +22,7 @@ const makeRow = (overrides: Partial<CompetenceProgress> = {}): CompetenceProgres
   ...overrides,
 });
 
-const makeFrameworkRow = (
-  overrides: Partial<CompetenceFramework> = {},
-): CompetenceFramework => ({
+const makeFrameworkRow = (overrides: Partial<CompetenceFramework> = {}): CompetenceFramework => ({
   id: 'fw-uuid-1',
   layer: 'Infrastructure',
   hboiActivity: 'Analysis',
@@ -195,9 +193,7 @@ describe('CompetenceService', () => {
       expect(infraAnalysis?.maxLevel).toBe(3);
       expect(infraAnalysis?.levels.map((entry) => entry.level)).toEqual([1, 2, 3]);
 
-      const pdCell = framework.cells.find(
-        (cell) => cell.layer === 'Professional Development',
-      );
+      const pdCell = framework.cells.find((cell) => cell.layer === 'Professional Development');
       expect(pdCell?.minLevel).toBe(1);
       expect(pdCell?.maxLevel).toBe(2);
     });

@@ -106,7 +106,6 @@ export class ChatService {
     const usedSources: ChatSource[] = [];
     let iterations = 0;
     let lastStopReason: string | null = null;
-    let accumulatedText = '';
 
     while (iterations < 6) {
       yield { event: 'status', data: 'Nadenken...' };
@@ -136,11 +135,10 @@ export class ChatService {
         messages.push({ role: 'assistant', content: finalMessage.content });
 
         if (finalMessage.stop_reason === 'end_turn') {
-          const iterationText = finalMessage.content
+          const text = finalMessage.content
             .filter((b): b is Anthropic.TextBlock => b.type === 'text')
             .map((b) => b.text)
             .join('');
-          const text = accumulatedText + iterationText;
           const finalSources = this.getFinalSources(usedSources);
           await this.conversationService.addMessage(
             conversation.id,
@@ -158,11 +156,6 @@ export class ChatService {
 
         if (finalMessage.stop_reason === 'tool_use') {
           if (iterationHasText) {
-            // Save streamed text before resetting — it will be included in the final payload
-            accumulatedText += finalMessage.content
-              .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-              .map((b) => b.text)
-              .join('');
             yield { event: 'stream_reset', data: '' };
           }
           for (const block of finalMessage.content) {
