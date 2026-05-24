@@ -294,7 +294,12 @@ describe('ChatService', () => {
     expect(mockAnthropicStream).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'claude-sonnet-test',
-        system: expect.stringContaining('get_student_context is tijdelijk uitgeschakeld'),
+        system: expect.arrayContaining([
+          expect.objectContaining({
+            type: 'text',
+            text: expect.stringContaining('get_student_context is tijdelijk uitgeschakeld'),
+          }),
+        ]),
         tools: expect.arrayContaining([
           expect.objectContaining({ name: 'perform_ui_action' }),
           expect.objectContaining({ name: 'search_activities' }),
