@@ -59,7 +59,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
         scheduleStatus({ label: 'Gesprek laden mislukt.', icon: 'history' });
       })
       .finally(() => {
-        if (!isMountedRef.current) return;
+        if (ignore || !isMountedRef.current) return;
         setIsLoadingHistory(false);
       });
 
