@@ -5,7 +5,6 @@ import { chatMarkdownComponents } from './chatMarkdownComponents';
 
 type ChatMarkdownProps = {
   content: string;
-  isStreaming?: boolean;
 };
 
 export function ChatMarkdown({ content }: ChatMarkdownProps) {

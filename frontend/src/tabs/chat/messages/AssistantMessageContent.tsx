@@ -32,7 +32,7 @@ export function AssistantMessageContent({
           </Typography>
         </>
       ) : (
-        <ChatMarkdown content={content} isStreaming={message.isStreaming} />
+        <ChatMarkdown content={content} />
       )}
       {message.sources && message.sources.length > 0 ? (
         <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1.5, flexWrap: 'wrap' }}>
