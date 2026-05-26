@@ -6,6 +6,7 @@ import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
 import HandymanRoundedIcon from '@mui/icons-material/HandymanRounded';
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -26,6 +27,8 @@ function getStatusIcon(icon: ChatStatusIcon) {
   switch (icon) {
     case 'activities':
       return <ChecklistRtlIcon fontSize="small" />;
+    case 'competences':
+      return <SchoolRoundedIcon fontSize="small" />;
     case 'sources':
       return <AutoStoriesRoundedIcon fontSize="small" />;
     case 'panel':
