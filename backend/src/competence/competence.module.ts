@@ -8,10 +8,7 @@ import { CompetenceSeederService } from './competence-seeder.service';
 import { CompetenceService } from './competence.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([CompetenceProgress, CompetenceFramework]),
-    StudentModule,
-  ],
+  imports: [TypeOrmModule.forFeature([CompetenceProgress, CompetenceFramework]), StudentModule],
   controllers: [CompetenceController],
   providers: [CompetenceService, CompetenceSeederService],
   exports: [CompetenceService],

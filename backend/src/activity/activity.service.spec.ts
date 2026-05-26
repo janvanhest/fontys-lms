@@ -260,7 +260,12 @@ describe('ActivityService', () => {
         expect.stringContaining("WHEN activity.status = 'bezig' THEN 0"),
         'ASC',
       );
-      expect(mockQb.addOrderBy).toHaveBeenNthCalledWith(1, 'activity.deadline', 'ASC', 'NULLS LAST');
+      expect(mockQb.addOrderBy).toHaveBeenNthCalledWith(
+        1,
+        'activity.deadline',
+        'ASC',
+        'NULLS LAST',
+      );
       expect(mockQb.addOrderBy).toHaveBeenNthCalledWith(2, 'activity.position', 'ASC');
       expect(mockQb.addOrderBy).toHaveBeenNthCalledWith(3, 'activity.createdAt', 'ASC');
     });

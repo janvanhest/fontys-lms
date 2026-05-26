@@ -4,6 +4,7 @@ import {
   generateMessageId,
   getStatusFromEventText,
   getStatusFromToolCall,
+  toolCallToBubble,
 } from './chatStreamHelpers';
 import type { ChatUiAction, Message } from './chatStreamHelpers';
 
@@ -39,12 +40,10 @@ describe('getStatusFromToolCall', () => {
   });
 
   it('preserves the source lookup status for search_course_content', () => {
-    expect(getStatusFromToolCall(JSON.stringify({ name: 'search_course_content' }))).toMatchObject(
-      {
-        label: 'Bronnen bekijken...',
-        icon: 'sources',
-      },
-    );
+    expect(getStatusFromToolCall(JSON.stringify({ name: 'search_course_content' }))).toMatchObject({
+      label: 'Bronnen bekijken...',
+      icon: 'sources',
+    });
   });
 
   it('returns generic context status metadata for unknown tools', () => {
@@ -114,8 +113,45 @@ describe('applyFinalMessage', () => {
       { id: 'assistant-1', role: 'assistant', content: '', isStreaming: true },
     ];
 
-    const result = applyFinalMessage(messages, 'assistant-1', { text: 'Antwoord.', conversationId: 'c1' });
+    const result = applyFinalMessage(messages, 'assistant-1', {
+      text: 'Antwoord.',
+      conversationId: 'c1',
+    });
 
     expect(result.find((m) => m.id === 'assistant-1')?.actions).toBeUndefined();
+  });
+});
+
+describe('toolCallToBubble', () => {
+  it('returns a bubble for search_activities', () => {
+    expect(toolCallToBubble('search_activities')).toEqual({
+      name: 'search_activities',
+      label: 'Activiteiten bekeken',
+      icon: 'activities',
+    });
+  });
+
+  it('returns a bubble for get_student_context', () => {
+    expect(toolCallToBubble('get_student_context')).toEqual({
+      name: 'get_student_context',
+      label: 'Studentprofiel bekeken',
+      icon: 'student',
+    });
+  });
+
+  it('returns a bubble for search_course_content', () => {
+    expect(toolCallToBubble('search_course_content')).toEqual({
+      name: 'search_course_content',
+      label: 'Bronnen bekeken',
+      icon: 'sources',
+    });
+  });
+
+  it('returns null for perform_ui_action', () => {
+    expect(toolCallToBubble('perform_ui_action')).toBeNull();
+  });
+
+  it('returns null for unknown tools', () => {
+    expect(toolCallToBubble('unknown_tool')).toBeNull();
   });
 });

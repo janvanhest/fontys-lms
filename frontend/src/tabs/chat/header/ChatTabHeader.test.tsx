@@ -8,6 +8,7 @@ describe('ChatTabHeader', () => {
       <ChatTabHeader
         activeTab="chat"
         isLoadingHistory={false}
+        isStreaming={false}
         onToggleActivities={() => {}}
         sidePanelOpen={false}
         status={{ label: 'Activiteiten bekijken...', icon: 'activities' }}
@@ -23,6 +24,7 @@ describe('ChatTabHeader', () => {
       <ChatTabHeader
         activeTab="chat"
         isLoadingHistory={false}
+        isStreaming={false}
         onToggleActivities={() => {}}
         sidePanelOpen={false}
         status={null}

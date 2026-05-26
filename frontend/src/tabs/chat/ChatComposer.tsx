@@ -13,13 +13,7 @@ type ChatComposerProps = {
   onSend: () => void;
 };
 
-export function ChatComposer({
-  disabled,
-  input,
-  onChange,
-  onKeyDown,
-  onSend,
-}: ChatComposerProps) {
+export function ChatComposer({ disabled, input, onChange, onKeyDown, onSend }: ChatComposerProps) {
   return (
     <Box
       sx={{
@@ -37,7 +31,9 @@ export function ChatComposer({
         maxRows={6}
         placeholder="Typ je vraag..."
         value={input}
-        onChange={(event) => { onChange(event.target.value); }}
+        onChange={(event) => {
+          onChange(event.target.value);
+        }}
         onKeyDown={onKeyDown}
         disabled={disabled}
         slotProps={{

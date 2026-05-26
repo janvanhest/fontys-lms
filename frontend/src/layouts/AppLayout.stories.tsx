@@ -55,7 +55,8 @@ const conversationDetails = {
 };
 
 globalThis.fetch = (input: RequestInfo | URL) => {
-  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  const url =
+    typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
   if (url.endsWith('/student/me')) {
     return Promise.resolve(

@@ -5,7 +5,10 @@ import type { ActivityGroupSection, OpenSubmenu } from './types';
 
 type UseActivitiesPanelStateOptions = {
   activities: Activity[];
-  onUpdateActivity: (activityId: string, patch: { status?: ActivityStatus; type?: ActivityType }) => void;
+  onUpdateActivity: (
+    activityId: string,
+    patch: { status?: ActivityStatus; type?: ActivityType },
+  ) => void;
 };
 
 export function useActivitiesPanelState({
@@ -24,7 +27,8 @@ export function useActivitiesPanelState({
     () => groupActivities(activities),
     [activities],
   );
-  const selectedActivity = activities.find((activity) => activity.id === selectedActivityId) ?? null;
+  const selectedActivity =
+    activities.find((activity) => activity.id === selectedActivityId) ?? null;
 
   const closeMenus = () => {
     setMenuAnchorEl(null);

@@ -31,9 +31,9 @@ export const typeLabelMap: Record<ActivityType, string> = {
   overdracht: 'Overdracht',
 };
 
-export const typeOptions = (
-  Object.entries(typeLabelMap) as [ActivityType, string][]
-).map(([value, label]) => ({ value, label }));
+export const typeOptions = (Object.entries(typeLabelMap) as [ActivityType, string][]).map(
+  ([value, label]) => ({ value, label }),
+);
 
 export const statusOptions: ActivityStatus[] = ['open', 'bezig', 'feedback', 'afgerond'];
 

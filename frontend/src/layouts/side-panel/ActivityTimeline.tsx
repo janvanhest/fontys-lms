@@ -9,9 +9,9 @@ import { getTypeLabel, statusMeta } from './constants';
 import type { ActivityGroupSection } from './types';
 import type { Activity } from '@/types/activity';
 
-const DOT_TOP_MT = '12px';       // offset from item top (mt: 1.5)
-const DOT_CONNECT_TOP = '22px';  // DOT_TOP + DOT_HEIGHT
-const DOT_NEG_OFFSET = '-12px';  // -DOT_TOP, extends into next item
+const DOT_TOP_MT = '12px'; // offset from item top (mt: 1.5)
+const DOT_CONNECT_TOP = '22px'; // DOT_TOP + DOT_HEIGHT
+const DOT_NEG_OFFSET = '-12px'; // -DOT_TOP, extends into next item
 
 type ActivityTimelineProps = {
   groups: ActivityGroupSection[];

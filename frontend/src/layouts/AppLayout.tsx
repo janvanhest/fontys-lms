@@ -4,7 +4,7 @@ import { ChatTab } from '@/tabs/chat/ChatTab';
 import { ChallengeTab } from '@/tabs/ChallengeTab';
 import { CompetentiesTab } from '@/tabs/CompetentiesTab';
 import { StappenplanTab } from '@/tabs/StappenplanTab';
-import { Sidebar } from './Sidebar';
+import { Sidebar } from './sidebar/Sidebar';
 import { SidePanel } from './SidePanel';
 import { Topbar } from '@/layouts/topbar/Topbar';
 
@@ -13,19 +13,14 @@ function assertUnreachable(tab: never): never {
 }
 
 export function AppLayout() {
-  const { activeTab, selectedConversationId } = useLayout();
+  const { activeTab, selectedConversationId, chatMountKey } = useLayout();
   const isChat = activeTab === 'chat' || activeTab === 'activities';
 
   function renderTab() {
     switch (activeTab) {
       case 'chat':
       case 'activities':
-        return (
-          <ChatTab
-            key={selectedConversationId ?? 'new-conversation'}
-            conversationId={selectedConversationId ?? undefined}
-          />
-        );
+        return <ChatTab key={chatMountKey} conversationId={selectedConversationId ?? undefined} />;
       case 'challenge':
         return <ChallengeTab />;
       case 'competenties':

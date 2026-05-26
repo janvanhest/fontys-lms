@@ -59,8 +59,7 @@ export function SidebarConversationList({
             borderRadius: 1.5,
             border: '1px solid',
             borderColor: 'divider',
-            bgcolor:
-              conversation.id === selectedConversationId ? 'action.selected' : 'transparent',
+            bgcolor: conversation.id === selectedConversationId ? 'action.selected' : 'transparent',
           }}
         >
           {editingConversationId === conversation.id ? (

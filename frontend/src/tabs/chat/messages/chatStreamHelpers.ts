@@ -11,6 +11,12 @@ export type ChatUiAction = {
   payload?: Record<string, string>;
 };
 
+export type ToolCallBubble = {
+  name: 'search_activities' | 'get_student_context' | 'search_course_content';
+  label: string;
+  icon: string;
+};
+
 export type ChatStatusIcon =
   | 'activities'
   | 'sources'
@@ -33,6 +39,7 @@ export type Message = {
   isStreaming?: boolean;
   sources?: ChatSource[];
   actions?: ChatUiAction[];
+  toolCalls?: ToolCallBubble[];
 };
 
 export function generateMessageId(prefix: string): string {
@@ -41,6 +48,19 @@ export function generateMessageId(prefix: string): string {
   }
 
   return `${prefix}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function toolCallToBubble(name: string): ToolCallBubble | null {
+  if (name === 'search_activities') {
+    return { name, label: 'Activiteiten bekeken', icon: 'activities' };
+  }
+  if (name === 'get_student_context') {
+    return { name, label: 'Studentprofiel bekeken', icon: 'student' };
+  }
+  if (name === 'search_course_content') {
+    return { name, label: 'Bronnen bekeken', icon: 'sources' };
+  }
+  return null;
 }
 
 export function createPendingMessages(text: string) {

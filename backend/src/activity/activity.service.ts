@@ -255,10 +255,7 @@ export class ActivityService {
       qb.andWhere('LOWER(activity.title) LIKE :title', { title: `%${title}%` });
     }
 
-    qb.orderBy(
-      buildChatStatusOrderCase(),
-      'ASC',
-    )
+    qb.orderBy(buildChatStatusOrderCase(), 'ASC')
       .addOrderBy('activity.deadline', 'ASC', 'NULLS LAST')
       .addOrderBy('activity.position', 'ASC')
       .addOrderBy('activity.createdAt', 'ASC')

@@ -10,7 +10,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-function parseSseEventBlock(block: string): ChatSseEvent | null {
+export function parseSseEventBlock(block: string): ChatSseEvent | null {
   const lines = block.split(/\r?\n/);
   let eventType: ChatSseEvent['event'] | null = null;
   const dataLines: string[] = [];
@@ -23,6 +23,8 @@ function parseSseEventBlock(block: string): ChatSseEvent | null {
         value === 'tool_call' ||
         value === 'tool_result' ||
         value === 'ui_action' ||
+        value === 'text_delta' ||
+        value === 'stream_reset' ||
         value === 'final' ||
         value === 'error'
       ) {
@@ -63,7 +65,8 @@ export function parseFinalChatPayload(data: string): FinalChatPayload {
 
       return {
         text: parsed.text,
-        conversationId: typeof parsed.conversationId === 'string' ? parsed.conversationId : undefined,
+        conversationId:
+          typeof parsed.conversationId === 'string' ? parsed.conversationId : undefined,
         sources: sources?.length ? sources : undefined,
       };
     }

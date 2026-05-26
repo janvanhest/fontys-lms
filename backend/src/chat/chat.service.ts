@@ -26,7 +26,7 @@ import { ChatSource } from '../document/document-search.service';
 export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
 
-const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-5';
+const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-7';
 
 const BASE_SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity First LMS van Fontys HBO-ICT.
 Je helpt studenten hun leervoortgang en competenties te begrijpen en te verbeteren.
@@ -42,13 +42,18 @@ Aanpak:
    - action 'open_activities_panel', mode 'suggest': als het tonen van het paneel nuttig zou zijn maar de student er niet om heeft gevraagd.
    - action 'highlight_activity', mode 'auto': wanneer je verwijst naar een specifieke activiteit die de student direct wil zien of bewerken. Geef altijd het exacte activityId mee dat je via search_activities hebt gevonden.
    Gebruik perform_ui_action nooit automatisch alleen omdat search_activities werd aangeroepen.
+5. Combineer bronnen alleen als dat inhoudelijk helpt.
+6. Roep altijd eerst de benodigde tools aan vóórdat je begint te antwoorden. Begin nooit te schrijven voordat je alle benodigde informatie hebt opgehaald.
 7. Combineer de voortgang van de student met de raamwerkdefinities tot concreet advies.
+8. Antwoord altijd in het Nederlands. Wees concreet en motiverend. Een incidenteel subtiel grapje mag.
+9. Gebruik spaarzaam emoji's — alleen als het echt iets toevoegt aan de boodschap.
+10. Als je een vraag niet goed begrijpt, vraag dan om verduidelijking in plaats van te gokken.
+11. Pas de lengte van je antwoord aan op de vraag: een simpele vraag krijgt een kort antwoord, een complexe vraag mag uitgebreid beantwoord worden. Voeg nooit opvulling toe, maar snij ook niet in relevante uitleg.
+12. Als de student een vraag stelt die buiten jouw domein valt, geef dan een vriendelijk antwoord waarin je uitlegt dat je daar niet mee kunt helpen.
 
 Het HBO-i raamwerk: een competentie is een combinatie van een laag (User Interaction, Software, Hardware Interfacing, Infrastructure, Organisational processes), een activiteit (Analysis, Advise, Design, Realisation, Manage&Control) en een niveau. Daarnaast staat Professional Development met Personal leadership en Professional standard.
 
-Afstuderen: om door te mogen naar semester 7 toont een student een laag volledig op niveau 3 aan (alle vijf activiteiten), een tweede laag als verbreding op niveau 2, en Personal leadership en Professional standard op niveau 2.
-
-Antwoord altijd in het Nederlands. Wees concreet en motiverend.`;
+Afstuderen: om door te mogen naar semester 7 toont een student een laag volledig op niveau 3 aan (alle vijf activiteiten), een tweede laag als verbreding op niveau 2, en Personal leadership en Professional standard op niveau 2.`;
 
 const STUDENT_CONTEXT_DISABLED_RESULT = {
   available: false,
@@ -67,6 +72,7 @@ export class ChatService {
   private readonly anthropic: Anthropic;
   private readonly logger = new Logger(ChatService.name);
   private readonly anthropicModel: string;
+  private readonly isDevelopment: boolean;
   private readonly studentContextPolicy: StudentContextPolicy = {
     enabled: false,
     disabledPromptNote:
@@ -89,6 +95,7 @@ export class ChatService {
     });
     this.anthropicModel =
       this.configService.get<string>('ANTHROPIC_MODEL') ?? DEFAULT_ANTHROPIC_MODEL;
+    this.isDevelopment = this.configService.get<string>('NODE_ENV') === 'development';
   }
 
   async *streamResponse(dto: SendMessageDto, studentId: string): AsyncGenerator<ChatSseEvent> {
@@ -101,41 +108,78 @@ export class ChatService {
     let lastStopReason: string | null = null;
 
     while (iterations < 6) {
-      yield { event: 'status', data: iterations === 0 ? 'Nadenken...' : 'Tool uitvoeren...' };
+      yield { event: 'status', data: 'Nadenken...' };
 
-      const response = await this.anthropic.messages.create({
-        model: this.anthropicModel,
-        max_tokens: 2048,
-        system: this.buildSystemPrompt(),
-        messages,
-        tools: this.getAvailableTools(),
-      });
-      lastStopReason = response.stop_reason;
+      try {
+        const stream = this.anthropic.messages.stream({
+          model: this.anthropicModel,
+          max_tokens: 8192,
+          system: [
+            { type: 'text', text: this.buildSystemPrompt(), cache_control: { type: 'ephemeral' } },
+          ],
+          messages,
+          tools: this.getAvailableTools(),
+        });
 
-      messages.push({ role: 'assistant', content: response.content });
+        let iterationHasText = false;
+        for await (const event of stream) {
+          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            iterationHasText = true;
+            yield { event: 'text_delta', data: event.delta.text };
+          }
+        }
 
-      if (response.stop_reason === 'end_turn') {
-        const text = response.content
-          .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-          .map((b) => b.text)
-          .join('');
-        const finalSources = this.getFinalSources(usedSources);
-        await this.conversationService.addMessage(conversation.id, 'assistant', text, finalSources);
-        await this.maybeUpdateConversationTitle(conversation, dto.message);
+        const finalMessage = await stream.finalMessage();
+        lastStopReason = finalMessage.stop_reason;
+
+        messages.push({ role: 'assistant', content: finalMessage.content });
+
+        if (finalMessage.stop_reason === 'end_turn') {
+          const text = finalMessage.content
+            .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+            .map((b) => b.text)
+            .join('');
+          const finalSources = this.getFinalSources(usedSources);
+          await this.conversationService.addMessage(
+            conversation.id,
+            'assistant',
+            text,
+            finalSources,
+          );
+          await this.maybeUpdateConversationTitle(conversation, dto.message);
+          yield {
+            event: 'final',
+            data: this.serializeFinalPayload(conversation.id, text, finalSources),
+          };
+          return;
+        }
+
+        if (finalMessage.stop_reason === 'tool_use') {
+          if (iterationHasText) {
+            yield { event: 'stream_reset', data: '' };
+          }
+          for (const block of finalMessage.content) {
+            if (block.type === 'tool_use') {
+              yield { event: 'tool_call', data: JSON.stringify({ name: block.name }) };
+            }
+          }
+          const toolResults = await this.executeToolCalls(finalMessage.content, studentId);
+          for (const event of toolResults.events) {
+            yield event;
+          }
+          usedSources.push(...toolResults.sources);
+          messages.push({ role: 'user', content: toolResults.results });
+        }
+      } catch (err) {
+        this.logger.error(
+          `Anthropic stream error on iteration ${iterations} for conversationId=${conversation.id}`,
+          err,
+        );
         yield {
-          event: 'final',
-          data: this.serializeFinalPayload(conversation.id, text, finalSources),
+          event: 'error',
+          data: 'Er is een fout opgetreden bij het verwerken van je vraag.',
         };
         return;
-      }
-
-      if (response.stop_reason === 'tool_use') {
-        const toolResults = await this.executeToolCalls(response.content, studentId);
-        for (const event of toolResults.events) {
-          yield event;
-        }
-        usedSources.push(...toolResults.sources);
-        messages.push({ role: 'user', content: toolResults.results });
       }
 
       iterations++;
@@ -225,7 +269,9 @@ export class ChatService {
     for (const block of content) {
       if (block.type !== 'tool_use') continue;
 
-      events.push({ event: 'tool_call', data: JSON.stringify({ name: block.name }) });
+      if (this.isDevelopment) {
+        this.logger.debug(`Tool call: ${block.name} | input: ${JSON.stringify(block.input)}`);
+      }
 
       let result: string;
       if (block.name === 'get_student_context') {

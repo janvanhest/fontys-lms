@@ -23,9 +23,7 @@ const makeRow = (overrides: Partial<CompetenceProgress> = {}): CompetenceProgres
 
 describe('CompetenceController', () => {
   let controller: CompetenceController;
-  let service: jest.Mocked<
-    Pick<CompetenceService, 'findAll' | 'setCompetence' | 'getFramework'>
-  >;
+  let service: jest.Mocked<Pick<CompetenceService, 'findAll' | 'setCompetence' | 'getFramework'>>;
 
   beforeEach(async () => {
     service = { findAll: jest.fn(), setCompetence: jest.fn(), getFramework: jest.fn() };

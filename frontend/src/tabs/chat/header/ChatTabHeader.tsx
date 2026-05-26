@@ -11,11 +11,12 @@ import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import type { LayoutTab } from '@/context/layout-context';
-import type { ChatStatus, ChatStatusIcon } from '@/hooks/chatStreamHelpers';
+import type { ChatStatus, ChatStatusIcon } from '@/tabs/chat/messages/chatStreamHelpers';
 
 type ChatTabHeaderProps = {
   activeTab: LayoutTab;
   isLoadingHistory: boolean;
+  isStreaming: boolean;
   onToggleActivities: () => void;
   sidePanelOpen: boolean;
   status: ChatStatus | null;
@@ -46,6 +47,7 @@ function getStatusIcon(icon: ChatStatusIcon) {
 export function ChatTabHeader({
   activeTab,
   isLoadingHistory,
+  isStreaming,
   onToggleActivities,
   sidePanelOpen,
   status,
@@ -68,10 +70,12 @@ export function ChatTabHeader({
         <Typography variant="h4" component="h1">
           {activeTab === 'activities' ? 'Activiteiten' : 'Chat'}
         </Typography>
-        {status ? (
+        {status || isStreaming || isLoadingHistory ? (
           <Chip
-            icon={getStatusIcon(status.icon)}
-            label={status.label}
+            icon={getStatusIcon(status?.icon ?? (isLoadingHistory ? 'history' : 'writing'))}
+            label={
+              status?.label ?? (isLoadingHistory ? 'Gesprek laden...' : 'Antwoord schrijven...')
+            }
             size="small"
             sx={{
               mt: 1,
@@ -85,9 +89,7 @@ export function ChatTabHeader({
           />
         ) : (
           <Typography variant="body2" color="text.secondary">
-            {isLoadingHistory
-              ? 'Gesprek laden...'
-              : 'Stel een vraag over je challenge, activiteiten of cursusinhoud.'}
+            Stel een vraag over je challenge, activiteiten of cursusinhoud.
           </Typography>
         )}
       </Box>
