@@ -9,6 +9,10 @@ services:
       CORS_ORIGINS: http://localhost:4173
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       DATABASE_URL: ${DATABASE_URL}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      MOCK_AUTH: "true"
+    volumes:
+      - ./canvas_content:/canvas_content:ro
     ports:
       - "3000:3000"
     depends_on:
@@ -24,6 +28,7 @@ services:
       args:
         VITE_CHUCK_API_MODE: mock
         VITE_CHUCK_API_BASE_URL: http://localhost:3002
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
     ports:
       - "4173:4173"
     depends_on:
