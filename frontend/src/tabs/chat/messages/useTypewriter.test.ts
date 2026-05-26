@@ -1,29 +1,91 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  getNextTypewriterIndex,
+  getTypewriterContent,
+  startTypewriterInterval,
+} from './useTypewriter';
 
-// The hook itself requires a DOM environment; we test the slicing logic inline.
-describe('useTypewriter slicing', () => {
-  it('slices content to displayIndex', () => {
-    const content = 'Hello world';
-    expect(content.slice(0, 5)).toBe('Hello');
-    expect(content.slice(0, 11)).toBe('Hello world');
+describe('getNextTypewriterIndex', () => {
+  it('resets to zero when the streaming content is cleared', () => {
+    expect(getNextTypewriterIndex(12, '')).toBe(0);
   });
 
-  it('adaptive steps clamp to content length', () => {
-    const content = 'Hi';
-    expect(Math.min(0 + 5, content.length)).toBe(2);
+  it('advances one character at a time for short queues', () => {
+    expect(getNextTypewriterIndex(3, 'hello')).toBe(4);
   });
 
-  it('paragraph boundary split', () => {
-    const displayed = 'First paragraph.\n\nSecond para in progress';
-    const lastParaEnd = displayed.lastIndexOf('\n\n');
-    expect(displayed.slice(0, lastParaEnd + 2)).toBe('First paragraph.\n\n');
-    expect(displayed.slice(lastParaEnd + 2)).toBe('Second para in progress');
+  it('jumps ahead adaptively for large queues', () => {
+    const content = 'a'.repeat(103);
+
+    expect(getNextTypewriterIndex(0, content)).toBe(5);
   });
 
-  it('no paragraph boundary uses full content as animating', () => {
-    const displayed = 'Just one line';
-    const lastParaEnd = displayed.lastIndexOf('\n\n');
-    const animatingPart = lastParaEnd >= 0 ? displayed.slice(lastParaEnd + 2) : displayed;
-    expect(animatingPart).toBe('Just one line');
+  it('clamps the next index to the content length', () => {
+    expect(getNextTypewriterIndex(102, 'a'.repeat(103))).toBe(103);
+  });
+
+  it('stops advancing once the full content is already visible', () => {
+    expect(getNextTypewriterIndex(5, 'hello')).toBe(5);
+  });
+});
+
+describe('getTypewriterContent', () => {
+  it('flushes to the full message as soon as streaming stops', () => {
+    expect(getTypewriterContent('Hello world', false, 3)).toBe('Hello world');
+  });
+
+  it('returns an empty string while streaming an empty message', () => {
+    expect(getTypewriterContent('', true, 10)).toBe('');
+  });
+
+  it('returns only the displayed prefix while streaming', () => {
+    expect(getTypewriterContent('Hello world', true, 5)).toBe('Hello');
+  });
+});
+
+describe('startTypewriterInterval', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('schedules repeated ticks on the typewriter cadence', () => {
+    const setIntervalMock = vi.fn(() => 123);
+    const tick = vi.fn();
+
+    vi.stubGlobal('setInterval', setIntervalMock);
+
+    startTypewriterInterval(tick);
+
+    expect(setIntervalMock).toHaveBeenCalledOnce();
+    expect(setIntervalMock).toHaveBeenCalledWith(expect.any(Function), 30);
+  });
+
+  it('runs the provided tick from the scheduled callback', () => {
+    const setIntervalMock = vi.fn<(handler: TimerHandler, timeout?: number) => number>();
+    const tick = vi.fn();
+
+    vi.stubGlobal('setInterval', setIntervalMock.mockImplementation(() => 123));
+
+    startTypewriterInterval(tick);
+
+    const scheduledTick = setIntervalMock.mock.calls[0]?.[0];
+    expect(typeof scheduledTick).toBe('function');
+
+    (scheduledTick as () => void)();
+
+    expect(tick).toHaveBeenCalledOnce();
+  });
+
+  it('clears the scheduled interval during cleanup', () => {
+    const setIntervalMock = vi.fn(() => 123);
+    const clearIntervalMock = vi.fn();
+
+    vi.stubGlobal('setInterval', setIntervalMock);
+    vi.stubGlobal('clearInterval', clearIntervalMock);
+
+    const cleanup = startTypewriterInterval(() => {});
+    cleanup();
+
+    expect(clearIntervalMock).toHaveBeenCalledWith(123);
   });
 });
