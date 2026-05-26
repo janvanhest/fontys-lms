@@ -12,13 +12,19 @@ export type ChatUiAction = {
 };
 
 export type ToolCallBubble = {
-  name: 'search_activities' | 'get_student_context' | 'search_course_content';
+  name:
+    | 'search_activities'
+    | 'get_student_context'
+    | 'search_course_content'
+    | 'get_student_competences'
+    | 'get_competence_framework';
   label: string;
   icon: string;
 };
 
 export type ChatStatusIcon =
   | 'activities'
+  | 'competences'
   | 'sources'
   | 'panel'
   | 'spark'
@@ -60,6 +66,12 @@ export function toolCallToBubble(name: string): ToolCallBubble | null {
   if (name === 'search_course_content') {
     return { name, label: 'Bronnen bekeken', icon: 'sources' };
   }
+  if (name === 'get_student_competences') {
+    return { name, label: 'Competenties bekeken', icon: 'competences' };
+  }
+  if (name === 'get_competence_framework') {
+    return { name, label: 'Raamwerk bekeken', icon: 'competences' };
+  }
   return null;
 }
 
@@ -91,6 +103,9 @@ export function getStatusFromToolCall(data: string): ChatStatus {
     }
     if (payload.name === 'perform_ui_action') {
       return { label: 'Paneel openen...', icon: 'panel' };
+    }
+    if (payload.name === 'get_student_competences' || payload.name === 'get_competence_framework') {
+      return { label: 'Competenties bekijken...', icon: 'competences' };
     }
 
     return { label: 'Extra context ophalen...', icon: 'tool' };
