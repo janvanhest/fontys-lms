@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { applyFinalMessage, createNudgeMessage, generateMessageId } from './chatStreamHelpers';
+import {
+  applyFinalMessage,
+  createNudgeMessage,
+  generateMessageId,
+  shouldLoadConversationHistory,
+} from './chatStreamHelpers';
 import type { ChatUiAction, Message } from './chatStreamHelpers';
 
 describe('generateMessageId', () => {
@@ -95,5 +100,34 @@ describe('createNudgeMessage', () => {
       content: '',
       action,
     });
+  });
+});
+
+describe('shouldLoadConversationHistory', () => {
+  it('does not reload history when a new conversation id is attached to local stream messages', () => {
+    expect(
+      shouldLoadConversationHistory({
+        nextConversationId: 'conversation-1',
+        previousConversationId: undefined,
+        hasLocalMessages: true,
+      }),
+    ).toBe(false);
+  });
+
+  it('loads history for initial conversation selection and explicit conversation switches', () => {
+    expect(
+      shouldLoadConversationHistory({
+        nextConversationId: 'conversation-1',
+        previousConversationId: undefined,
+        hasLocalMessages: false,
+      }),
+    ).toBe(true);
+    expect(
+      shouldLoadConversationHistory({
+        nextConversationId: 'conversation-2',
+        previousConversationId: 'conversation-1',
+        hasLocalMessages: true,
+      }),
+    ).toBe(true);
   });
 });

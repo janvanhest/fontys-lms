@@ -48,6 +48,15 @@ export function createPendingMessages(text: string) {
   return { streamingId, userMessage, streamingMessage };
 }
 
+export function createStreamingAssistantMessage(): Message {
+  return {
+    id: generateMessageId('assistant'),
+    role: 'assistant',
+    content: '',
+    isStreaming: true,
+  };
+}
+
 export function createNudgeMessage(action: ChatUiAction): Message {
   return {
     id: generateMessageId('nudge'),
@@ -55,6 +64,29 @@ export function createNudgeMessage(action: ChatUiAction): Message {
     content: '',
     action,
   };
+}
+
+export function splitStreamingAssistantMessage(
+  messages: Message[],
+  streamingId: string,
+  nextMessage: Message,
+) {
+  return messages
+    .map((message) => (message.id === streamingId ? { ...message, isStreaming: false } : message))
+    .concat(nextMessage);
+}
+
+export function shouldLoadConversationHistory({
+  nextConversationId,
+  previousConversationId,
+  hasLocalMessages,
+}: {
+  nextConversationId: string;
+  previousConversationId: string | undefined;
+  hasLocalMessages: boolean;
+}) {
+  if (previousConversationId === undefined && hasLocalMessages) return false;
+  return previousConversationId !== nextConversationId;
 }
 
 export function applyFinalMessage(
