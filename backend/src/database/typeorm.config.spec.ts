@@ -6,7 +6,7 @@ describe('typeorm.config', () => {
 
     expect(options.synchronize).toBe(false);
     expect(options.migrationsRun).toBe(true);
-    expect(options.entities).toHaveLength(5);
+    expect(options.entities).toHaveLength(7);
     expect(options.migrations).toEqual(
       expect.arrayContaining([expect.stringContaining('/migrations/*{.ts,.js}')]),
     );

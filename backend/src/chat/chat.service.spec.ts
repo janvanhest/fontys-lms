@@ -68,6 +68,7 @@ describe('ChatService', () => {
   let mockPerformUiActionTool: jest.Mocked<Pick<PerformUiActionTool, 'execute'>>;
   let mockAnthropicStream: jest.Mock;
   let loggerWarnSpy: jest.SpyInstance;
+  let loggerErrorSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     mockConversationService = {
@@ -110,10 +111,12 @@ describe('ChatService', () => {
       messages: { stream: mockAnthropicStream },
     };
     loggerWarnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    loggerErrorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
   afterEach(() => {
     loggerWarnSpy.mockRestore();
+    loggerErrorSpy.mockRestore();
   });
 
   async function collectEvents(dto: SendMessageDto, studentId = STUDENT_ID) {
@@ -283,9 +286,8 @@ describe('ChatService', () => {
     );
     mockRagTool.execute.mockRejectedValue(new Error('Course search unavailable'));
 
-    await expect(collectEvents({ message: 'What is a professional task?' })).rejects.toThrow(
-      'Course search unavailable',
-    );
+    const events = await collectEvents({ message: 'What is a professional task?' });
+    expect(events.some((e) => e.event === 'error')).toBe(true);
   });
 
   it('derives the disabled student-context policy in the Anthropic request', async () => {
