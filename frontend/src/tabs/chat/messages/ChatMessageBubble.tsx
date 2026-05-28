@@ -1,6 +1,5 @@
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
@@ -9,6 +8,8 @@ import { studentInitials, type StudentProfile } from '@/api/student';
 import type { Message } from './useChatStream';
 import { AssistantMessageContent } from './AssistantMessageContent';
 import { streamingAvatarSx } from './chatBubbleStyles';
+import { NudgeMessageBubble } from './NudgeMessageBubble';
+import { ToolCallBubbles } from './ToolCallBubbles';
 
 type ChatMessageBubbleProps = {
   message: Message;
@@ -31,69 +32,15 @@ export function ChatMessageBubble({
 }: ChatMessageBubbleProps) {
   const isStudent = message.role === 'student';
   const isNudge = message.role === 'nudge';
-
   const nudgeAction = message.action;
-
   if (isNudge && nudgeAction) {
-    return (
-      <Box sx={{ display: 'flex', pl: '44px' }}>
-        <Paper
-          elevation={0}
-          sx={{
-            px: 1.5,
-            py: 1,
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-          }}
-        >
-          <Chip
-            label={nudgeAction.label}
-            size="small"
-            onClick={() => onAction?.(message.id, nudgeAction.action, nudgeAction.payload)}
-            sx={{ fontSize: '0.75rem' }}
-          />
-        </Paper>
-      </Box>
-    );
+    return <NudgeMessageBubble action={nudgeAction} messageId={message.id} onAction={onAction} />;
   }
 
   return (
     <Box>
       {!isStudent && message.toolCalls && message.toolCalls.length > 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 0.75,
-            pl: '44px', // avatar breedte (34px) + gap (10px)
-            mb: 0.5,
-          }}
-        >
-          {message.toolCalls.map((tc) => (
-            <Box
-              key={tc.name}
-              sx={{
-                borderLeft: '3px solid',
-                borderColor: 'secondary.light',
-                pl: 1,
-                pr: 1.25,
-                py: 0.5,
-                bgcolor: 'rgba(123, 31, 162, 0.04)',
-                borderRadius: '0 6px 6px 0',
-                fontSize: '0.75rem',
-                color: 'primary.dark',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {tc.label}
-            </Box>
-          ))}
-        </Box>
+        <ToolCallBubbles toolCalls={message.toolCalls} />
       )}
       <Box
         sx={{

@@ -5,6 +5,7 @@ import type { StudentProfile } from '@/api/student';
 import type { Message } from './useChatStream';
 import { useTypewriter } from './useTypewriter';
 import { ChatMessageBubble } from './ChatMessageBubble';
+import { getVisibleMessageContent } from './messageRenderState';
 
 type ChatMessageListProps = {
   bottomRef: RefObject<HTMLDivElement | null>;
@@ -24,7 +25,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
     <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
       <Stack spacing={2.5}>
         {messages.map((message) => {
-          const content = message.isStreaming ? displayedContent : message.content;
+          const content = getVisibleMessageContent(message, displayedContent);
           const isAnimating =
             Boolean(message.isStreaming) && displayedContent.length < message.content.length;
           const lastPara = isAnimating ? content.lastIndexOf('\n\n') : -1;
