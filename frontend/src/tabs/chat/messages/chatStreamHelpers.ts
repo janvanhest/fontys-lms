@@ -4,38 +4,12 @@ import {
   type ChatSource,
   type FinalChatPayload,
 } from '@/api/chat';
+import type { ToolCallBubble } from './chatStreamStatus';
 
 export type ChatUiAction = {
   action: 'open_activities_panel' | 'highlight_activity';
   label: string;
   payload?: Record<string, string>;
-};
-
-export type ToolCallBubble = {
-  name:
-    | 'search_activities'
-    | 'get_student_context'
-    | 'search_course_content'
-    | 'get_student_competences'
-    | 'get_competence_framework';
-  label: string;
-  icon: string;
-};
-
-export type ChatStatusIcon =
-  | 'activities'
-  | 'competences'
-  | 'sources'
-  | 'panel'
-  | 'spark'
-  | 'writing'
-  | 'history'
-  | 'thinking'
-  | 'tool';
-
-export type ChatStatus = {
-  label: string;
-  icon: ChatStatusIcon;
 };
 
 export type Message = {
@@ -56,25 +30,6 @@ export function generateMessageId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function toolCallToBubble(name: string): ToolCallBubble | null {
-  if (name === 'search_activities') {
-    return { name, label: 'Activiteiten bekeken', icon: 'activities' };
-  }
-  if (name === 'get_student_context') {
-    return { name, label: 'Studentprofiel bekeken', icon: 'student' };
-  }
-  if (name === 'search_course_content') {
-    return { name, label: 'Bronnen bekeken', icon: 'sources' };
-  }
-  if (name === 'get_student_competences') {
-    return { name, label: 'Competenties bekeken', icon: 'competences' };
-  }
-  if (name === 'get_competence_framework') {
-    return { name, label: 'Raamwerk bekeken', icon: 'competences' };
-  }
-  return null;
-}
-
 export function createPendingMessages(text: string) {
   const userMessage: Message = {
     id: generateMessageId('user'),
@@ -92,50 +47,6 @@ export function createPendingMessages(text: string) {
   return { streamingId, userMessage, streamingMessage };
 }
 
-export function getStatusFromToolCall(data: string): ChatStatus {
-  try {
-    const payload = JSON.parse(data) as { name?: string };
-    if (payload.name === 'search_activities') {
-      return { label: 'Activiteiten bekijken...', icon: 'activities' };
-    }
-    if (payload.name === 'search_course_content') {
-      return { label: 'Bronnen bekijken...', icon: 'sources' };
-    }
-    if (payload.name === 'perform_ui_action') {
-      return { label: 'Paneel openen...', icon: 'panel' };
-    }
-    if (payload.name === 'get_student_competences' || payload.name === 'get_competence_framework') {
-      return { label: 'Competenties bekijken...', icon: 'competences' };
-    }
-
-    return { label: 'Extra context ophalen...', icon: 'tool' };
-  } catch {
-    return { label: 'Bronnen bekijken...', icon: 'sources' };
-  }
-}
-
-export function getStatusFromEventText(text: string): ChatStatus {
-  if (text === 'Nadenken...') {
-    return { label: text, icon: 'thinking' };
-  }
-
-  if (text === 'Tool uitvoeren...') {
-    return { label: text, icon: 'tool' };
-  }
-
-  return { label: text, icon: 'spark' };
-}
-
-export const CHAT_HISTORY_STATUS: ChatStatus = {
-  label: 'Gesprek laden...',
-  icon: 'history',
-};
-
-export const CHAT_WRITING_STATUS: ChatStatus = {
-  label: 'Antwoord voorbereiden...',
-  icon: 'writing',
-};
-
 export function applyFinalMessage(
   messages: Message[],
   streamingId: string,
@@ -146,7 +57,7 @@ export function applyFinalMessage(
     message.id === streamingId
       ? {
           ...message,
-          content: finalPayload.text,
+          content: message.content.length > 0 ? message.content : finalPayload.text,
           sources: finalPayload.sources,
           isStreaming: false,
           ...(actions.length > 0 ? { actions } : {}),

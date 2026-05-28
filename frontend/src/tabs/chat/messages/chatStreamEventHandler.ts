@@ -3,14 +3,16 @@ import { parseFinalChatPayload, type ChatSseEvent } from '@/api/chat';
 import {
   applyErrorMessage,
   applyFinalMessage,
+  type ChatUiAction,
+  type Message,
+} from './chatStreamHelpers';
+import {
   CHAT_WRITING_STATUS,
   getStatusFromEventText,
   getStatusFromToolCall,
   toolCallToBubble,
   type ChatStatus,
-  type ChatUiAction,
-  type Message,
-} from './chatStreamHelpers';
+} from './chatStreamStatus';
 
 type StreamEventHandlers = {
   scheduleStatus: (status: ChatStatus | null) => void;
@@ -55,16 +57,12 @@ export function handleStreamEvent(
       break;
     case 'text_delta':
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === streamingId ? { ...m, content: m.content + sseEvent.data } : m,
-        ),
+        prev.map((m) => (m.id === streamingId ? { ...m, content: m.content + sseEvent.data } : m)),
       );
       scheduleStatus(null);
       break;
     case 'stream_reset':
-      setMessages((prev) =>
-        prev.map((m) => (m.id === streamingId ? { ...m, content: '' } : m)),
-      );
+      setMessages((prev) => prev.map((m) => (m.id === streamingId ? { ...m, content: '' } : m)));
       break;
     case 'ui_action': {
       const uiPayload = JSON.parse(sseEvent.data) as {
