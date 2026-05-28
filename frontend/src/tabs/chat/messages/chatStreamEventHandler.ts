@@ -3,6 +3,7 @@ import { parseFinalChatPayload, type ChatSseEvent } from '@/api/chat';
 import {
   applyErrorMessage,
   applyFinalMessage,
+  createNudgeMessage,
   type ChatUiAction,
   type Message,
 } from './chatStreamHelpers';
@@ -62,7 +63,6 @@ export function handleStreamEvent(
       scheduleStatus(null);
       break;
     case 'stream_reset':
-      setMessages((prev) => prev.map((m) => (m.id === streamingId ? { ...m, content: '' } : m)));
       break;
     case 'ui_action': {
       const uiPayload = JSON.parse(sseEvent.data) as {
@@ -77,11 +77,12 @@ export function handleStreamEvent(
           uiPayload.activityId ? { activityId: uiPayload.activityId } : undefined,
         );
       } else {
-        pendingSuggestions.push({
+        const action = {
           action: uiPayload.action as ChatUiAction['action'],
           label: uiPayload.label,
           ...(uiPayload.activityId ? { payload: { activityId: uiPayload.activityId } } : {}),
-        });
+        };
+        setMessages((prev) => [...prev, createNudgeMessage(action)]);
       }
       break;
     }
