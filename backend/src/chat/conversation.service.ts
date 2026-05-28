@@ -34,11 +34,19 @@ export class ConversationService {
     conversationId: string,
     studentId: string,
   ): Promise<ConversationEntity | null> {
-    return this.conversationRepository.findOne({
+    const result = await this.conversationRepository.findOne({
       where: { id: conversationId, studentId },
       relations: ['messages'],
       order: { messages: { timestamp: 'ASC' } },
     });
+    if (!result) return null;
+    // TypeORM populates message.conversation as a back-reference to the parent,
+    // creating a circular structure that breaks JSON.stringify. Return a cloned
+    // object to avoid mutating the cached entity.
+    return {
+      ...result,
+      messages: result.messages.map(({ conversation: _c, ...rest }) => rest as MessageEntity),
+    };
   }
 
   async addMessage(
