@@ -1,5 +1,6 @@
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
@@ -29,6 +30,34 @@ export function ChatMessageBubble({
   onAction,
 }: ChatMessageBubbleProps) {
   const isStudent = message.role === 'student';
+  const isNudge = message.role === 'nudge';
+
+  const nudgeAction = message.action;
+
+  if (isNudge && nudgeAction) {
+    return (
+      <Box sx={{ display: 'flex', pl: '44px' }}>
+        <Paper
+          elevation={0}
+          sx={{
+            px: 1.5,
+            py: 1,
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Chip
+            label={nudgeAction.label}
+            size="small"
+            onClick={() => onAction?.(message.id, nudgeAction.action, nudgeAction.payload)}
+            sx={{ fontSize: '0.75rem' }}
+          />
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box>
