@@ -14,11 +14,12 @@ export type ChatUiAction = {
 
 export type Message = {
   id: string;
-  role: 'student' | 'assistant';
+  role: 'student' | 'assistant' | 'nudge';
   content: string;
   isStreaming?: boolean;
   sources?: ChatSource[];
   actions?: ChatUiAction[];
+  action?: ChatUiAction;
   toolCalls?: ToolCallBubble[];
 };
 
@@ -45,6 +46,15 @@ export function createPendingMessages(text: string) {
   };
 
   return { streamingId, userMessage, streamingMessage };
+}
+
+export function createNudgeMessage(action: ChatUiAction): Message {
+  return {
+    id: generateMessageId('nudge'),
+    role: 'nudge',
+    content: '',
+    action,
+  };
 }
 
 export function applyFinalMessage(
