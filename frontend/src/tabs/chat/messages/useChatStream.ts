@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { streamChatMessage } from '@/api/chat';
 import {
   applyErrorMessage,
-  CHAT_HISTORY_STATUS,
   createPendingMessages,
   loadConversationHistory,
   type ChatUiAction,
   type Message,
 } from './chatStreamHelpers';
+import { CHAT_HISTORY_STATUS } from './chatStreamStatus';
 import { handleStreamEvent } from './chatStreamEventHandler';
 import { useScheduledStatus } from './useScheduledStatus';
 

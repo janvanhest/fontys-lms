@@ -12,7 +12,7 @@ import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import type { LayoutTab } from '@/context/layout-context';
-import type { ChatStatus, ChatStatusIcon } from '@/tabs/chat/messages/chatStreamHelpers';
+import type { ChatStatus, ChatStatusIcon } from '@/tabs/chat/messages/chatStreamStatus';
 
 type ChatTabHeaderProps = {
   activeTab: LayoutTab;
