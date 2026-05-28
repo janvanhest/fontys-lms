@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { applyFinalMessage, generateMessageId } from './chatStreamHelpers';
+import { applyFinalMessage, createNudgeMessage, generateMessageId } from './chatStreamHelpers';
 import type { ChatUiAction, Message } from './chatStreamHelpers';
 
 describe('generateMessageId', () => {
@@ -79,6 +79,21 @@ describe('applyFinalMessage', () => {
       isStreaming: false,
       sources: [{ kind: 'canvas', label: 'Canvas: Activiteit', url: null }],
       actions: [{ action: 'open_activities_panel', label: 'Open activiteiten' }],
+    });
+  });
+});
+
+describe('createNudgeMessage', () => {
+  it('creates a separate nudge message from a suggested UI action', () => {
+    const action: ChatUiAction = {
+      action: 'open_activities_panel',
+      label: 'Open activiteiten',
+    };
+
+    expect(createNudgeMessage(action)).toMatchObject({
+      role: 'nudge',
+      content: '',
+      action,
     });
   });
 });
