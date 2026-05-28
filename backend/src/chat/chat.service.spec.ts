@@ -677,6 +677,63 @@ describe('ChatService', () => {
     expect(mockPerformUiActionTool.execute).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps streamed answer text when perform_ui_action follows the answer', async () => {
+    mockAnthropicStream
+      .mockReturnValueOnce(
+        makeStreamMock(['Semesterplan tekst.'], {
+          stop_reason: 'tool_use',
+          content: [
+            { type: 'text', text: 'Semesterplan tekst.' },
+            {
+              type: 'tool_use',
+              id: 'tool-ui-after-answer',
+              name: 'perform_ui_action',
+              input: {
+                action: 'highlight_activity',
+                mode: 'suggest',
+                label: 'Open Persoonlijk ontwikkelplan',
+                activityId: 'activity-123',
+              },
+            },
+          ],
+        }),
+      )
+      .mockReturnValueOnce(
+        makeStreamMock([], {
+          stop_reason: 'end_turn',
+          content: [{ type: 'text', text: '' }],
+        }),
+      );
+
+    const events = await collectEvents({ message: 'Maak een semesterplan' });
+
+    expect(events.some((e) => e.event === 'stream_reset')).toBe(false);
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'text_delta', data: 'Semesterplan tekst.' }),
+        expect.objectContaining({
+          event: 'ui_action',
+          data: JSON.stringify({
+            action: 'highlight_activity',
+            mode: 'suggest',
+            label: 'Open Persoonlijk ontwikkelplan',
+            activityId: 'activity-123',
+          }),
+        }),
+        expect.objectContaining({
+          event: 'final',
+          data: JSON.stringify({ text: 'Semesterplan tekst.', conversationId: 'c1' }),
+        }),
+      ]),
+    );
+    expect(mockConversationService.addMessage).toHaveBeenCalledWith(
+      'c1',
+      'assistant',
+      'Semesterplan tekst.',
+      [],
+    );
+  });
+
   it('deduplicates retrieved sources and limits them to the top 3', async () => {
     mockAnthropicStream
       .mockReturnValueOnce(

@@ -106,6 +106,7 @@ export class ChatService {
     const usedSources: ChatSource[] = [];
     let iterations = 0;
     let lastStopReason: string | null = null;
+    let durableAssistantText = '';
 
     while (iterations < 6) {
       yield { event: 'status', data: 'Nadenken...' };
@@ -132,36 +133,45 @@ export class ChatService {
         const finalMessage = await stream.finalMessage();
         lastStopReason = finalMessage.stop_reason;
 
+        const text = finalMessage.content
+          .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+          .map((b) => b.text)
+          .join('');
         messages.push({ role: 'assistant', content: finalMessage.content });
 
         if (finalMessage.stop_reason === 'end_turn') {
-          const text = finalMessage.content
-            .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-            .map((b) => b.text)
-            .join('');
+          const responseText = text.length > 0 ? text : durableAssistantText;
           const finalSources = this.getFinalSources(usedSources);
           await this.conversationService.addMessage(
             conversation.id,
             'assistant',
-            text,
+            responseText,
             finalSources,
           );
           await this.maybeUpdateConversationTitle(conversation, dto.message);
           yield {
             event: 'final',
-            data: this.serializeFinalPayload(conversation.id, text, finalSources),
+            data: this.serializeFinalPayload(conversation.id, responseText, finalSources),
           };
           return;
         }
 
         if (finalMessage.stop_reason === 'tool_use') {
-          if (iterationHasText) {
-            yield { event: 'stream_reset', data: '' };
+          const toolUseBlocks = finalMessage.content.filter(
+            (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+          );
+          const onlyUiActionTools =
+            toolUseBlocks.length > 0 &&
+            toolUseBlocks.every((block) => block.name === 'perform_ui_action');
+
+          if (onlyUiActionTools && text.length > 0) {
+            durableAssistantText += text;
+          } else {
+            if (!onlyUiActionTools) durableAssistantText = '';
+            if (iterationHasText) yield { event: 'stream_reset', data: '' };
           }
-          for (const block of finalMessage.content) {
-            if (block.type === 'tool_use') {
-              yield { event: 'tool_call', data: JSON.stringify({ name: block.name }) };
-            }
+          for (const block of toolUseBlocks) {
+            yield { event: 'tool_call', data: JSON.stringify({ name: block.name }) };
           }
           const toolResults = await this.executeToolCalls(finalMessage.content, studentId);
           for (const event of toolResults.events) {
