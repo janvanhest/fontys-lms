@@ -4,6 +4,8 @@ import {
   applyErrorMessage,
   applyFinalMessage,
   createNudgeMessage,
+  createStreamingAssistantMessage,
+  splitStreamingAssistantMessage,
   type ChatUiAction,
   type Message,
 } from './chatStreamHelpers';
@@ -19,6 +21,8 @@ type StreamEventHandlers = {
   scheduleStatus: (status: ChatStatus | null) => void;
   forceStatus: (status: ChatStatus | null) => void;
   setMessages: Dispatch<SetStateAction<Message[]>>;
+  getStreamingId?: () => string;
+  setStreamingId?: (streamingId: string) => void;
   onConversationEstablished?: (id: string) => void;
   onUiAction?: (action: string, payload?: Record<string, string>) => void;
 };
@@ -31,6 +35,7 @@ export function handleStreamEvent(
 ): void {
   const { scheduleStatus, forceStatus, setMessages, onConversationEstablished, onUiAction } =
     handlers;
+  const currentStreamingId = handlers.getStreamingId?.() ?? streamingId;
   switch (sseEvent.event) {
     case 'status':
       scheduleStatus(getStatusFromEventText(sseEvent.data));
@@ -45,7 +50,7 @@ export function handleStreamEvent(
       if (bubble) {
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === streamingId && !m.toolCalls?.some((tc) => tc.name === bubble.name)
+            m.id === currentStreamingId && !m.toolCalls?.some((tc) => tc.name === bubble.name)
               ? { ...m, toolCalls: [...(m.toolCalls ?? []), bubble] }
               : m,
           ),
@@ -55,15 +60,28 @@ export function handleStreamEvent(
     }
     case 'tool_result':
       scheduleStatus(CHAT_WRITING_STATUS);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === currentStreamingId && m.content.length > 0 && !m.content.endsWith('\n')
+            ? { ...m, content: m.content + '\n\n' }
+            : m,
+        ),
+      );
       break;
     case 'text_delta':
       setMessages((prev) =>
-        prev.map((m) => (m.id === streamingId ? { ...m, content: m.content + sseEvent.data } : m)),
+        prev.map((m) =>
+          m.id === currentStreamingId ? { ...m, content: m.content + sseEvent.data } : m,
+        ),
       );
       scheduleStatus(null);
       break;
-    case 'stream_reset':
+    case 'stream_reset': {
+      const nextMessage = createStreamingAssistantMessage();
+      handlers.setStreamingId?.(nextMessage.id);
+      setMessages((prev) => splitStreamingAssistantMessage(prev, currentStreamingId, nextMessage));
       break;
+    }
     case 'ui_action': {
       const uiPayload = JSON.parse(sseEvent.data) as {
         action: string;
@@ -91,12 +109,14 @@ export function handleStreamEvent(
       if (finalPayload.conversationId) {
         onConversationEstablished?.(finalPayload.conversationId);
       }
-      setMessages((prev) => applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions));
+      setMessages((prev) =>
+        applyFinalMessage(prev, currentStreamingId, finalPayload, pendingSuggestions),
+      );
       scheduleStatus(null);
       break;
     }
     case 'error':
-      setMessages((prev) => applyErrorMessage(prev, streamingId, sseEvent.data));
+      setMessages((prev) => applyErrorMessage(prev, currentStreamingId, sseEvent.data));
       scheduleStatus(null);
       break;
   }
