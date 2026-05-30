@@ -65,7 +65,9 @@ curl -s -N -X POST "$ENDPOINT" \
       ev="${line#event: }"
       ev="${ev#event:}"
       skip_event=false
-      $VERBOSE || [[ "$ev" == "text_delta" || "$ev" == "stream_reset" ]] && skip_event=true
+      if ! $VERBOSE && [[ "$ev" == "text_delta" || "$ev" == "stream_reset" ]]; then
+        skip_event=true
+      fi
       case "$ev" in
         tool_call)   color="$CYAN" ;;
         tool_result) color="$YELLOW" ;;
