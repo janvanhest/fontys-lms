@@ -1,7 +1,8 @@
 #!/bin/bash
 
-ENDPOINT="http://localhost:3000/chat/stream"
-BODY='{"message": "Wat zijn de HBO-i beroepstaken voor software realiseren niveau 2?"}'
+ENDPOINT="${CHAT_STREAM_ENDPOINT:-http://localhost:3000/chat/stream}"
+DEFAULT_MESSAGE="${CHAT_BENCH_MESSAGE:-Wat zijn de HBO-i beroepstaken voor software realiseren niveau 2?}"
+BODY="${CHAT_BENCH_BODY:-$(printf '{"message":"%s"}' "$DEFAULT_MESSAGE")}"
 CONCURRENT=${1:-5}
 ROUNDS=${2:-5}
 SLEEP=${3:-15}
