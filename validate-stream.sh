@@ -23,7 +23,7 @@ for arg in "$@"; do
 done
 
 MESSAGE="${ARGS[0]:-Maak voor mij een persoonlijk semesterplan met mijn activiteiten en competenties.}"
-EXPECTED_TOOLS_RAW="${ARGS[1]:-}"
+EXPECTED_TOOLS_RAW="${ARGS[1]:-get_student_competences,search_activities,search_course_content}"
 
 # All known event types
 ALL_EVENT_TYPES=(status text_delta tool_call tool_result ui_action stream_reset final error)
@@ -98,15 +98,21 @@ echo -e "${BOLD}========================================${RESET}"
 echo ""
 
 # Parse events and tool calls from captured output
-declare -A SEEN_EVENTS
+SEEN_EVENTS=()
 SEEN_TOOLS=()
 current_event=""
+
+seen_event() {
+  local target="$1"
+  for e in "${SEEN_EVENTS[@]}"; do [[ "$e" == "$target" ]] && return 0; done
+  return 1
+}
 
 while IFS= read -r line; do
   if [[ "$line" == event:* ]]; then
     current_event="${line#event: }"
     current_event="${current_event#event:}"
-    SEEN_EVENTS["$current_event"]=1
+    SEEN_EVENTS+=("$current_event")
   elif [[ "$line" == data:* ]] && [[ "$current_event" == "tool_call" ]]; then
     data="${line#data: }"
     data="${data#data:}"
@@ -124,10 +130,19 @@ rm "$TMPFILE"
 echo -e "${BOLD}Event types:${RESET}"
 all_pass=true
 for ev in "${ALL_EVENT_TYPES[@]}"; do
-  if [[ "${SEEN_EVENTS[$ev]}" == "1" ]]; then
-    echo -e "  ${GREEN}GEZIEN  ${RESET} $ev"
+  if [[ "$ev" == "error" ]]; then
+    if seen_event "$ev"; then
+      echo -e "  ${RED}GEZIEN  ${RESET} $ev  (fout in stream)"
+      all_pass=false
+    else
+      echo -e "  ${GREEN}NIET GEZIEN${RESET} $ev"
+    fi
   else
-    echo -e "  ${YELLOW}NIET GEZIEN${RESET} $ev"
+    if seen_event "$ev"; then
+      echo -e "  ${GREEN}GEZIEN  ${RESET} $ev"
+    else
+      echo -e "  ${YELLOW}NIET GEZIEN${RESET} $ev"
+    fi
   fi
 done
 
