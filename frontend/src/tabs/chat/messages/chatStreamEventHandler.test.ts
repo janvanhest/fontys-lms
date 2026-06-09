@@ -115,6 +115,37 @@ describe('handleStreamEvent', () => {
     ]);
   });
 
+  it('adds tool-result spacing only once per assistant message', () => {
+    const handlers = createHandlers([
+      {
+        id: 'assistant-1',
+        role: 'assistant',
+        content: 'Ik kijk even naar je activiteiten.',
+        isStreaming: true,
+      },
+    ]);
+
+    handleStreamEvent(
+      { event: 'tool_result', data: JSON.stringify({ name: 'search_activities' }) },
+      'assistant-1',
+      [],
+      handlers,
+    );
+    handleStreamEvent(
+      { event: 'tool_result', data: JSON.stringify({ name: 'get_student_competences' }) },
+      'assistant-1',
+      [],
+      handlers,
+    );
+
+    expect(handlers.getMessages()).toMatchObject([
+      {
+        id: 'assistant-1',
+        content: 'Ik kijk even naar je activiteiten.\n\n',
+      },
+    ]);
+  });
+
   it('keeps text before and after a reset in separate assistant bubbles', () => {
     const handlers = createHandlers([
       { id: 'assistant-1', role: 'assistant', content: '', isStreaming: true },

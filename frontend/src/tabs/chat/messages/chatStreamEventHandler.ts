@@ -3,6 +3,7 @@ import { parseFinalChatPayload, type ChatSseEvent } from '@/api/chat';
 import {
   applyErrorMessage,
   applyFinalMessage,
+  appendToolResultSpacing,
   createNudgeMessage,
   createStreamingAssistantMessage,
   splitStreamingAssistantMessage,
@@ -60,13 +61,9 @@ export function handleStreamEvent(
     }
     case 'tool_result':
       scheduleStatus(CHAT_WRITING_STATUS);
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === currentStreamingId && m.content.length > 0 && !m.content.endsWith('\n')
-            ? { ...m, content: m.content + '\n\n' }
-            : m,
-        ),
-      );
+      if (JSON.parse(sseEvent.data).name !== 'perform_ui_action') {
+        setMessages((prev) => appendToolResultSpacing(prev, currentStreamingId));
+      }
       break;
     case 'text_delta':
       setMessages((prev) =>

@@ -14,11 +14,17 @@ export type ChatUiAction = {
 
 export type Message = {
   id: string;
+  // Assistant messages render markdown content. Nudge messages render a single
+  // suggested CTA and intentionally leave `content` empty.
   role: 'student' | 'assistant' | 'nudge';
   content: string;
+  // Only the active assistant stream should set `isStreaming`; stream resets
+  // finalize the current message and rotate to a new assistant message id.
   isStreaming?: boolean;
   sources?: ChatSource[];
+  // `actions` attach one or more buttons to a completed assistant message.
   actions?: ChatUiAction[];
+  // `action` is reserved for standalone `nudge` messages.
   action?: ChatUiAction;
   toolCalls?: ToolCallBubble[];
 };
@@ -74,6 +80,17 @@ export function splitStreamingAssistantMessage(
   return messages
     .map((message) => (message.id === streamingId ? { ...message, isStreaming: false } : message))
     .concat(nextMessage);
+}
+
+export function appendToolResultSpacing(messages: Message[], streamingId: string): Message[] {
+  return messages.map((message) =>
+    message.id === streamingId &&
+    message.role === 'assistant' &&
+    message.content.length > 0 &&
+    !message.content.endsWith('\n\n')
+      ? { ...message, content: message.content + '\n\n' }
+      : message,
+  );
 }
 
 export function shouldLoadConversationHistory({
