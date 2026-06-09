@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { CurrentStudent } from '../auth/decorators/current-student.decorator';
 import { Student } from '../student/student.entity';
 import { ChatService, ChatSseEvent } from './chat.service';
-import { ConversationService } from './conversation.service';
+import { ConversationService, type ConversationWithMessagesView } from './conversation.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { UpdateConversationTitleDto } from './dto/update-conversation-title.dto';
 import { ConversationEntity } from './entities/conversation.entity';
@@ -57,7 +57,7 @@ export class ChatController {
   async getConversation(
     @Param('id') id: string,
     @CurrentStudent() student: Student,
-  ): Promise<ConversationEntity | null> {
+  ): Promise<ConversationWithMessagesView | null> {
     return this.conversationService.findConversationWithMessages(id, student.id);
   }
 
