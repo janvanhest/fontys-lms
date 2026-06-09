@@ -79,6 +79,56 @@ describe('ConversationService', () => {
     expect(result).toBeNull();
   });
 
+  it('findConversationWithMessages returns a serializable conversation payload', async () => {
+    const conversation = {
+      id: 'c1',
+      studentId: 'student-uuid',
+      createdAt: new Date('2026-06-01T12:00:00.000Z'),
+      title: 'Semesterplan hulp',
+      titleManuallyEdited: false,
+      titleRevisionCount: 0,
+      messages: [
+        {
+          id: 'm1',
+          role: 'assistant',
+          content: 'Hier is je plan.',
+          sources: null,
+          timestamp: new Date('2026-06-01T12:01:00.000Z'),
+          conversationId: 'c1',
+          conversation: {} as ConversationEntity,
+        },
+      ],
+      student: {
+        id: 'student-uuid',
+        conversations: [] as ConversationEntity[],
+      },
+    } as ConversationEntity & { student: { id: string; conversations: ConversationEntity[] } };
+    conversation.messages[0]!.conversation = conversation;
+    conversationRepo.findOne.mockResolvedValue(conversation);
+
+    const result = await service.findConversationWithMessages('c1', 'student-uuid');
+
+    expect(result).toEqual({
+      id: 'c1',
+      studentId: 'student-uuid',
+      createdAt: new Date('2026-06-01T12:00:00.000Z'),
+      title: 'Semesterplan hulp',
+      titleManuallyEdited: false,
+      titleRevisionCount: 0,
+      messages: [
+        {
+          id: 'm1',
+          role: 'assistant',
+          content: 'Hier is je plan.',
+          sources: null,
+          timestamp: new Date('2026-06-01T12:01:00.000Z'),
+          conversationId: 'c1',
+        },
+      ],
+    });
+    expect(() => JSON.stringify(result)).not.toThrow();
+  });
+
   it('addMessage saves a message to the conversation', async () => {
     const message = {
       id: 'm1',

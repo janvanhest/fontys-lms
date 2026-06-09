@@ -68,6 +68,7 @@ describe('ChatService', () => {
   let mockPerformUiActionTool: jest.Mocked<Pick<PerformUiActionTool, 'execute'>>;
   let mockAnthropicStream: jest.Mock;
   let loggerWarnSpy: jest.SpyInstance;
+  let loggerErrorSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     mockConversationService = {
@@ -110,10 +111,12 @@ describe('ChatService', () => {
       messages: { stream: mockAnthropicStream },
     };
     loggerWarnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    loggerErrorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
   afterEach(() => {
     loggerWarnSpy.mockRestore();
+    loggerErrorSpy.mockRestore();
   });
 
   async function collectEvents(dto: SendMessageDto, studentId = STUDENT_ID) {
@@ -283,9 +286,8 @@ describe('ChatService', () => {
     );
     mockRagTool.execute.mockRejectedValue(new Error('Course search unavailable'));
 
-    await expect(collectEvents({ message: 'What is a professional task?' })).rejects.toThrow(
-      'Course search unavailable',
-    );
+    const events = await collectEvents({ message: 'What is a professional task?' });
+    expect(events.some((e) => e.event === 'error')).toBe(true);
   });
 
   it('derives the disabled student-context policy in the Anthropic request', async () => {
@@ -673,6 +675,63 @@ describe('ChatService', () => {
       label: 'Open activiteiten',
     });
     expect(mockPerformUiActionTool.execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps streamed answer text when perform_ui_action follows the answer', async () => {
+    mockAnthropicStream
+      .mockReturnValueOnce(
+        makeStreamMock(['Semesterplan tekst.'], {
+          stop_reason: 'tool_use',
+          content: [
+            { type: 'text', text: 'Semesterplan tekst.' },
+            {
+              type: 'tool_use',
+              id: 'tool-ui-after-answer',
+              name: 'perform_ui_action',
+              input: {
+                action: 'highlight_activity',
+                mode: 'suggest',
+                label: 'Open Persoonlijk ontwikkelplan',
+                activityId: 'activity-123',
+              },
+            },
+          ],
+        }),
+      )
+      .mockReturnValueOnce(
+        makeStreamMock([], {
+          stop_reason: 'end_turn',
+          content: [{ type: 'text', text: '' }],
+        }),
+      );
+
+    const events = await collectEvents({ message: 'Maak een semesterplan' });
+
+    expect(events.some((e) => e.event === 'stream_reset')).toBe(false);
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'text_delta', data: 'Semesterplan tekst.' }),
+        expect.objectContaining({
+          event: 'ui_action',
+          data: JSON.stringify({
+            action: 'highlight_activity',
+            mode: 'suggest',
+            label: 'Open Persoonlijk ontwikkelplan',
+            activityId: 'activity-123',
+          }),
+        }),
+        expect.objectContaining({
+          event: 'final',
+          data: JSON.stringify({ text: 'Semesterplan tekst.', conversationId: 'c1' }),
+        }),
+      ]),
+    );
+    expect(mockConversationService.addMessage).toHaveBeenCalledWith(
+      'c1',
+      'assistant',
+      'Semesterplan tekst.',
+      [],
+    );
   });
 
   it('deduplicates retrieved sources and limits them to the top 3', async () => {

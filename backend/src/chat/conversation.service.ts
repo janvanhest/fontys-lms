@@ -4,6 +4,18 @@ import { Repository } from 'typeorm';
 import { MessageEntity, MessageRole, MessageSource } from './entities/message.entity';
 import { ConversationEntity } from './entities/conversation.entity';
 
+export type ConversationMessageView = Pick<
+  MessageEntity,
+  'id' | 'role' | 'content' | 'sources' | 'timestamp' | 'conversationId'
+>;
+
+export type ConversationWithMessagesView = Pick<
+  ConversationEntity,
+  'id' | 'createdAt' | 'title' | 'studentId' | 'titleManuallyEdited' | 'titleRevisionCount'
+> & {
+  messages: ConversationMessageView[];
+};
+
 @Injectable()
 export class ConversationService {
   constructor(
@@ -33,12 +45,31 @@ export class ConversationService {
   async findConversationWithMessages(
     conversationId: string,
     studentId: string,
-  ): Promise<ConversationEntity | null> {
-    return this.conversationRepository.findOne({
+  ): Promise<ConversationWithMessagesView | null> {
+    const result = await this.conversationRepository.findOne({
       where: { id: conversationId, studentId },
       relations: ['messages'],
       order: { messages: { timestamp: 'ASC' } },
     });
+    if (!result) return null;
+    // Return the API shape explicitly so future ORM relations cannot leak
+    // circular references back into the serialized response.
+    return {
+      id: result.id,
+      createdAt: result.createdAt,
+      title: result.title,
+      studentId: result.studentId,
+      titleManuallyEdited: result.titleManuallyEdited,
+      titleRevisionCount: result.titleRevisionCount,
+      messages: result.messages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        content: message.content,
+        sources: message.sources,
+        timestamp: message.timestamp,
+        conversationId: message.conversationId,
+      })),
+    };
   }
 
   async addMessage(

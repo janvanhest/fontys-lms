@@ -4,6 +4,7 @@ import {
   type ChatSource,
   type FinalChatPayload,
 } from '@/api/chat';
+import type { ToolCallBubble } from './chatStreamStatus';
 
 export type ChatUiAction = {
   action: 'open_activities_panel' | 'highlight_activity';
@@ -11,40 +12,20 @@ export type ChatUiAction = {
   payload?: Record<string, string>;
 };
 
-export type ToolCallBubble = {
-  name:
-    | 'search_activities'
-    | 'get_student_context'
-    | 'search_course_content'
-    | 'get_student_competences'
-    | 'get_competence_framework';
-  label: string;
-  icon: string;
-};
-
-export type ChatStatusIcon =
-  | 'activities'
-  | 'competences'
-  | 'sources'
-  | 'panel'
-  | 'spark'
-  | 'writing'
-  | 'history'
-  | 'thinking'
-  | 'tool';
-
-export type ChatStatus = {
-  label: string;
-  icon: ChatStatusIcon;
-};
-
 export type Message = {
   id: string;
-  role: 'student' | 'assistant';
+  // Assistant messages render markdown content. Nudge messages render a single
+  // suggested CTA and intentionally leave `content` empty.
+  role: 'student' | 'assistant' | 'nudge';
   content: string;
+  // Only the active assistant stream should set `isStreaming`; stream resets
+  // finalize the current message and rotate to a new assistant message id.
   isStreaming?: boolean;
   sources?: ChatSource[];
+  // `actions` attach one or more buttons to a completed assistant message.
   actions?: ChatUiAction[];
+  // `action` is reserved for standalone `nudge` messages.
+  action?: ChatUiAction;
   toolCalls?: ToolCallBubble[];
 };
 
@@ -54,25 +35,6 @@ export function generateMessageId(prefix: string): string {
   }
 
   return `${prefix}-${Math.random().toString(36).slice(2)}`;
-}
-
-export function toolCallToBubble(name: string): ToolCallBubble | null {
-  if (name === 'search_activities') {
-    return { name, label: 'Activiteiten bekeken', icon: 'activities' };
-  }
-  if (name === 'get_student_context') {
-    return { name, label: 'Studentprofiel bekeken', icon: 'student' };
-  }
-  if (name === 'search_course_content') {
-    return { name, label: 'Bronnen bekeken', icon: 'sources' };
-  }
-  if (name === 'get_student_competences') {
-    return { name, label: 'Competenties bekeken', icon: 'competences' };
-  }
-  if (name === 'get_competence_framework') {
-    return { name, label: 'Raamwerk bekeken', icon: 'competences' };
-  }
-  return null;
 }
 
 export function createPendingMessages(text: string) {
@@ -92,49 +54,57 @@ export function createPendingMessages(text: string) {
   return { streamingId, userMessage, streamingMessage };
 }
 
-export function getStatusFromToolCall(data: string): ChatStatus {
-  try {
-    const payload = JSON.parse(data) as { name?: string };
-    if (payload.name === 'search_activities') {
-      return { label: 'Activiteiten bekijken...', icon: 'activities' };
-    }
-    if (payload.name === 'search_course_content') {
-      return { label: 'Bronnen bekijken...', icon: 'sources' };
-    }
-    if (payload.name === 'perform_ui_action') {
-      return { label: 'Paneel openen...', icon: 'panel' };
-    }
-    if (payload.name === 'get_student_competences' || payload.name === 'get_competence_framework') {
-      return { label: 'Competenties bekijken...', icon: 'competences' };
-    }
-
-    return { label: 'Extra context ophalen...', icon: 'tool' };
-  } catch {
-    return { label: 'Bronnen bekijken...', icon: 'sources' };
-  }
+export function createStreamingAssistantMessage(): Message {
+  return {
+    id: generateMessageId('assistant'),
+    role: 'assistant',
+    content: '',
+    isStreaming: true,
+  };
 }
 
-export function getStatusFromEventText(text: string): ChatStatus {
-  if (text === 'Nadenken...') {
-    return { label: text, icon: 'thinking' };
-  }
-
-  if (text === 'Tool uitvoeren...') {
-    return { label: text, icon: 'tool' };
-  }
-
-  return { label: text, icon: 'spark' };
+export function createNudgeMessage(action: ChatUiAction): Message {
+  return {
+    id: generateMessageId('nudge'),
+    role: 'nudge',
+    content: '',
+    action,
+  };
 }
 
-export const CHAT_HISTORY_STATUS: ChatStatus = {
-  label: 'Gesprek laden...',
-  icon: 'history',
-};
+export function splitStreamingAssistantMessage(
+  messages: Message[],
+  streamingId: string,
+  nextMessage: Message,
+) {
+  return messages
+    .map((message) => (message.id === streamingId ? { ...message, isStreaming: false } : message))
+    .concat(nextMessage);
+}
 
-export const CHAT_WRITING_STATUS: ChatStatus = {
-  label: 'Antwoord voorbereiden...',
-  icon: 'writing',
-};
+export function appendToolResultSpacing(messages: Message[], streamingId: string): Message[] {
+  return messages.map((message) =>
+    message.id === streamingId &&
+    message.role === 'assistant' &&
+    message.content.length > 0 &&
+    !message.content.endsWith('\n\n')
+      ? { ...message, content: message.content + '\n\n' }
+      : message,
+  );
+}
+
+export function shouldLoadConversationHistory({
+  nextConversationId,
+  previousConversationId,
+  hasLocalMessages,
+}: {
+  nextConversationId: string;
+  previousConversationId: string | undefined;
+  hasLocalMessages: boolean;
+}) {
+  if (previousConversationId === undefined && hasLocalMessages) return false;
+  return previousConversationId !== nextConversationId;
+}
 
 export function applyFinalMessage(
   messages: Message[],
@@ -146,7 +116,7 @@ export function applyFinalMessage(
     message.id === streamingId
       ? {
           ...message,
-          content: finalPayload.text,
+          content: message.content.length > 0 ? message.content : finalPayload.text,
           sources: finalPayload.sources,
           isStreaming: false,
           ...(actions.length > 0 ? { actions } : {}),

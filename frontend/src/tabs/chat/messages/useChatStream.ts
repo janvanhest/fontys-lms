@@ -2,13 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { streamChatMessage } from '@/api/chat';
 import {
   applyErrorMessage,
-  CHAT_HISTORY_STATUS,
   createPendingMessages,
-  loadConversationHistory,
   type ChatUiAction,
   type Message,
 } from './chatStreamHelpers';
+import { CHAT_HISTORY_STATUS } from './chatStreamStatus';
 import { handleStreamEvent } from './chatStreamEventHandler';
+import { useConversationHistory } from './useConversationHistory';
 import { useScheduledStatus } from './useScheduledStatus';
 
 export type { Message } from './chatStreamHelpers';
@@ -26,6 +26,8 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
   const [isLoadingHistory, setIsLoadingHistory] = useState(hasConversation);
   const isMountedRef = useRef(true);
   const streamAbortRef = useRef<AbortController | null>(null);
+  const previousConversationIdRef = useRef<string | undefined>(undefined);
+  const messagesRef = useRef<Message[]>([]);
   const { status, scheduleStatus, forceStatus } = useScheduledStatus(
     isMountedRef,
     hasConversation ? CHAT_HISTORY_STATUS : null,
@@ -40,40 +42,27 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
   }, []);
 
   useEffect(() => {
-    streamAbortRef.current?.abort();
-    if (!conversationId) return;
+    messagesRef.current = messages;
+  }, [messages]);
 
-    const controller = new AbortController();
-    let ignore = false;
-
-    void loadConversationHistory(conversationId, controller.signal)
-      .then((historyMessages) => {
-        if (ignore || !isMountedRef.current) return;
-        setMessages(historyMessages);
-        scheduleStatus(null);
-      })
-      .catch((error: unknown) => {
-        if (ignore || !isMountedRef.current) return;
-        if (error instanceof DOMException && error.name === 'AbortError') return;
-        setMessages([]);
-        scheduleStatus({ label: 'Gesprek laden mislukt.', icon: 'history' });
-      })
-      .finally(() => {
-        if (ignore || !isMountedRef.current) return;
-        setIsLoadingHistory(false);
-      });
-
-    return () => {
-      ignore = true;
-      controller.abort();
-    };
-  }, [conversationId, scheduleStatus]);
+  useConversationHistory({
+    conversationId,
+    isMountedRef,
+    messagesRef,
+    previousConversationIdRef,
+    scheduleStatus,
+    setIsLoadingHistory,
+    setMessages,
+    streamAbortRef,
+  });
 
   const consumeAction = useCallback((messageId: string, action: string) => {
     setMessages((prev) =>
-      prev.map((m) =>
-        m.id === messageId ? { ...m, actions: m.actions?.filter((a) => a.action !== action) } : m,
-      ),
+      prev
+        .filter((m) => !(m.id === messageId && m.role === 'nudge'))
+        .map((m) =>
+          m.id === messageId ? { ...m, actions: m.actions?.filter((a) => a.action !== action) } : m,
+        ),
     );
   }, []);
 
@@ -86,6 +75,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       streamAbortRef.current = controller;
 
       const { streamingId, streamingMessage, userMessage } = createPendingMessages(text);
+      const currentStreamingIdRef = { current: streamingId };
       const pendingSuggestions: ChatUiAction[] = [];
 
       setMessages((prev) => [...prev, userMessage, streamingMessage]);
@@ -99,6 +89,10 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
             scheduleStatus,
             forceStatus,
             setMessages,
+            getStreamingId: () => currentStreamingIdRef.current,
+            setStreamingId: (nextStreamingId) => {
+              currentStreamingIdRef.current = nextStreamingId;
+            },
             onConversationEstablished,
             onUiAction,
           });

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import type { ChatStatus } from './chatStreamHelpers';
+import type { ChatStatus } from './chatStreamStatus';
 
 const MIN_STATUS_DURATION_MS = Number(import.meta.env.VITE_MIN_STATUS_DURATION_MS) || 2000;
 

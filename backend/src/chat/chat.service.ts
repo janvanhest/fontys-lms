@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { ConversationEntity } from './entities/conversation.entity';
-import { ConversationService } from './conversation.service';
+import { ConversationService, type ConversationWithMessagesView } from './conversation.service';
 import {
   PERFORM_UI_ACTION_TOOL_DEF,
   PerformUiActionTool,
@@ -25,6 +25,7 @@ import { ChatSource } from '../document/document-search.service';
 
 export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
+type ConversationHistory = ConversationEntity | ConversationWithMessagesView;
 
 const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-7';
 
@@ -32,7 +33,7 @@ const BASE_SYSTEM_PROMPT = `Je bent een leercoach-assistent voor het Activity Fi
 Je helpt studenten hun leervoortgang en competenties te begrijpen en te verbeteren.
 
 Aanpak:
-1. Gebruik search_course_content voor vragen over begrippen, het HBO-i raamwerk of cursusinhoud.
+1. Gebruik search_course_content voor vragen over begrippen, het HBO-i raamwerk, cursusinhoud, of studieprocessen zoals het persoonlijk semesterplan, challenges, agile werken of portflow.
 2. Gebruik search_activities voor vragen over activiteiten, deadlines, open taken, workshops of voortgang van de student.
 3. Gebruik get_student_competences voor vragen over waar de student staat: zijn behaalde en gekozen competentieniveaus.
 4. Gebruik get_competence_framework om op te zoeken wat een competentie of niveau inhoudt.
@@ -106,6 +107,7 @@ export class ChatService {
     const usedSources: ChatSource[] = [];
     let iterations = 0;
     let lastStopReason: string | null = null;
+    let durableAssistantText = '';
 
     while (iterations < 6) {
       yield { event: 'status', data: 'Nadenken...' };
@@ -132,36 +134,45 @@ export class ChatService {
         const finalMessage = await stream.finalMessage();
         lastStopReason = finalMessage.stop_reason;
 
+        const text = finalMessage.content
+          .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+          .map((b) => b.text)
+          .join('');
         messages.push({ role: 'assistant', content: finalMessage.content });
 
         if (finalMessage.stop_reason === 'end_turn') {
-          const text = finalMessage.content
-            .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-            .map((b) => b.text)
-            .join('');
+          const responseText = text.length > 0 ? text : durableAssistantText;
           const finalSources = this.getFinalSources(usedSources);
           await this.conversationService.addMessage(
             conversation.id,
             'assistant',
-            text,
+            responseText,
             finalSources,
           );
           await this.maybeUpdateConversationTitle(conversation, dto.message);
           yield {
             event: 'final',
-            data: this.serializeFinalPayload(conversation.id, text, finalSources),
+            data: this.serializeFinalPayload(conversation.id, responseText, finalSources),
           };
           return;
         }
 
         if (finalMessage.stop_reason === 'tool_use') {
-          if (iterationHasText) {
-            yield { event: 'stream_reset', data: '' };
+          const toolUseBlocks = finalMessage.content.filter(
+            (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+          );
+          const onlyUiActionTools =
+            toolUseBlocks.length > 0 &&
+            toolUseBlocks.every((block) => block.name === 'perform_ui_action');
+
+          if (onlyUiActionTools && text.length > 0) {
+            durableAssistantText += text;
+          } else {
+            if (!onlyUiActionTools) durableAssistantText = '';
+            if (iterationHasText) yield { event: 'stream_reset', data: '' };
           }
-          for (const block of finalMessage.content) {
-            if (block.type === 'tool_use') {
-              yield { event: 'tool_call', data: JSON.stringify({ name: block.name }) };
-            }
+          for (const block of toolUseBlocks) {
+            yield { event: 'tool_call', data: JSON.stringify({ name: block.name }) };
           }
           const toolResults = await this.executeToolCalls(finalMessage.content, studentId);
           for (const event of toolResults.events) {
@@ -231,7 +242,7 @@ export class ChatService {
   private async getOrCreateConversation(
     conversationId: string | undefined,
     studentId: string,
-  ): Promise<ConversationEntity> {
+  ): Promise<ConversationHistory> {
     if (conversationId) {
       const existing = await this.conversationService.findConversationWithMessages(
         conversationId,
@@ -243,7 +254,7 @@ export class ChatService {
   }
 
   private buildMessageHistory(
-    conversation: ConversationEntity,
+    conversation: ConversationHistory,
     newMessage: string,
   ): Anthropic.MessageParam[] {
     const history: Anthropic.MessageParam[] = (conversation.messages ?? []).map((m) => ({
@@ -350,7 +361,7 @@ export class ChatService {
   }
 
   private async maybeUpdateConversationTitle(
-    conversation: ConversationEntity,
+    conversation: ConversationHistory,
     latestStudentMessage: string,
   ): Promise<void> {
     if (conversation.titleManuallyEdited) return;
@@ -369,7 +380,7 @@ export class ChatService {
   }
 
   private getNextTitleRevision(
-    conversation: ConversationEntity,
+    conversation: ConversationHistory,
     latestStudentMessage: string,
   ): number | null {
     const revisionCount = conversation.titleRevisionCount ?? 0;

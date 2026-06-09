@@ -7,7 +7,7 @@ import {
 export const RAG_TOOL_DEF = {
   name: 'search_course_content',
   description:
-    'Zoekt in de geïndexeerde cursusinhoud naar informatie die relevant is voor de vraag. Gebruik dit voor vragen over begrippen, definities, het HBO-i raamwerk of cursusmateriaal.',
+    'Zoekt in de geïndexeerde cursusinhoud naar informatie die relevant is voor de vraag. Gebruik dit voor vragen over begrippen, definities, het HBO-i raamwerk, cursusmateriaal, of studieprocessen zoals het persoonlijk semesterplan, challenges, agile werken of portflow.',
   input_schema: {
     type: 'object' as const,
     properties: {

@@ -1,10 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   applyFinalMessage,
+  createNudgeMessage,
   generateMessageId,
-  getStatusFromEventText,
-  getStatusFromToolCall,
-  toolCallToBubble,
+  shouldLoadConversationHistory,
 } from './chatStreamHelpers';
 import type { ChatUiAction, Message } from './chatStreamHelpers';
 
@@ -28,59 +27,6 @@ describe('generateMessageId', () => {
 
     expect(generateMessageId('user')).toBe('user-4fzzzxjylrx');
     expect(randomSpy).toHaveBeenCalledOnce();
-  });
-});
-
-describe('getStatusFromToolCall', () => {
-  it('returns the activity lookup status metadata for search_activities', () => {
-    expect(getStatusFromToolCall(JSON.stringify({ name: 'search_activities' }))).toMatchObject({
-      label: 'Activiteiten bekijken...',
-      icon: 'activities',
-    });
-  });
-
-  it('preserves the source lookup status for search_course_content', () => {
-    expect(getStatusFromToolCall(JSON.stringify({ name: 'search_course_content' }))).toMatchObject({
-      label: 'Bronnen bekijken...',
-      icon: 'sources',
-    });
-  });
-
-  it('returns generic context status metadata for unknown tools', () => {
-    expect(getStatusFromToolCall(JSON.stringify({ name: 'unknown_tool' }))).toMatchObject({
-      label: 'Extra context ophalen...',
-      icon: 'tool',
-    });
-  });
-
-  it('shows panel status for perform_ui_action', () => {
-    expect(getStatusFromToolCall(JSON.stringify({ name: 'perform_ui_action' }))).toMatchObject({
-      label: 'Paneel openen...',
-      icon: 'panel',
-    });
-  });
-});
-
-describe('getStatusFromEventText', () => {
-  it('maps nadenken status to a dedicated thinking icon', () => {
-    expect(getStatusFromEventText('Nadenken...')).toMatchObject({
-      label: 'Nadenken...',
-      icon: 'thinking',
-    });
-  });
-
-  it('maps tool uitvoeren status to a dedicated tool icon', () => {
-    expect(getStatusFromEventText('Tool uitvoeren...')).toMatchObject({
-      label: 'Tool uitvoeren...',
-      icon: 'tool',
-    });
-  });
-
-  it('keeps unknown status text readable with the default spark icon', () => {
-    expect(getStatusFromEventText('Bezig...')).toMatchObject({
-      label: 'Bezig...',
-      icon: 'spark',
-    });
   });
 });
 
@@ -109,49 +55,79 @@ describe('applyFinalMessage', () => {
   });
 
   it('omits actions field when no actions are provided', () => {
-    const messages: Message[] = [
-      { id: 'assistant-1', role: 'assistant', content: '', isStreaming: true },
-    ];
-
-    const result = applyFinalMessage(messages, 'assistant-1', {
-      text: 'Antwoord.',
-      conversationId: 'c1',
-    });
+    const result = applyFinalMessage(
+      [{ id: 'assistant-1', role: 'assistant', content: '', isStreaming: true }],
+      'assistant-1',
+      {
+        text: 'Antwoord.',
+        conversationId: 'c1',
+      },
+    );
 
     expect(result.find((m) => m.id === 'assistant-1')?.actions).toBeUndefined();
   });
+
+  it('adds final metadata without replacing streamed content', () => {
+    const result = applyFinalMessage(
+      [{ id: 'assistant-1', role: 'assistant', content: 'Gestreamd antwoord.', isStreaming: true }],
+      'assistant-1',
+      {
+        text: 'Final antwoord dat niet opnieuw in de bubble moet worden gezet.',
+        conversationId: 'c1',
+        sources: [{ kind: 'canvas', label: 'Canvas: Activiteit', url: null }],
+      },
+      [{ action: 'open_activities_panel', label: 'Open activiteiten' }],
+    );
+
+    expect(result.find((m) => m.id === 'assistant-1')).toMatchObject({
+      content: 'Gestreamd antwoord.',
+      isStreaming: false,
+      sources: [{ kind: 'canvas', label: 'Canvas: Activiteit', url: null }],
+      actions: [{ action: 'open_activities_panel', label: 'Open activiteiten' }],
+    });
+  });
 });
 
-describe('toolCallToBubble', () => {
-  it('returns a bubble for search_activities', () => {
-    expect(toolCallToBubble('search_activities')).toEqual({
-      name: 'search_activities',
-      label: 'Activiteiten bekeken',
-      icon: 'activities',
+describe('createNudgeMessage', () => {
+  it('creates a separate nudge message from a suggested UI action', () => {
+    const action: ChatUiAction = {
+      action: 'open_activities_panel',
+      label: 'Open activiteiten',
+    };
+
+    expect(createNudgeMessage(action)).toMatchObject({
+      role: 'nudge',
+      content: '',
+      action,
     });
   });
+});
 
-  it('returns a bubble for get_student_context', () => {
-    expect(toolCallToBubble('get_student_context')).toEqual({
-      name: 'get_student_context',
-      label: 'Studentprofiel bekeken',
-      icon: 'student',
-    });
+describe('shouldLoadConversationHistory', () => {
+  it('does not reload history when a new conversation id is attached to local stream messages', () => {
+    expect(
+      shouldLoadConversationHistory({
+        nextConversationId: 'conversation-1',
+        previousConversationId: undefined,
+        hasLocalMessages: true,
+      }),
+    ).toBe(false);
   });
 
-  it('returns a bubble for search_course_content', () => {
-    expect(toolCallToBubble('search_course_content')).toEqual({
-      name: 'search_course_content',
-      label: 'Bronnen bekeken',
-      icon: 'sources',
-    });
-  });
-
-  it('returns null for perform_ui_action', () => {
-    expect(toolCallToBubble('perform_ui_action')).toBeNull();
-  });
-
-  it('returns null for unknown tools', () => {
-    expect(toolCallToBubble('unknown_tool')).toBeNull();
+  it('loads history for initial conversation selection and explicit conversation switches', () => {
+    expect(
+      shouldLoadConversationHistory({
+        nextConversationId: 'conversation-1',
+        previousConversationId: undefined,
+        hasLocalMessages: false,
+      }),
+    ).toBe(true);
+    expect(
+      shouldLoadConversationHistory({
+        nextConversationId: 'conversation-2',
+        previousConversationId: 'conversation-1',
+        hasLocalMessages: true,
+      }),
+    ).toBe(true);
   });
 });

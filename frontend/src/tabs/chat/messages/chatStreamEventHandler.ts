@@ -3,19 +3,27 @@ import { parseFinalChatPayload, type ChatSseEvent } from '@/api/chat';
 import {
   applyErrorMessage,
   applyFinalMessage,
+  appendToolResultSpacing,
+  createNudgeMessage,
+  createStreamingAssistantMessage,
+  splitStreamingAssistantMessage,
+  type ChatUiAction,
+  type Message,
+} from './chatStreamHelpers';
+import {
   CHAT_WRITING_STATUS,
   getStatusFromEventText,
   getStatusFromToolCall,
   toolCallToBubble,
   type ChatStatus,
-  type ChatUiAction,
-  type Message,
-} from './chatStreamHelpers';
+} from './chatStreamStatus';
 
 type StreamEventHandlers = {
   scheduleStatus: (status: ChatStatus | null) => void;
   forceStatus: (status: ChatStatus | null) => void;
   setMessages: Dispatch<SetStateAction<Message[]>>;
+  getStreamingId?: () => string;
+  setStreamingId?: (streamingId: string) => void;
   onConversationEstablished?: (id: string) => void;
   onUiAction?: (action: string, payload?: Record<string, string>) => void;
 };
@@ -28,6 +36,7 @@ export function handleStreamEvent(
 ): void {
   const { scheduleStatus, forceStatus, setMessages, onConversationEstablished, onUiAction } =
     handlers;
+  const currentStreamingId = handlers.getStreamingId?.() ?? streamingId;
   switch (sseEvent.event) {
     case 'status':
       scheduleStatus(getStatusFromEventText(sseEvent.data));
@@ -42,7 +51,7 @@ export function handleStreamEvent(
       if (bubble) {
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === streamingId && !m.toolCalls?.some((tc) => tc.name === bubble.name)
+            m.id === currentStreamingId && !m.toolCalls?.some((tc) => tc.name === bubble.name)
               ? { ...m, toolCalls: [...(m.toolCalls ?? []), bubble] }
               : m,
           ),
@@ -52,20 +61,24 @@ export function handleStreamEvent(
     }
     case 'tool_result':
       scheduleStatus(CHAT_WRITING_STATUS);
+      if (JSON.parse(sseEvent.data).name !== 'perform_ui_action') {
+        setMessages((prev) => appendToolResultSpacing(prev, currentStreamingId));
+      }
       break;
     case 'text_delta':
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === streamingId ? { ...m, content: m.content + sseEvent.data } : m,
+          m.id === currentStreamingId ? { ...m, content: m.content + sseEvent.data } : m,
         ),
       );
       scheduleStatus(null);
       break;
-    case 'stream_reset':
-      setMessages((prev) =>
-        prev.map((m) => (m.id === streamingId ? { ...m, content: '' } : m)),
-      );
+    case 'stream_reset': {
+      const nextMessage = createStreamingAssistantMessage();
+      handlers.setStreamingId?.(nextMessage.id);
+      setMessages((prev) => splitStreamingAssistantMessage(prev, currentStreamingId, nextMessage));
       break;
+    }
     case 'ui_action': {
       const uiPayload = JSON.parse(sseEvent.data) as {
         action: string;
@@ -79,11 +92,12 @@ export function handleStreamEvent(
           uiPayload.activityId ? { activityId: uiPayload.activityId } : undefined,
         );
       } else {
-        pendingSuggestions.push({
+        const action = {
           action: uiPayload.action as ChatUiAction['action'],
           label: uiPayload.label,
           ...(uiPayload.activityId ? { payload: { activityId: uiPayload.activityId } } : {}),
-        });
+        };
+        setMessages((prev) => [...prev, createNudgeMessage(action)]);
       }
       break;
     }
@@ -92,12 +106,14 @@ export function handleStreamEvent(
       if (finalPayload.conversationId) {
         onConversationEstablished?.(finalPayload.conversationId);
       }
-      setMessages((prev) => applyFinalMessage(prev, streamingId, finalPayload, pendingSuggestions));
+      setMessages((prev) =>
+        applyFinalMessage(prev, currentStreamingId, finalPayload, pendingSuggestions),
+      );
       scheduleStatus(null);
       break;
     }
     case 'error':
-      setMessages((prev) => applyErrorMessage(prev, streamingId, sseEvent.data));
+      setMessages((prev) => applyErrorMessage(prev, currentStreamingId, sseEvent.data));
       scheduleStatus(null);
       break;
   }
