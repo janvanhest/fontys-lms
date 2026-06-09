@@ -13,7 +13,7 @@
 #   ./validate-stream.sh "Maak een semesterplan" "get_student_competences,search_activities"
 #   ./validate-stream.sh --verbose "Maak een semesterplan"
 
-ENDPOINT="http://localhost:3000/chat/stream"
+ENDPOINT="${CHAT_STREAM_ENDPOINT:-http://localhost:3000/chat/stream}"
 VERBOSE=false
 
 # Parse --verbose flag (anywhere in args)
@@ -22,8 +22,10 @@ for arg in "$@"; do
   [[ "$arg" == "--verbose" ]] && VERBOSE=true || ARGS+=("$arg")
 done
 
-MESSAGE="${ARGS[0]:-Maak voor mij een persoonlijk semesterplan met mijn activiteiten en competenties.}"
-EXPECTED_TOOLS_RAW="${ARGS[1]:-get_student_competences,search_activities,search_course_content}"
+DEFAULT_MESSAGE="${CHAT_VALIDATE_MESSAGE:-Maak voor mij een persoonlijk semesterplan met mijn activiteiten en competenties.}"
+DEFAULT_EXPECTED_TOOLS="${CHAT_VALIDATE_EXPECTED_TOOLS:-get_student_competences,search_activities,search_course_content}"
+MESSAGE="${ARGS[0]:-$DEFAULT_MESSAGE}"
+EXPECTED_TOOLS_RAW="${ARGS[1]:-$DEFAULT_EXPECTED_TOOLS}"
 
 # All known event types
 ALL_EVENT_TYPES=(status text_delta tool_call tool_result ui_action stream_reset final error)
