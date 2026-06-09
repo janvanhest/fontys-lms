@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { ConversationEntity } from './entities/conversation.entity';
-import { ConversationService } from './conversation.service';
+import { ConversationService, type ConversationWithMessagesView } from './conversation.service';
 import {
   PERFORM_UI_ACTION_TOOL_DEF,
   PerformUiActionTool,
@@ -25,6 +25,7 @@ import { ChatSource } from '../document/document-search.service';
 
 export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
+type ConversationHistory = ConversationEntity | ConversationWithMessagesView;
 
 const DEFAULT_ANTHROPIC_MODEL = 'claude-opus-4-7';
 
@@ -241,7 +242,7 @@ export class ChatService {
   private async getOrCreateConversation(
     conversationId: string | undefined,
     studentId: string,
-  ): Promise<ConversationEntity> {
+  ): Promise<ConversationHistory> {
     if (conversationId) {
       const existing = await this.conversationService.findConversationWithMessages(
         conversationId,
@@ -253,7 +254,7 @@ export class ChatService {
   }
 
   private buildMessageHistory(
-    conversation: ConversationEntity,
+    conversation: ConversationHistory,
     newMessage: string,
   ): Anthropic.MessageParam[] {
     const history: Anthropic.MessageParam[] = (conversation.messages ?? []).map((m) => ({
@@ -360,7 +361,7 @@ export class ChatService {
   }
 
   private async maybeUpdateConversationTitle(
-    conversation: ConversationEntity,
+    conversation: ConversationHistory,
     latestStudentMessage: string,
   ): Promise<void> {
     if (conversation.titleManuallyEdited) return;
@@ -379,7 +380,7 @@ export class ChatService {
   }
 
   private getNextTitleRevision(
-    conversation: ConversationEntity,
+    conversation: ConversationHistory,
     latestStudentMessage: string,
   ): number | null {
     const revisionCount = conversation.titleRevisionCount ?? 0;
