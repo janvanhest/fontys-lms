@@ -31,7 +31,8 @@ export function parseSseEventBlock(block: string): ChatSseEvent | null {
         eventType = value;
       }
     } else if (line.startsWith('data:')) {
-      dataLines.push(line.slice(5).trim());
+      const raw = line.slice(5);
+      dataLines.push(raw.startsWith(' ') ? raw.slice(1) : raw);
     }
   }
 
