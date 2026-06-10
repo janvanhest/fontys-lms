@@ -8,7 +8,7 @@ import { ConversationService } from './conversation.service';
 describe('ConversationService', () => {
   let service: ConversationService;
   let conversationRepo: jest.Mocked<
-    Pick<Repository<ConversationEntity>, 'save' | 'find' | 'findOne' | 'update'>
+    Pick<Repository<ConversationEntity>, 'save' | 'find' | 'findOne' | 'update' | 'delete'>
   >;
   let messageRepo: jest.Mocked<Pick<Repository<MessageEntity>, 'save'>>;
 
@@ -18,6 +18,7 @@ describe('ConversationService', () => {
       find: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
     };
     messageRepo = {
       save: jest.fn(),
@@ -191,6 +192,17 @@ describe('ConversationService', () => {
         url: 'https://canvas.example/stappenplan',
       },
     ]);
+  });
+
+  it('deleteConversation verwijdert het gesprek van de juiste student', async () => {
+    conversationRepo.delete.mockResolvedValue({ affected: 1, raw: [] });
+
+    await service.deleteConversation('c1', 'student-uuid');
+
+    expect(conversationRepo.delete).toHaveBeenCalledWith({
+      id: 'c1',
+      studentId: 'student-uuid',
+    });
   });
 
   it('updateConversationTitle trims the title and marks it as manually edited', async () => {
