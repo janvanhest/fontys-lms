@@ -18,7 +18,7 @@ import { useLayout } from '@/context/useLayout';
 import { normalizeConversationTitleInput } from '@/utils/sidebarTitle';
 import { SidebarConversationList } from './SidebarConversationList';
 
-const sidebarWidth = 380;
+const sidebarWidth = 320;
 
 export function Sidebar() {
   const {
