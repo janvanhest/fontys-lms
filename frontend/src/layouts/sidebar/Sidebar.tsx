@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import {
   conversationSummariesQueryOptions,
+  deleteConversation,
   type ConversationSummary,
   updateConversationTitle,
 } from '@/api/chat';
@@ -81,6 +82,25 @@ export function Sidebar() {
     [cancelEditing, editingTitle, queryClient],
   );
 
+  const handleDeleteConversation = useCallback(
+    async (conversationId: string) => {
+      const queryKey = conversationSummariesQueryOptions.queryKey;
+      const previousConversations = queryClient.getQueryData<ConversationSummary[]>(queryKey) ?? [];
+
+      queryClient.setQueryData<ConversationSummary[]>(
+        queryKey,
+        previousConversations.filter((item) => item.id !== conversationId),
+      );
+
+      try {
+        await deleteConversation(conversationId);
+      } catch {
+        queryClient.setQueryData<ConversationSummary[]>(queryKey, previousConversations);
+      }
+    },
+    [queryClient],
+  );
+
   return (
     <Box
       sx={{
@@ -128,6 +148,7 @@ export function Sidebar() {
               savingConversationId={savingConversationId}
               selectedConversationId={selectedConversationId}
               onCancelEditing={cancelEditing}
+              onDeleteConversation={handleDeleteConversation}
               onEditTitleChange={setEditingTitle}
               onSaveTitle={saveTitle}
               onSelectConversation={(conversationId) => {
