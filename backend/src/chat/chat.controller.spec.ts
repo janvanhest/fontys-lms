@@ -12,6 +12,7 @@ describe('ChatController', () => {
   beforeEach(async () => {
     conversationService = {
       updateConversationTitle: jest.fn().mockResolvedValue(undefined),
+      deleteConversation: jest.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -86,6 +87,17 @@ describe('ChatController', () => {
       'conversation-1',
       'student-1',
       'Semesterplan hulp',
+    );
+  });
+
+  it('deleteConversation roept de service aan met conversationId en studentId', async () => {
+    const student = { id: 'student-1' } as Student;
+
+    await controller.deleteConversation('conversation-1', student);
+
+    expect(conversationService.deleteConversation).toHaveBeenCalledWith(
+      'conversation-1',
+      'student-1',
     );
   });
 
