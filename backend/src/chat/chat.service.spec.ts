@@ -85,18 +85,7 @@ describe('ChatService', () => {
     mockGetCompetenceFrameworkTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockSearchActivitiesTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockPerformUiActionTool = { execute: jest.fn().mockReturnValue(JSON.stringify({ ok: true })) };
-    mockTitleGenerationService = {
-      generateTitle: jest
-        .fn()
-        .mockImplementation(async (studentMessage: string, aiResponse: string) => {
-          // Extract key terms for test title generation
-          if (studentMessage.toLowerCase().includes('semesterplan')) return 'Semesterplan hulp';
-          if (studentMessage.toLowerCase().includes('portflow')) return 'Portflow en voortgang';
-          if (studentMessage.toLowerCase().includes('competentie'))
-            return 'Competentie niveau';
-          return 'Gesprekstitel';
-        }),
-    };
+    mockTitleGenerationService = { generateTitle: jest.fn().mockResolvedValue(null) };
     mockAnthropicStream = jest.fn();
     mockConfigService = {
       get: jest.fn((key: string) => {
@@ -134,13 +123,13 @@ describe('ChatService', () => {
     loggerErrorSpy.mockRestore();
   });
 
-  async function collectEvents(dto: SendMessageDto, studentId = STUDENT_ID) {
+  const collectEvents = async (dto: SendMessageDto, studentId = STUDENT_ID) => {
     const events: ChatSseEvent[] = [];
     for await (const e of service.streamResponse(dto, studentId)) {
       events.push(e);
     }
     return events;
-  }
+  };
 
   it('sends status event at the start', async () => {
     mockAnthropicStream.mockReturnValue(
@@ -517,6 +506,7 @@ describe('ChatService', () => {
   });
 
   it('generates an automatic title after the first complete assistant answer', async () => {
+    mockTitleGenerationService.generateTitle.mockResolvedValue('Semesterplan hulp');
     mockAnthropicStream.mockReturnValue(
       makeStreamMock(['Je kunt starten met je semesterplan.'], {
         stop_reason: 'end_turn',
@@ -534,6 +524,7 @@ describe('ChatService', () => {
   });
 
   it('refines the automatic title only once for a longer conversation', async () => {
+    mockTitleGenerationService.generateTitle.mockResolvedValue('Portflow en voortgang');
     mockConversationService.findConversationWithMessages.mockResolvedValue(
       makeConversation(
         [
