@@ -375,11 +375,15 @@ export class ChatService {
     const title = await this.titleGenerationService.generateTitle(latestStudentMessage, aiResponse);
     if (!title) return;
 
-    await this.conversationService.updateAutoConversationTitle(
-      conversation.id,
-      title,
-      nextRevision,
-    );
+    try {
+      await this.conversationService.updateAutoConversationTitle(
+        conversation.id,
+        title,
+        nextRevision,
+      );
+    } catch (error) {
+      this.logger.error('Fout bij opslaan gegenereerde titel', error);
+    }
   }
 
   private getNextTitleRevision(
