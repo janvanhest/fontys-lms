@@ -124,3 +124,5 @@ Hard te bewijzen later deze sprint bij Marc. Vijf HBO-i activiteiten op niv 1, g
 - [ ] Stabiliteit en veiligheid controleren
 - [ ] Architectuurdocumentatie finaliseren + overdracht op git.fhict.nl
 - [ ] Portfolio afronden + reflecties schrijven
+- [ ] **Documentatie maken** voor het grote teamproject (architectuur + overdracht)
+- [ ] **5 C4-diagrammen opnieuw maken op basis van het grote teamproject** (systeemcontext, containers, componenten, datamodel, sequence) voor die documentatie. De huidige diagrammen in `sprint3/end-to-end-poc/infrastructuurontwerp-poc.md` beschrijven alleen de PoC; deze versie moet het teamproduct in de repo-root weergeven (meer tools, TypeORM + migraties, competentie-tabellen, extra containers).
