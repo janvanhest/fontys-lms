@@ -1,7 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +23,7 @@ const sidebarWidth = 380;
 export function Sidebar() {
   const {
     sidebarOpen,
+    setSidebarOpen,
     selectedConversationId,
     setSelectedConversationId,
     setChatMountKey,
@@ -121,18 +124,27 @@ export function Sidebar() {
         }}
       >
         <Stack spacing={2}>
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setSelectedConversationId(null);
-              setChatMountKey(`new-${String(Date.now())}`);
-              selectTab('chat');
-            }}
-          >
-            Nieuw gesprek
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setSelectedConversationId(null);
+                setChatMountKey(`new-${String(Date.now())}`);
+                selectTab('chat');
+              }}
+              sx={{ flex: 1 }}
+            >
+              Nieuw gesprek
+            </Button>
+            <IconButton
+              onClick={() => { setSidebarOpen(false); }}
+              aria-label="Zijbalk inklappen"
+              size="small"
+            >
+              <ChevronLeftIcon />
+            </IconButton>
+          </Box>
 
           <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.12em' }}>
             Gesprekken
