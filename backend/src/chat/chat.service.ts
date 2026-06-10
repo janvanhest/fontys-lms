@@ -22,6 +22,7 @@ import {
 } from './tools/get-competence-framework.tool';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatSource } from '../document/document-search.service';
+import { TitleGenerationService } from './title-generation.service';
 
 export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
@@ -89,6 +90,7 @@ export class ChatService {
     private readonly getCompetenceFrameworkTool: GetCompetenceFrameworkTool,
     private readonly searchActivitiesTool: SearchActivitiesTool,
     private readonly performUiActionTool: PerformUiActionTool,
+    private readonly titleGenerationService: TitleGenerationService,
     private readonly configService: ConfigService,
   ) {
     this.anthropic = new Anthropic({
@@ -149,7 +151,7 @@ export class ChatService {
             responseText,
             finalSources,
           );
-          await this.maybeUpdateConversationTitle(conversation, dto.message);
+          void this.maybeUpdateConversationTitle(conversation, dto.message, responseText);
           yield {
             event: 'final',
             data: this.serializeFinalPayload(conversation.id, responseText, finalSources),
@@ -363,13 +365,14 @@ export class ChatService {
   private async maybeUpdateConversationTitle(
     conversation: ConversationHistory,
     latestStudentMessage: string,
+    aiResponse: string,
   ): Promise<void> {
     if (conversation.titleManuallyEdited) return;
 
     const nextRevision = this.getNextTitleRevision(conversation, latestStudentMessage);
     if (nextRevision === null) return;
 
-    const title = this.generateConversationTitle(latestStudentMessage);
+    const title = await this.titleGenerationService.generateTitle(latestStudentMessage, aiResponse);
     if (!title) return;
 
     await this.conversationService.updateAutoConversationTitle(
@@ -398,53 +401,5 @@ export class ChatService {
     ];
 
     return studentMessages.length >= 2 ? 2 : null;
-  }
-
-  private generateConversationTitle(message: string): string | null {
-    const cleaned = message
-      .replace(/[?!.,:;()[\]"]/g, ' ')
-      .split(/\s+/)
-      .map((word) => word.trim())
-      .filter((word) => word.length > 0);
-
-    const stopwords = new Set([
-      'aan',
-      'als',
-      'bij',
-      'de',
-      'dit',
-      'doen',
-      'een',
-      'en',
-      'er',
-      'gaan',
-      'hebben',
-      'helpen',
-      'het',
-      'hoe',
-      'hun',
-      'ik',
-      'in',
-      'je',
-      'kan',
-      'kun',
-      'kunnen',
-      'met',
-      'mijn',
-      'moet',
-      'ook',
-      'past',
-      'van',
-      'voor',
-      'wat',
-      'wil',
-      'weten',
-    ]);
-
-    const significantWords = cleaned.filter((word) => !stopwords.has(word.toLowerCase()));
-    const selectedWords = (significantWords.length > 0 ? significantWords : cleaned).slice(0, 4);
-    if (selectedWords.length === 0) return null;
-
-    return selectedWords.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   }
 }
