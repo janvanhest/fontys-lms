@@ -61,6 +61,16 @@ describe('TitleGenerationService', () => {
     expect(result).toBeNull();
   });
 
+  it('geeft null terug bij een titel langer dan 100 tekens', async () => {
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: 'x'.repeat(101) }],
+    });
+
+    const result = await service.generateTitle('vraag', 'antwoord');
+
+    expect(result).toBeNull();
+  });
+
   it('geeft null terug bij een API-fout en logt de fout', async () => {
     mockCreate.mockRejectedValue(new Error('Network error'));
 
