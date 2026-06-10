@@ -15,9 +15,9 @@ import { StudentMenu } from './StudentMenu';
 const tabOptions: Array<{ label: string; value: LayoutTab }> = [
   { label: 'Chat', value: 'chat' },
   { label: 'Activities', value: 'activities' },
-  { label: 'Challenge', value: 'challenge' },
+  // { label: 'Challenge', value: 'challenge' },
   { label: 'Competenties', value: 'competenties' },
-  { label: 'Stappenplan', value: 'stappenplan' },
+  // { label: 'Stappenplan', value: 'stappenplan' },
 ];
 
 export function Topbar() {
