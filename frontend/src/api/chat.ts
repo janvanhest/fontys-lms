@@ -54,6 +54,14 @@ export async function updateConversationTitle(
   return res.json() as Promise<{ id: string; title: string }>;
 }
 
+export async function deleteConversation(conversationId: string): Promise<void> {
+  const res = await fetch(`${backendUrl}/chat/conversations/${conversationId}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) throw new Error(`Failed to delete conversation: ${String(res.status)}`);
+}
+
 export async function* streamChatMessage(
   message: string,
   conversationId?: string,
