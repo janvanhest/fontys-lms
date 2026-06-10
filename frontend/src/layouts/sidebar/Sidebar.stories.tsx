@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LayoutStoryProvider } from '@/storybook/LayoutStoryProvider';
 import { Sidebar } from './Sidebar';
 
@@ -62,13 +63,17 @@ globalThis.fetch = (input: RequestInfo | URL) => {
   return Promise.reject(new Error(`Unhandled fetch in story: ${url}`));
 };
 
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
 function SidebarFrame({ sidebarOpen }: { sidebarOpen: boolean }) {
   return (
-    <LayoutStoryProvider sidebarOpen={sidebarOpen}>
-      <Box sx={{ height: 520, display: 'flex', bgcolor: 'background.default' }}>
-        <Sidebar />
-      </Box>
-    </LayoutStoryProvider>
+    <QueryClientProvider client={queryClient}>
+      <LayoutStoryProvider sidebarOpen={sidebarOpen}>
+        <Box sx={{ height: 520, display: 'flex', bgcolor: 'background.default' }}>
+          <Sidebar />
+        </Box>
+      </LayoutStoryProvider>
+    </QueryClientProvider>
   );
 }
 
