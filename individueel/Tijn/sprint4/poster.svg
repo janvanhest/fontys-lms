@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Productposter Activity First LMS - A5 staand (148 x 210 mm)
+  Colorway: dark violet (#14101A) met gradient-accent #8B5CF6 naar #EC4899
+  Schaal: 10 eenheden = 1 mm
+  Exporteren naar PNG (300 dpi): magick -density 300 poster.svg poster-300dpi.png
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="148mm" height="210mm" viewBox="0 0 1480 2100" font-family="Segoe UI, Roboto, Arial, sans-serif">
+  <title>Activity First LMS - productposter A5</title>
+
+  <defs>
+    <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#8B5CF6" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#EC4899" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#EC4899" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- achtergrond -->
+  <rect x="0" y="0" width="1480" height="2100" fill="#14101A"/>
+  <ellipse cx="1150" cy="120" rx="720" ry="520" fill="url(#glow1)"/>
+  <ellipse cx="150" cy="1350" rx="650" ry="560" fill="url(#glow2)"/>
+  <rect x="0" y="0" width="1480" height="6" fill="url(#acc)"/>
+
+  <!-- ===== kop ===== -->
+  <text x="80" y="128" font-size="26" font-weight="600" letter-spacing="6" fill="#9C93A8">FONTYS HBO-ICT · SEMESTER 4 · 2026</text>
+  <text x="80" y="312" font-size="168" font-weight="700" letter-spacing="-3" fill="url(#acc)">Activity First</text>
+  <text x="80" y="478" font-size="168" font-weight="700" letter-spacing="-3" fill="#F5F2F7">LMS</text>
+  <path d="M452 392 l8 19 19 8 -19 8 -8 19 -8 -19 -19 -8 19 -8 z" fill="url(#acc)"/>
+  <text x="80" y="560" font-size="42" fill="#B5ABC4">De AI-leercoach die de student centraal zet, niet de module.</text>
+
+  <!-- ===== statement ===== -->
+  <text x="80" y="706" font-size="54" font-weight="700" fill="#F5F2F7">Canvas denkt in modules.</text>
+  <text x="80" y="778" font-size="54" font-weight="700" fill="url(#acc)">Studenten denken in vragen.</text>
+
+  <!-- ===== screenshot placeholder ===== -->
+  <rect x="80" y="840" width="1320" height="540" rx="24" fill="#1B1523" stroke="#322843" stroke-width="2"/>
+  <rect x="665" y="1000" width="150" height="110" rx="14" fill="none" stroke="#564A6B" stroke-width="5"/>
+  <circle cx="705" cy="1036" r="12" fill="#564A6B"/>
+  <path d="M678 1095 L716 1054 L742 1080 L762 1060 L800 1095" fill="none" stroke="#564A6B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="740" y="1190" text-anchor="middle" font-size="34" font-weight="600" fill="#8E84A0">placeholder · vul hier een screenshot van de app in</text>
+  <text x="740" y="1236" text-anchor="middle" font-size="26" fill="#6E6380">chat · activiteiten · competentie-overzicht</text>
+
+  <!-- ===== features ===== -->
+  <line x1="80" y1="1448" x2="1400" y2="1448" stroke="#2A2136" stroke-width="2"/>
+  <g>
+    <rect x="80" y="1505" width="44" height="8" rx="4" fill="url(#acc)"/>
+    <text x="80" y="1572" font-size="42" font-weight="700" fill="#F5F2F7">AI-leercoach</text>
+    <text x="80" y="1618" font-size="28" fill="#9C93A8">kent voortgang en bronnen</text>
+  </g>
+  <g>
+    <rect x="530" y="1505" width="44" height="8" rx="4" fill="url(#acc)"/>
+    <text x="530" y="1572" font-size="42" font-weight="700" fill="#F5F2F7">Activiteiten</text>
+    <text x="530" y="1618" font-size="28" fill="#9C93A8">alles op één plek</text>
+  </g>
+  <g>
+    <rect x="980" y="1505" width="44" height="8" rx="4" fill="url(#acc)"/>
+    <text x="980" y="1572" font-size="42" font-weight="700" fill="#F5F2F7">Competenties</text>
+    <text x="980" y="1618" font-size="28" fill="#9C93A8">HBO-i groei in beeld</text>
+  </g>
+
+  <!-- ===== hoe het werkt ===== -->
+  <text x="80" y="1708" font-size="24" font-weight="600" letter-spacing="6" fill="#9C93A8">HOE HET WERKT</text>
+  <line x1="120" y1="1780" x2="1320" y2="1780" stroke="#3A2E49" stroke-width="3"/>
+  <path d="M312 1773 L326 1780 L312 1787" fill="none" stroke="#564A6B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M712 1773 L726 1780 L712 1787" fill="none" stroke="#564A6B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M1112 1773 L1126 1780 L1112 1787" fill="none" stroke="#564A6B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="120" cy="1780" r="11" fill="#14101A" stroke="#8B5CF6" stroke-width="3.5"/>
+  <circle cx="520" cy="1780" r="11" fill="#14101A" stroke="#8B5CF6" stroke-width="3.5"/>
+  <circle cx="920" cy="1780" r="11" fill="#14101A" stroke="#8B5CF6" stroke-width="3.5"/>
+  <circle cx="1320" cy="1780" r="11" fill="url(#acc)"/>
+  <text x="120" y="1840" text-anchor="middle" font-size="32" font-weight="700" fill="#F5F2F7">Student</text>
+  <text x="120" y="1876" text-anchor="middle" font-size="24" fill="#9C93A8">stelt een vraag</text>
+  <text x="520" y="1840" text-anchor="middle" font-size="32" font-weight="700" fill="#F5F2F7">Frontend</text>
+  <text x="520" y="1876" text-anchor="middle" font-size="24" fill="#9C93A8">React + Vite</text>
+  <text x="920" y="1840" text-anchor="middle" font-size="32" font-weight="700" fill="#F5F2F7">Backend</text>
+  <text x="920" y="1876" text-anchor="middle" font-size="24" fill="#9C93A8">NestJS + tools</text>
+  <text x="1320" y="1840" text-anchor="middle" font-size="32" font-weight="700" fill="#F5F2F7">Claude API</text>
+  <text x="1320" y="1876" text-anchor="middle" font-size="24" fill="#9C93A8">extern taalmodel</text>
+
+  <!-- tech chips -->
+  <g font-size="26" fill="#B5ABC4">
+    <rect x="80" y="1916" width="190" height="54" rx="27" fill="#1B1523" stroke="#322843" stroke-width="2"/>
+    <text x="175" y="1952" text-anchor="middle">PostgreSQL</text>
+    <rect x="290" y="1916" width="160" height="54" rx="27" fill="#1B1523" stroke="#322843" stroke-width="2"/>
+    <text x="370" y="1952" text-anchor="middle">pgvector</text>
+    <rect x="470" y="1916" width="130" height="54" rx="27" fill="#1B1523" stroke="#322843" stroke-width="2"/>
+    <text x="535" y="1952" text-anchor="middle">Ollama</text>
+    <rect x="620" y="1916" width="230" height="54" rx="27" fill="#1B1523" stroke="#322843" stroke-width="2"/>
+    <text x="735" y="1952" text-anchor="middle">Canvas-content</text>
+    <rect x="870" y="1916" width="130" height="54" rx="27" fill="#1B1523" stroke="#322843" stroke-width="2"/>
+    <text x="935" y="1952" text-anchor="middle">Docker</text>
+  </g>
+
+  <!-- ===== footer ===== -->
+  <line x1="80" y1="2004" x2="1400" y2="2004" stroke="#2A2136" stroke-width="2"/>
+  <text x="80" y="2046" font-size="27" fill="#B5ABC4">Tijn Knaap · Jan van Hest · Tamara Lemmens · Manon Blom</text>
+  <text x="80" y="2084" font-size="24" fill="#6E6380">Stakeholder: Eric Slaats · Fontys Hogeschool ICT</text>
+
+  <!-- QR placeholder -->
+  <rect x="1316" y="2012" width="72" height="72" rx="6" fill="#F5F2F7"/>
+  <rect x="1324" y="2020" width="16" height="16" fill="#14101A"/>
+  <rect x="1328" y="2024" width="8" height="8" fill="#F5F2F7"/>
+  <rect x="1372" y="2020" width="16" height="16" fill="#14101A"/>
+  <rect x="1376" y="2024" width="8" height="8" fill="#F5F2F7"/>
+  <rect x="1324" y="2068" width="16" height="16" fill="#14101A"/>
+  <rect x="1328" y="2072" width="8" height="8" fill="#F5F2F7"/>
+  <rect x="1350" y="2024" width="7" height="7" fill="#14101A"/>
+  <rect x="1362" y="2038" width="7" height="7" fill="#14101A"/>
+  <rect x="1346" y="2048" width="7" height="7" fill="#14101A"/>
+  <rect x="1370" y="2060" width="7" height="7" fill="#14101A"/>
+  <rect x="1354" y="2068" width="7" height="7" fill="#14101A"/>
+</svg>
