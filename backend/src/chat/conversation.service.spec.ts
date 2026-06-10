@@ -104,7 +104,7 @@ describe('ConversationService', () => {
         conversations: [] as ConversationEntity[],
       },
     } as ConversationEntity & { student: { id: string; conversations: ConversationEntity[] } };
-    conversation.messages[0]!.conversation = conversation;
+    conversation.messages[0].conversation = conversation;
     conversationRepo.findOne.mockResolvedValue(conversation);
 
     const result = await service.findConversationWithMessages('c1', 'student-uuid');
