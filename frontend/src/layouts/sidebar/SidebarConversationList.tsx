@@ -10,6 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
+import Skeleton from '@mui/material/Skeleton';
 import ListItemButton from '@mui/material/ListItemButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -103,20 +104,24 @@ export function SidebarConversationList({
               />
             ) : (
               <Box sx={{ pr: 7 }}>
-                <Typography
-                  sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text' }}
-                  onClick={(event) => {
-                    if (conversation.id !== selectedConversationId) return;
-                    event.stopPropagation();
-                    onStartEditing(conversation);
-                  }}
-                  onDoubleClick={(event) => {
-                    event.stopPropagation();
-                    onStartEditing(conversation);
-                  }}
-                >
-                  {formatConversationTitle(conversation)}
-                </Typography>
+                {conversation.title ? (
+                  <Typography
+                    sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text' }}
+                    onClick={(event) => {
+                      if (conversation.id !== selectedConversationId) return;
+                      event.stopPropagation();
+                      onStartEditing(conversation);
+                    }}
+                    onDoubleClick={(event) => {
+                      event.stopPropagation();
+                      onStartEditing(conversation);
+                    }}
+                  >
+                    {conversation.title}
+                  </Typography>
+                ) : (
+                  <Skeleton variant="text" width="70%" sx={{ fontSize: 14 }} />
+                )}
               </Box>
             )}
             <Chip
