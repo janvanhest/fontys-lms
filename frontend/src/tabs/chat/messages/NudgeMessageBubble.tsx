@@ -1,7 +1,8 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { alpha } from '@mui/material/styles';
+import { alpha, keyframes } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
+import { fontysColors } from '@/themes/muiTheme';
 import type { ChatUiAction } from './chatStreamHelpers';
 
 type NudgeMessageBubbleProps = {
@@ -11,6 +12,12 @@ type NudgeMessageBubbleProps = {
 };
 
 const ANIMATION_DURATION_MS = 12_000;
+
+const nudgePulse = keyframes`
+  0%   { box-shadow: 0 0 0 0   ${alpha(fontysColors.magenta.main, 0.4)}; }
+  70%  { box-shadow: 0 0 0 8px ${alpha(fontysColors.magenta.main, 0)}; }
+  100% { box-shadow: 0 0 0 0   ${alpha(fontysColors.magenta.main, 0)}; }
+`;
 
 export function NudgeMessageBubble({ action, messageId, onAction }: NudgeMessageBubbleProps) {
   const [animated, setAnimated] = useState(true);
@@ -28,15 +35,10 @@ export function NudgeMessageBubble({ action, messageId, onAction }: NudgeMessage
         size="small"
         disabled={action.used === true}
         onClick={() => onAction?.(messageId, action.action, action.payload)}
-        sx={(theme) => ({
+        sx={{
           bgcolor: 'background.paper',
-          '@keyframes nudgePulse': {
-            '0%': { boxShadow: `0 0 0 0 ${alpha(theme.palette.secondary.main, 0.4)}` },
-            '70%': { boxShadow: `0 0 0 8px ${alpha(theme.palette.secondary.main, 0)}` },
-            '100%': { boxShadow: `0 0 0 0 ${alpha(theme.palette.secondary.main, 0)}` },
-          },
-          animation: animated ? 'nudgePulse 2s ease-in-out infinite' : 'none',
-        })}
+          animation: animated ? `${nudgePulse} 2s ease-in-out infinite` : 'none',
+        }}
       >
         {action.label}
       </Button>
