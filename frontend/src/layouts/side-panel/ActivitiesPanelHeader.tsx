@@ -27,9 +27,9 @@ export function ActivitiesPanelHeader() {
       </Box>
       <IconButton
         size="small"
+        edge="end"
         onClick={closeSidePanel}
         aria-label="Sluit activiteiten"
-        sx={{ mt: -0.5 }}
       >
         <CloseIcon fontSize="small" />
       </IconButton>
