@@ -35,6 +35,10 @@ export function LayoutProvider({ children }: PropsWithChildren) {
     setSidePanelOpen(true);
   }, []);
 
+  const closeSidePanel = useCallback(() => {
+    setSidePanelOpen(false);
+  }, []);
+
   const value = useMemo<LayoutContextValue>(
     () => ({
       activeTab,
@@ -49,6 +53,7 @@ export function LayoutProvider({ children }: PropsWithChildren) {
       setSidePanelOpen,
       sidePanelContent,
       openSidePanel,
+      closeSidePanel,
       highlightedActivityId,
       highlightActivity,
     }),
@@ -61,6 +66,7 @@ export function LayoutProvider({ children }: PropsWithChildren) {
       sidePanelOpen,
       sidePanelContent,
       openSidePanel,
+      closeSidePanel,
       highlightedActivityId,
       highlightActivity,
     ],

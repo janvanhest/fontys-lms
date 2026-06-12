@@ -46,6 +46,10 @@ export function LayoutStoryProvider({
     setSidePanelOpen(true);
   }, []);
 
+  const closeSidePanel = useCallback(() => {
+    setSidePanelOpen(false);
+  }, []);
+
   const value = useMemo<LayoutContextValue>(
     () => ({
       activeTab,
@@ -60,6 +64,7 @@ export function LayoutStoryProvider({
       setSidePanelOpen,
       sidePanelContent,
       openSidePanel,
+      closeSidePanel,
       highlightedActivityId,
       highlightActivity,
     }),
@@ -72,6 +77,7 @@ export function LayoutStoryProvider({
       sidePanelOpen,
       sidePanelContent,
       openSidePanel,
+      closeSidePanel,
       highlightedActivityId,
       highlightActivity,
     ],
