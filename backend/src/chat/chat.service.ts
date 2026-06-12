@@ -333,15 +333,7 @@ export class ChatService {
   }
 
   private callPerformUiAction(input: PerformUiActionInput, events: ChatSseEvent[]): string {
-    const uiActionData: { action: string; mode: string; label: string; activityId?: string } = {
-      action: input.action,
-      mode: input.mode,
-      label: input.label,
-    };
-    if (input.activityId) {
-      uiActionData.activityId = input.activityId;
-    }
-    events.push({ event: 'ui_action', data: JSON.stringify(uiActionData) });
+    events.push({ event: 'ui_action', data: JSON.stringify(input) });
     return this.performUiActionTool.execute();
   }
 
