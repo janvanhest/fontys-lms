@@ -1,10 +1,8 @@
 import Box from '@mui/material/Box';
-import ButtonBase from '@mui/material/ButtonBase';
-import Typography from '@mui/material/Typography';
 import { useLayout } from '@/context/useLayout';
 import { PANEL_REGISTRY } from '@/layouts/side-panel/panel-registry';
+import { SidePanelEdgeTab } from '@/layouts/side-panel/SidePanelEdgeTab';
 import { panelWidth } from '@/layouts/side-panel/constants';
-import { fontysColors } from '@/themes/muiTheme';
 
 export function SidePanel() {
   const { sidePanelOpen, sidePanelContent, openSidePanel } = useLayout();
@@ -38,40 +36,9 @@ export function SidePanel() {
       </Box>
 
       {!sidePanelOpen && (
-        <ButtonBase
-          focusRipple
-          onClick={() => {
-            openSidePanel(sidePanelContent ?? { type: 'activities' });
-          }}
-          aria-label="Open activiteiten"
-          sx={{
-            width: 20,
-            flexShrink: 0,
-            bgcolor: fontysColors.paars[50],
-            borderLeft: `2px solid ${fontysColors.paars[200]}`,
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            pt: 2,
-            '&:hover': {
-              bgcolor: fontysColors.paars[300],
-            },
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              writingMode: 'vertical-rl',
-              transform: 'rotate(180deg)',
-              color: fontysColors.paars.main,
-              fontWeight: 600,
-              whiteSpace: 'nowrap',
-              userSelect: 'none',
-            }}
-          >
-            ☰ Activiteiten
-          </Typography>
-        </ButtonBase>
+        <SidePanelEdgeTab
+          onClick={() => { openSidePanel(sidePanelContent ?? { type: 'activities' }); }}
+        />
       )}
     </Box>
   );
