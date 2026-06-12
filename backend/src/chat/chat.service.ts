@@ -332,6 +332,19 @@ export class ChatService {
     return { events, results, sources };
   }
 
+  /**
+   * Bouwt de payload op die als definitieve chatrespons naar de frontend wordt gestuurd. De payload bevat altijd tekst en conversatie-id, en optioneel een beperkte lijst met bronnen.
+   *
+   * Deze methode zorgt ervoor dat de frontend een consistent JSON-formaat ontvangt, ongeacht of er bronnen beschikbaar zijn.
+   *
+   * Args:
+   *   conversationId: Het id van de conversatie waarop deze respons betrekking heeft.
+   *   text: De uiteindelijke tekstuele respons van de assistent.
+   *   sources: De verzamelde bronnen die eventueel met het antwoord worden meegestuurd.
+   *
+   * Returns:
+   *   Een JSON-string die de volledige eindpayload voor het chat-event representeert.
+   */
   private serializeFinalPayload(
     conversationId: string,
     text: string,
@@ -344,10 +357,32 @@ export class ChatService {
     return JSON.stringify(payload);
   }
 
+  /**
+   * Stelt de definitieve lijst met bronnen samen die bij een antwoord worden getoond. Het beperkt het aantal weergegeven bronnen tot een klein, overzichtelijk aantal.
+   *
+   * Deze methode combineert deduplicatie en afkapping zodat de gebruiker alleen de belangrijkste unieke bronnen ziet.
+   *
+   * Args:
+   *   sources: De ruwe lijst met alle verzamelde bronnen uit tool-calls tijdens het gesprek.
+   *
+   * Returns:
+   *   Een array met maximaal drie unieke ChatSource-objecten die als eindresultaat worden meegestuurd.
+   */
   private getFinalSources(sources: ChatSource[]): ChatSource[] {
     return this.deduplicateSources(sources).slice(0, 3);
   }
 
+  /**
+   * Maakt een unieke lijst van bronverwijzingen op basis van label en url. Het voorkomt dat dezelfde bron meerdere keren in de uiteindelijke bronlijst verschijnt.
+   *
+   * Deze methode bewaart de oorspronkelijke volgorde door alleen de eerste instantie van elke unieke combinatie van label en url te behouden.
+   *
+   * Args:
+   *   sources: De volledige lijst met bronnen die mogelijk duplicaten bevatten.
+   *
+   * Returns:
+   *   Een nieuwe array met unieke ChatSource-objecten zonder dubbele entries.
+   */
   private deduplicateSources(sources: ChatSource[]): ChatSource[] {
     const seen = new Set<string>();
     const unique: ChatSource[] = [];
@@ -362,6 +397,19 @@ export class ChatService {
     return unique;
   }
 
+  /**
+   * Probeert de titel van een conversatie automatisch bij te werken op basis van de laatste uitwisseling. Het doet dit alleen wanneer automatische titelupdates zijn toegestaan voor deze conversatie.
+   *
+   * De methode gebruikt zowel het recentste studentbericht als het AI-antwoord om een nieuwe titel te genereren en slaat deze op als een geldige volgende revisie.
+   *
+   * Args:
+   *   conversation: De conversatie waarvoor een automatische titelupdate wordt overwogen.
+   *   latestStudentMessage: Het meest recente studentbericht dat de context vormt voor de nieuwe titel.
+   *   aiResponse: Het bijbehorende AI-antwoord dat samen met het studentbericht gebruikt wordt om de titel te bepalen.
+   *
+   * Returns:
+   *   Een promise die voltooid wanneer een eventuele titelupdate is verwerkt of overgeslagen.
+   */
   private async maybeUpdateConversationTitle(
     conversation: ConversationHistory,
     latestStudentMessage: string,
@@ -386,6 +434,18 @@ export class ChatService {
     }
   }
 
+  /**
+   * Bepaalt of en met welk revisienummer de gesprekstitel bijgewerkt mag worden. Het voorkomt dat een automatisch gegenereerde titel te vaak wordt aangepast.
+   *
+   * Deze methode kijkt naar het aantal eerdere titelrevisies en naar het aantal studentberichten om te beslissen of een eerste of tweede automatische titelupdate toegestaan is.
+   *
+   * Args:
+   *   conversation: De conversatie waarvoor mogelijk een nieuwe titelrevisie wordt bepaald.
+   *   latestStudentMessage: Het meest recente studentbericht dat nog niet in de conversatiegeschiedenis is opgenomen.
+   *
+   * Returns:
+   *   Het volgende revisienummer (1 of 2) als een titelupdate gewenst is, of null als er geen verdere automatische titelupdates meer moeten plaatsvinden.
+   */
   private getNextTitleRevision(
     conversation: ConversationHistory,
     latestStudentMessage: string,
