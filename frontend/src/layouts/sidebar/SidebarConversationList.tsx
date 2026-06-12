@@ -72,8 +72,8 @@ export function SidebarConversationList({
             onClick={() => {
               onSelectConversation(conversation.id);
             }}
-            onMouseEnter={() => setHoveredConversationId(conversation.id)}
-            onMouseLeave={() => setHoveredConversationId(null)}
+            onMouseEnter={() => { setHoveredConversationId(conversation.id); }}
+            onMouseLeave={() => { setHoveredConversationId(null); }}
             sx={{
               display: 'block',
               position: 'relative',
@@ -143,7 +143,7 @@ export function SidebarConversationList({
                     ? 'visible'
                     : 'hidden',
               }}
-              onClick={(event) => event.stopPropagation()}
+              onClick={(event) => { event.stopPropagation(); }}
             >
               <IconButton
                 size="small"
@@ -177,14 +177,14 @@ export function SidebarConversationList({
 
       <Dialog
         open={deletingConversationId !== null}
-        onClose={() => setDeletingConversationId(null)}
+        onClose={() => { setDeletingConversationId(null); }}
       >
         <DialogTitle>Gesprek verwijderen?</DialogTitle>
         <DialogContent>
           <DialogContentText>Dit kan niet ongedaan worden gemaakt.</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeletingConversationId(null)}>Annuleren</Button>
+          <Button onClick={() => { setDeletingConversationId(null); }}>Annuleren</Button>
           <Button
             color="error"
             onClick={() => {
