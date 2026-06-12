@@ -111,7 +111,9 @@ export class ChatService {
     let lastStopReason: string | null = null;
     let durableAssistantText = '';
 
-    while (iterations < 6) {
+    const MAX_TOOL_ITERATIONS = 6;
+
+    while (iterations < MAX_TOOL_ITERATIONS) {
       yield { event: 'status', data: 'Nadenken...' };
 
       try {
@@ -279,11 +281,44 @@ export class ChatService {
     const results: Anthropic.ToolResultBlockParam[] = [];
     const sources: ChatSource[] = [];
 
+    const REDACTED_KEYS = [
+      'password',
+      'pass',
+      'pwd',
+      'token',
+      'accessToken',
+      'refreshToken',
+      'authorization',
+      'auth',
+      'secret',
+      'apiKey',
+      'apikey',
+    ];
+
+    const sanitizeToolInput = (input: unknown, maxLength = 500): string => {
+      const redact = (value: unknown): unknown => {
+        if (!value || typeof value !== 'object') return value;
+        if (Array.isArray(value)) return value.map(redact);
+        const obj: Record<string, unknown> = {};
+        for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+          obj[key] = REDACTED_KEYS.includes(key.toLowerCase()) ? '[REDACTED]' : redact(val);
+        }
+        return obj;
+      };
+      try {
+        let json = JSON.stringify(redact(input));
+        if (json.length > maxLength) json = `${json.slice(0, maxLength)}…[truncated]`;
+        return json;
+      } catch {
+        return '[unserializable input]';
+      }
+    };
+
     for (const block of content) {
       if (block.type !== 'tool_use') continue;
 
       if (this.isDevelopment) {
-        this.logger.debug(`Tool call: ${block.name} | input: ${JSON.stringify(block.input)}`);
+        this.logger.debug(`Tool call: ${block.name} | input: ${sanitizeToolInput(block.input)}`);
       }
 
       let result: string;
