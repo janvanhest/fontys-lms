@@ -61,7 +61,7 @@ export function handleStreamEvent(
     }
     case 'tool_result':
       scheduleStatus(CHAT_WRITING_STATUS);
-      if (JSON.parse(sseEvent.data).name !== 'perform_ui_action') {
+      if ((JSON.parse(sseEvent.data) as { name?: string }).name !== 'perform_ui_action') {
         setMessages((prev) => appendToolResultSpacing(prev, currentStreamingId));
       }
       break;
