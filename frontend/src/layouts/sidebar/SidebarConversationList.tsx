@@ -16,7 +16,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { formatConversationDateLabel, formatConversationTitle } from '@/utils/sidebarTitle';
+import { formatConversationDateLabel } from '@/utils/sidebarTitle';
 import type { ConversationSummary } from '@/api/chat';
 
 type SidebarConversationListProps = {
