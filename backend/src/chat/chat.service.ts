@@ -286,14 +286,15 @@ export class ChatService {
       'pass',
       'pwd',
       'token',
-      'accessToken',
-      'refreshToken',
+      'accesstoken',
+      'refreshtoken',
       'authorization',
       'auth',
       'secret',
-      'apiKey',
       'apikey',
     ];
+
+    const normalizeKey = (key: string) => key.toLowerCase().replace(/[_\-. ]/g, '');
 
     const sanitizeToolInput = (input: unknown, maxLength = 500): string => {
       const redact = (value: unknown): unknown => {
@@ -301,7 +302,7 @@ export class ChatService {
         if (Array.isArray(value)) return value.map(redact);
         const obj: Record<string, unknown> = {};
         for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
-          obj[key] = REDACTED_KEYS.includes(key.toLowerCase()) ? '[REDACTED]' : redact(val);
+          obj[key] = REDACTED_KEYS.includes(normalizeKey(key)) ? '[REDACTED]' : redact(val);
         }
         return obj;
       };
