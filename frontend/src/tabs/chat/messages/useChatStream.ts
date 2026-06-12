@@ -58,11 +58,15 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
 
   const consumeAction = useCallback((messageId: string, action: string) => {
     setMessages((prev) =>
-      prev
-        .filter((m) => !(m.id === messageId && m.role === 'nudge'))
-        .map((m) =>
-          m.id === messageId ? { ...m, actions: m.actions?.filter((a) => a.action !== action) } : m,
-        ),
+      prev.map((m) => {
+        if (m.id === messageId && m.role === 'nudge' && m.action) {
+          return { ...m, action: { ...m.action, used: true } };
+        }
+        if (m.id === messageId && m.role !== 'nudge') {
+          return { ...m, actions: m.actions?.filter((a) => a.action !== action) };
+        }
+        return m;
+      }),
     );
   }, []);
 

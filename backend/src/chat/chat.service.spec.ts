@@ -11,6 +11,7 @@ import { StudentContextTool } from './tools/student-context.tool';
 import { GetStudentCompetencesTool } from './tools/get-student-competences.tool';
 import { GetCompetenceFrameworkTool } from './tools/get-competence-framework.tool';
 import { PerformUiActionTool } from './tools/perform-ui-action.tool';
+import { TitleGenerationService } from './title-generation.service';
 
 const STUDENT_ID = 'student-uuid-001';
 
@@ -66,6 +67,7 @@ describe('ChatService', () => {
   let mockGetCompetenceFrameworkTool: jest.Mocked<Pick<GetCompetenceFrameworkTool, 'execute'>>;
   let mockSearchActivitiesTool: jest.Mocked<Pick<SearchActivitiesTool, 'execute'>>;
   let mockPerformUiActionTool: jest.Mocked<Pick<PerformUiActionTool, 'execute'>>;
+  let mockTitleGenerationService: jest.Mocked<Pick<TitleGenerationService, 'generateTitle'>>;
   let mockAnthropicStream: jest.Mock;
   let loggerWarnSpy: jest.SpyInstance;
   let loggerErrorSpy: jest.SpyInstance;
@@ -83,6 +85,7 @@ describe('ChatService', () => {
     mockGetCompetenceFrameworkTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockSearchActivitiesTool = { execute: jest.fn().mockResolvedValue('{}') };
     mockPerformUiActionTool = { execute: jest.fn().mockReturnValue(JSON.stringify({ ok: true })) };
+    mockTitleGenerationService = { generateTitle: jest.fn().mockResolvedValue(null) };
     mockAnthropicStream = jest.fn();
     mockConfigService = {
       get: jest.fn((key: string) => {
@@ -102,6 +105,7 @@ describe('ChatService', () => {
         { provide: GetCompetenceFrameworkTool, useValue: mockGetCompetenceFrameworkTool },
         { provide: SearchActivitiesTool, useValue: mockSearchActivitiesTool },
         { provide: PerformUiActionTool, useValue: mockPerformUiActionTool },
+        { provide: TitleGenerationService, useValue: mockTitleGenerationService },
         { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
@@ -119,13 +123,13 @@ describe('ChatService', () => {
     loggerErrorSpy.mockRestore();
   });
 
-  async function collectEvents(dto: SendMessageDto, studentId = STUDENT_ID) {
+  const collectEvents = async (dto: SendMessageDto, studentId = STUDENT_ID) => {
     const events: ChatSseEvent[] = [];
     for await (const e of service.streamResponse(dto, studentId)) {
       events.push(e);
     }
     return events;
-  }
+  };
 
   it('sends status event at the start', async () => {
     mockAnthropicStream.mockReturnValue(
@@ -502,6 +506,7 @@ describe('ChatService', () => {
   });
 
   it('generates an automatic title after the first complete assistant answer', async () => {
+    mockTitleGenerationService.generateTitle.mockResolvedValue('Semesterplan hulp');
     mockAnthropicStream.mockReturnValue(
       makeStreamMock(['Je kunt starten met je semesterplan.'], {
         stop_reason: 'end_turn',
@@ -519,6 +524,7 @@ describe('ChatService', () => {
   });
 
   it('refines the automatic title only once for a longer conversation', async () => {
+    mockTitleGenerationService.generateTitle.mockResolvedValue('Portflow en voortgang');
     mockConversationService.findConversationWithMessages.mockResolvedValue(
       makeConversation(
         [

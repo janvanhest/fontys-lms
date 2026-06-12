@@ -26,7 +26,12 @@ export function NudgeMessageBubble({ action, messageId, onAction }: NudgeMessage
         <Chip
           label={action.label}
           size="small"
-          onClick={() => onAction?.(messageId, action.action, action.payload)}
+          disabled={action.used === true}
+          onClick={
+            action.used
+              ? undefined
+              : () => onAction?.(messageId, action.action, action.payload)
+          }
           sx={{ fontSize: '0.75rem' }}
         />
       </Paper>

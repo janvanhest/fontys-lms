@@ -22,6 +22,7 @@ import {
 } from './tools/get-competence-framework.tool';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatSource } from '../document/document-search.service';
+import { TitleGenerationService } from './title-generation.service';
 
 export type ChatSseEvent = { event: string; data: string };
 type FinalChatPayload = { text: string; conversationId: string; sources?: ChatSource[] };
@@ -89,6 +90,7 @@ export class ChatService {
     private readonly getCompetenceFrameworkTool: GetCompetenceFrameworkTool,
     private readonly searchActivitiesTool: SearchActivitiesTool,
     private readonly performUiActionTool: PerformUiActionTool,
+    private readonly titleGenerationService: TitleGenerationService,
     private readonly configService: ConfigService,
   ) {
     this.anthropic = new Anthropic({
@@ -149,7 +151,7 @@ export class ChatService {
             responseText,
             finalSources,
           );
-          await this.maybeUpdateConversationTitle(conversation, dto.message);
+          void this.maybeUpdateConversationTitle(conversation, dto.message, responseText);
           yield {
             event: 'final',
             data: this.serializeFinalPayload(conversation.id, responseText, finalSources),
@@ -286,16 +288,12 @@ export class ChatService {
 
       let result: string;
       if (block.name === 'get_student_context') {
-        if (!this.studentContextPolicy.enabled) {
-          this.logger.warn(`student context tool called while disabled for studentId=${studentId}`);
-          result = JSON.stringify(this.studentContextPolicy.disabledResult);
-        } else {
-          result = await this.studentContextTool.execute(studentId);
-        }
+        result = await this.callStudentContext(studentId);
       } else if (block.name === 'search_course_content') {
-        const retrieval = await this.ragTool.execute((block.input as { query: string }).query);
-        result = retrieval.content;
-        sources.push(...retrieval.sources);
+        result = await this.callSearchCourseContent(
+          (block.input as { query: string }).query,
+          sources,
+        );
       } else if (block.name === 'get_student_competences') {
         result = await this.getStudentCompetencesTool.execute(studentId);
       } else if (block.name === 'get_competence_framework') {
@@ -308,17 +306,7 @@ export class ChatService {
           block.input as Parameters<SearchActivitiesTool['execute']>[1],
         );
       } else if (block.name === 'perform_ui_action') {
-        const input = block.input as PerformUiActionInput;
-        const uiActionData: { action: string; mode: string; label: string; activityId?: string } = {
-          action: input.action,
-          mode: input.mode,
-          label: input.label,
-        };
-        if (input.activityId) {
-          uiActionData.activityId = input.activityId;
-        }
-        events.push({ event: 'ui_action', data: JSON.stringify(uiActionData) });
-        result = this.performUiActionTool.execute();
+        result = this.callPerformUiAction(block.input as PerformUiActionInput, events);
       } else {
         result = `Unknown tool: ${block.name}`;
       }
@@ -328,6 +316,25 @@ export class ChatService {
     }
 
     return { events, results, sources };
+  }
+
+  private async callStudentContext(studentId: string): Promise<string> {
+    if (!this.studentContextPolicy.enabled) {
+      this.logger.warn(`student context tool called while disabled for studentId=${studentId}`);
+      return JSON.stringify(this.studentContextPolicy.disabledResult);
+    }
+    return this.studentContextTool.execute(studentId);
+  }
+
+  private async callSearchCourseContent(query: string, sources: ChatSource[]): Promise<string> {
+    const retrieval = await this.ragTool.execute(query);
+    sources.push(...retrieval.sources);
+    return retrieval.content;
+  }
+
+  private callPerformUiAction(input: PerformUiActionInput, events: ChatSseEvent[]): string {
+    events.push({ event: 'ui_action', data: JSON.stringify(input) });
+    return this.performUiActionTool.execute();
   }
 
   private serializeFinalPayload(
@@ -363,20 +370,25 @@ export class ChatService {
   private async maybeUpdateConversationTitle(
     conversation: ConversationHistory,
     latestStudentMessage: string,
+    aiResponse: string,
   ): Promise<void> {
     if (conversation.titleManuallyEdited) return;
 
     const nextRevision = this.getNextTitleRevision(conversation, latestStudentMessage);
     if (nextRevision === null) return;
 
-    const title = this.generateConversationTitle(latestStudentMessage);
+    const title = await this.titleGenerationService.generateTitle(latestStudentMessage, aiResponse);
     if (!title) return;
 
-    await this.conversationService.updateAutoConversationTitle(
-      conversation.id,
-      title,
-      nextRevision,
-    );
+    try {
+      await this.conversationService.updateAutoConversationTitle(
+        conversation.id,
+        title,
+        nextRevision,
+      );
+    } catch (error) {
+      this.logger.error('Fout bij opslaan gegenereerde titel', error);
+    }
   }
 
   private getNextTitleRevision(
@@ -398,53 +410,5 @@ export class ChatService {
     ];
 
     return studentMessages.length >= 2 ? 2 : null;
-  }
-
-  private generateConversationTitle(message: string): string | null {
-    const cleaned = message
-      .replace(/[?!.,:;()[\]"]/g, ' ')
-      .split(/\s+/)
-      .map((word) => word.trim())
-      .filter((word) => word.length > 0);
-
-    const stopwords = new Set([
-      'aan',
-      'als',
-      'bij',
-      'de',
-      'dit',
-      'doen',
-      'een',
-      'en',
-      'er',
-      'gaan',
-      'hebben',
-      'helpen',
-      'het',
-      'hoe',
-      'hun',
-      'ik',
-      'in',
-      'je',
-      'kan',
-      'kun',
-      'kunnen',
-      'met',
-      'mijn',
-      'moet',
-      'ook',
-      'past',
-      'van',
-      'voor',
-      'wat',
-      'wil',
-      'weten',
-    ]);
-
-    const significantWords = cleaned.filter((word) => !stopwords.has(word.toLowerCase()));
-    const selectedWords = (significantWords.length > 0 ? significantWords : cleaned).slice(0, 4);
-    if (selectedWords.length === 0) return null;
-
-    return selectedWords.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   }
 }

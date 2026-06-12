@@ -101,6 +101,14 @@ describe('createNudgeMessage', () => {
       action,
     });
   });
+
+  it('creates a nudge message without used flag by default', () => {
+    const action: ChatUiAction = { action: 'open_activities_panel', label: 'Open activiteiten' };
+    const message = createNudgeMessage(action);
+
+    expect(message.role).toBe('nudge');
+    expect(message.action?.used).toBeUndefined();
+  });
 });
 
 describe('shouldLoadConversationHistory', () => {

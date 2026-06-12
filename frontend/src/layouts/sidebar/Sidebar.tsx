@@ -1,13 +1,16 @@
 import AddIcon from '@mui/icons-material/Add';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import {
   conversationSummariesQueryOptions,
+  deleteConversation,
   type ConversationSummary,
   updateConversationTitle,
 } from '@/api/chat';
@@ -15,11 +18,12 @@ import { useLayout } from '@/context/useLayout';
 import { normalizeConversationTitleInput } from '@/utils/sidebarTitle';
 import { SidebarConversationList } from './SidebarConversationList';
 
-const sidebarWidth = 190;
+const sidebarWidth = 320;
 
 export function Sidebar() {
   const {
     sidebarOpen,
+    setSidebarOpen,
     selectedConversationId,
     setSelectedConversationId,
     setChatMountKey,
@@ -81,6 +85,25 @@ export function Sidebar() {
     [cancelEditing, editingTitle, queryClient],
   );
 
+  const handleDeleteConversation = useCallback(
+    async (conversationId: string) => {
+      const queryKey = conversationSummariesQueryOptions.queryKey;
+      const previousConversations = queryClient.getQueryData<ConversationSummary[]>(queryKey) ?? [];
+
+      queryClient.setQueryData<ConversationSummary[]>(
+        queryKey,
+        previousConversations.filter((item) => item.id !== conversationId),
+      );
+
+      try {
+        await deleteConversation(conversationId);
+      } catch {
+        queryClient.setQueryData<ConversationSummary[]>(queryKey, previousConversations);
+      }
+    },
+    [queryClient],
+  );
+
   return (
     <Box
       sx={{
@@ -101,18 +124,27 @@ export function Sidebar() {
         }}
       >
         <Stack spacing={2}>
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setSelectedConversationId(null);
-              setChatMountKey(`new-${String(Date.now())}`);
-              selectTab('chat');
-            }}
-          >
-            Nieuw gesprek
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setSelectedConversationId(null);
+                setChatMountKey(`new-${String(Date.now())}`);
+                selectTab('chat');
+              }}
+              sx={{ flex: 1 }}
+            >
+              Nieuw gesprek
+            </Button>
+            <IconButton
+              onClick={() => { setSidebarOpen(false); }}
+              aria-label="Zijbalk inklappen"
+              size="small"
+            >
+              <ChevronLeftIcon />
+            </IconButton>
+          </Box>
 
           <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.12em' }}>
             Gesprekken
@@ -128,6 +160,7 @@ export function Sidebar() {
               savingConversationId={savingConversationId}
               selectedConversationId={selectedConversationId}
               onCancelEditing={cancelEditing}
+              onDeleteConversation={handleDeleteConversation}
               onEditTitleChange={setEditingTitle}
               onSaveTitle={saveTitle}
               onSelectConversation={(conversationId) => {

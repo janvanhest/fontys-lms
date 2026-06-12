@@ -7,6 +7,7 @@ import Tabs from '@mui/material/Tabs';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import { studentProfileOptions } from '@/api/student';
 import type { LayoutTab } from '@/context/layout-context';
 import { useLayout } from '@/context/useLayout';
@@ -15,14 +16,23 @@ import { StudentMenu } from './StudentMenu';
 const tabOptions: Array<{ label: string; value: LayoutTab }> = [
   { label: 'Chat', value: 'chat' },
   { label: 'Activities', value: 'activities' },
-  { label: 'Challenge', value: 'challenge' },
+  // { label: 'Challenge', value: 'challenge' },
   { label: 'Competenties', value: 'competenties' },
-  { label: 'Stappenplan', value: 'stappenplan' },
+  // { label: 'Stappenplan', value: 'stappenplan' },
 ];
 
 export function Topbar() {
   const { activeTab, selectTab, sidebarOpen, setSidebarOpen } = useLayout();
   const { data: student } = useQuery(studentProfileOptions);
+  const [flashKey, setFlashKey] = useState(0);
+  const prevSidebarOpenRef = useRef(sidebarOpen);
+
+  useEffect(() => {
+    if (prevSidebarOpenRef.current && !sidebarOpen) {
+      setFlashKey((k) => k + 1);
+    }
+    prevSidebarOpenRef.current = sidebarOpen;
+  }, [sidebarOpen]);
 
   return (
     <AppBar position="static" elevation={0}>
@@ -35,12 +45,23 @@ export function Topbar() {
         }}
       >
         <IconButton
+          key={flashKey}
           aria-label="Toggle sidebar"
           onClick={() => {
             setSidebarOpen(!sidebarOpen);
           }}
           edge="start"
-          sx={{ color: 'common.white' }}
+          sx={{
+            color: 'common.white',
+            ...(flashKey > 0 && {
+              animation: 'sidebarHint 0.5s ease-out 3',
+              '@keyframes sidebarHint': {
+                '0%': { backgroundColor: 'transparent' },
+                '25%': { backgroundColor: 'rgba(255,255,255,0.28)' },
+                '100%': { backgroundColor: 'transparent' },
+              },
+            }),
+          }}
         >
           <MenuIcon />
         </IconButton>

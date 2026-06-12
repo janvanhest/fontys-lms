@@ -1,4 +1,16 @@
-import { Body, Controller, Get, MessageEvent, Param, Patch, Post, Sse } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  MessageEvent,
+  Param,
+  Patch,
+  Post,
+  Sse,
+} from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { CurrentStudent } from '../auth/decorators/current-student.decorator';
@@ -74,5 +86,15 @@ export class ChatController {
   ) {
     await this.conversationService.updateConversationTitle(id, student.id, dto.title);
     return { id, title: dto.title.trim() };
+  }
+
+  @Delete('conversations/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a conversation for the logged-in student' })
+  async deleteConversation(
+    @Param('id') id: string,
+    @CurrentStudent() student: Student,
+  ): Promise<void> {
+    await this.conversationService.deleteConversation(id, student.id);
   }
 }

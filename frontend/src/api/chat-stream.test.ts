@@ -22,4 +22,10 @@ describe('parseSseEventBlock', () => {
   it('returns null when data line is missing', () => {
     expect(parseSseEventBlock('event: text_delta')).toBeNull();
   });
+
+  it('preserves leading space in text_delta data (LLM token with leading space)', () => {
+    // SSE protocol adds one space after "data:", so "data:  werkt" means the token is " werkt"
+    const block = 'event: text_delta\ndata:  werkt eraan';
+    expect(parseSseEventBlock(block)).toEqual({ event: 'text_delta', data: ' werkt eraan' });
+  });
 });

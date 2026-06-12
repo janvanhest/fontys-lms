@@ -15,6 +15,7 @@ import { PerformUiActionTool } from './tools/perform-ui-action.tool';
 import { RagTool } from './tools/rag.tool';
 import { SearchActivitiesTool } from './tools/search-activities.tool';
 import { StudentContextTool } from './tools/student-context.tool';
+import { TitleGenerationService } from './title-generation.service';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { StudentContextTool } from './tools/student-context.tool';
     GetCompetenceFrameworkTool,
     SearchActivitiesTool,
     PerformUiActionTool,
+    TitleGenerationService,
   ],
 })
 export class ChatModule {}

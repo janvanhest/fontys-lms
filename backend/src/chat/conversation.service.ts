@@ -100,6 +100,10 @@ export class ConversationService {
     );
   }
 
+  async deleteConversation(conversationId: string, studentId: string): Promise<void> {
+    await this.conversationRepository.delete({ id: conversationId, studentId });
+  }
+
   async updateAutoConversationTitle(
     conversationId: string,
     title: string,
