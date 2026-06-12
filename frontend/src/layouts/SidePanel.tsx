@@ -39,7 +39,10 @@ export function SidePanel() {
 
       {!sidePanelOpen && (
         <ButtonBase
-          onClick={() => openSidePanel(sidePanelContent ?? { type: 'activities' })}
+          focusRipple
+          onClick={() => {
+            openSidePanel(sidePanelContent ?? { type: 'activities' });
+          }}
           aria-label="Open activiteiten"
           sx={{
             width: 20,
