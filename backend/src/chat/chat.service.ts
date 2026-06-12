@@ -288,16 +288,12 @@ export class ChatService {
 
       let result: string;
       if (block.name === 'get_student_context') {
-        if (!this.studentContextPolicy.enabled) {
-          this.logger.warn(`student context tool called while disabled for studentId=${studentId}`);
-          result = JSON.stringify(this.studentContextPolicy.disabledResult);
-        } else {
-          result = await this.studentContextTool.execute(studentId);
-        }
+        result = await this.callStudentContext(studentId);
       } else if (block.name === 'search_course_content') {
-        const retrieval = await this.ragTool.execute((block.input as { query: string }).query);
-        result = retrieval.content;
-        sources.push(...retrieval.sources);
+        result = await this.callSearchCourseContent(
+          (block.input as { query: string }).query,
+          sources,
+        );
       } else if (block.name === 'get_student_competences') {
         result = await this.getStudentCompetencesTool.execute(studentId);
       } else if (block.name === 'get_competence_framework') {
@@ -310,17 +306,7 @@ export class ChatService {
           block.input as Parameters<SearchActivitiesTool['execute']>[1],
         );
       } else if (block.name === 'perform_ui_action') {
-        const input = block.input as PerformUiActionInput;
-        const uiActionData: { action: string; mode: string; label: string; activityId?: string } = {
-          action: input.action,
-          mode: input.mode,
-          label: input.label,
-        };
-        if (input.activityId) {
-          uiActionData.activityId = input.activityId;
-        }
-        events.push({ event: 'ui_action', data: JSON.stringify(uiActionData) });
-        result = this.performUiActionTool.execute();
+        result = this.callPerformUiAction(block.input as PerformUiActionInput, events);
       } else {
         result = `Unknown tool: ${block.name}`;
       }
@@ -330,6 +316,33 @@ export class ChatService {
     }
 
     return { events, results, sources };
+  }
+
+  private async callStudentContext(studentId: string): Promise<string> {
+    if (!this.studentContextPolicy.enabled) {
+      this.logger.warn(`student context tool called while disabled for studentId=${studentId}`);
+      return JSON.stringify(this.studentContextPolicy.disabledResult);
+    }
+    return this.studentContextTool.execute(studentId);
+  }
+
+  private async callSearchCourseContent(query: string, sources: ChatSource[]): Promise<string> {
+    const retrieval = await this.ragTool.execute(query);
+    sources.push(...retrieval.sources);
+    return retrieval.content;
+  }
+
+  private callPerformUiAction(input: PerformUiActionInput, events: ChatSseEvent[]): string {
+    const uiActionData: { action: string; mode: string; label: string; activityId?: string } = {
+      action: input.action,
+      mode: input.mode,
+      label: input.label,
+    };
+    if (input.activityId) {
+      uiActionData.activityId = input.activityId;
+    }
+    events.push({ event: 'ui_action', data: JSON.stringify(uiActionData) });
+    return this.performUiActionTool.execute();
   }
 
   private serializeFinalPayload(
