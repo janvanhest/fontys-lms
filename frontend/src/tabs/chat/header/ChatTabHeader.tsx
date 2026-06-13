@@ -98,9 +98,15 @@ export function ChatTabHeader({
       </Box>
 
       <IconButton
-        color={sidePanelOpen ? 'primary' : 'default'}
         onClick={onToggleActivities}
         aria-label="Toggle activities panel"
+        sx={(theme) => ({
+          bgcolor: sidePanelOpen ? theme.palette.primary.main : theme.palette.primary.light,
+          color: theme.palette.primary.contrastText,
+          '&:hover': {
+            bgcolor: theme.palette.primary.dark,
+          },
+        })}
       >
         <ChecklistRtlIcon />
       </IconButton>
