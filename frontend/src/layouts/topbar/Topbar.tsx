@@ -36,7 +36,7 @@ export function Topbar() {
   }, [sidebarOpen]);
 
   return (
-    <AppBar position="static" elevation={0}>
+    <AppBar position="static" elevation={2} sx={{ position: 'relative', zIndex: 1 }}>
       <Toolbar
         sx={{
           gap: 2,
