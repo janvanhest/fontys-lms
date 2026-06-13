@@ -19,7 +19,7 @@ import { normalizeConversationTitleInput } from '@/utils/sidebarTitle';
 import { SidebarConversationList } from './SidebarConversationList';
 import { SidebarEdgeTab } from './SidebarEdgeTab';
 
-const sidebarWidth = 320;
+const sidebarWidth = 'clamp(260px, 18vw, 380px)';
 
 export function Sidebar() {
   const {
@@ -150,8 +150,8 @@ export function Sidebar() {
             </Box>
 
             <Typography
-              variant="overline"
-              sx={{ color: 'text.secondary', letterSpacing: '0.12em' }}
+              variant="caption"
+              sx={{ color: 'text.secondary', fontWeight: 600, letterSpacing: '0.04em', display: 'block' }}
             >
               Gesprekken
             </Typography>

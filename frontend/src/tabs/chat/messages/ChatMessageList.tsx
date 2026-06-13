@@ -1,5 +1,6 @@
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { RefObject } from 'react';
@@ -59,7 +60,8 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
   }
 
   return (
-    <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
+    <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', py: 3 }}>
+      <Container maxWidth={false} sx={{ maxWidth: { xs: '100%', md: 760, lg: 980, xl: 1200 } }}>
       <Stack spacing={2.5}>
         {messages.map((message) => {
           const content = getVisibleMessageContent(message, displayedContent);
@@ -83,6 +85,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
         })}
         <div ref={bottomRef} />
       </Stack>
+      </Container>
     </Box>
   );
 }
