@@ -20,7 +20,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<ChatLanguage>(readStoredLanguage);
 
   const setLanguage = (lang: ChatLanguage) => {
-    localStorage.setItem(STORAGE_KEY, lang);
+    try {
+      if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, lang);
+      }
+    } catch {
+      // Ignore storage errors, UI state still updates
+    }
     setLanguageState(lang);
   };
 
