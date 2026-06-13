@@ -6,6 +6,7 @@ const queryClient = new QueryClient();
 import { AppLayout } from '@/layouts/AppLayout';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AppThemeProvider } from '@/themes/ThemeContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 
 const StorybookDemoPage = import.meta.env.DEV
   ? lazy(() =>
@@ -18,6 +19,7 @@ const StorybookDemoPage = import.meta.env.DEV
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
       <AppThemeProvider>
         <BrowserRouter>
           <Routes>
@@ -34,6 +36,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </AppThemeProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
