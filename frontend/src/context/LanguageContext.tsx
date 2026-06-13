@@ -5,6 +5,7 @@ export type ChatLanguage = 'nl' | 'en';
 const STORAGE_KEY = 'lms-chat-language';
 
 function readStoredLanguage(): ChatLanguage {
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return 'nl';
   return localStorage.getItem(STORAGE_KEY) === 'en' ? 'en' : 'nl';
 }
 
