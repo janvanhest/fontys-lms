@@ -1,4 +1,5 @@
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import Tooltip from '@mui/material/Tooltip';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -44,7 +45,8 @@ export function Topbar() {
           px: { xs: 2, md: 3 },
         }}
       >
-        <IconButton
+        <Tooltip title={sidebarOpen ? 'Gesprekken verbergen' : 'Gesprekken tonen'} arrow>
+          <IconButton
           key={flashKey}
           aria-label="Toggle sidebar"
           onClick={() => {
@@ -65,6 +67,7 @@ export function Topbar() {
         >
           <MenuOpenIcon sx={{ transform: sidebarOpen ? 'none' : 'scaleX(-1)', transition: 'transform 0.2s' }} />
         </IconButton>
+        </Tooltip>
 
         <Typography
           variant="h6"
