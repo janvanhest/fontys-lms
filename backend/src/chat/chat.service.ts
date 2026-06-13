@@ -192,7 +192,7 @@ export class ChatService {
         );
         yield {
           event: 'error',
-          data: 'Er is een fout opgetreden bij het verwerken van je vraag.',
+          data: this.classifyAnthropicError(err),
         };
         return;
       }
@@ -427,6 +427,24 @@ export class ChatService {
     } catch (error) {
       this.logger.error('Fout bij opslaan gegenereerde titel', error);
     }
+  }
+
+  private classifyAnthropicError(err: unknown): string {
+    if (err instanceof Anthropic.APIError) {
+      const message = err.message?.toLowerCase() ?? '';
+      const isCreditError =
+        err.status === 402 ||
+        message.includes('credit balance') ||
+        message.includes('billing') ||
+        message.includes('credits');
+      if (isCreditError) {
+        return 'Je API-tegoed is op. Ga naar de Anthropic Console (console.anthropic.com) om je tegoed aan te vullen.';
+      }
+      if (err.status === 429) {
+        return 'De AI-service is momenteel overbelast of je hebt de limiet bereikt. Probeer het over een moment opnieuw.';
+      }
+    }
+    return 'Er is een fout opgetreden bij het verwerken van je vraag.';
   }
 
   private getNextTitleRevision(
