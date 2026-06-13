@@ -1,4 +1,4 @@
-import MenuIcon from '@mui/icons-material/Menu';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -57,13 +57,13 @@ export function Topbar() {
               animation: 'sidebarHint 0.5s ease-out 3',
               '@keyframes sidebarHint': {
                 '0%': { backgroundColor: 'transparent' },
-                '25%': { backgroundColor: 'rgba(255,255,255,0.28)' },
+                '25%': { backgroundColor: 'rgba(255,255,255,0.35)' },
                 '100%': { backgroundColor: 'transparent' },
               },
             }),
           }}
         >
-          <MenuIcon />
+          <MenuOpenIcon sx={{ transform: sidebarOpen ? 'none' : 'scaleX(-1)', transition: 'transform 0.2s' }} />
         </IconButton>
 
         <Typography
