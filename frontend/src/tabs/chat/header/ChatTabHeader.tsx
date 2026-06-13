@@ -10,6 +10,7 @@ import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { LayoutTab } from '@/context/layout-context';
 import type { ChatStatus, ChatStatusIcon } from '@/tabs/chat/messages/chatStreamStatus';
@@ -97,19 +98,21 @@ export function ChatTabHeader({
         )}
       </Box>
 
-      <IconButton
-        onClick={onToggleActivities}
-        aria-label="Toggle activities panel"
-        sx={(theme) => ({
-          bgcolor: sidePanelOpen ? theme.palette.primary.main : theme.palette.primary.light,
-          color: theme.palette.primary.contrastText,
-          '&:hover': {
-            bgcolor: theme.palette.primary.dark,
-          },
-        })}
-      >
-        <ChecklistRtlIcon />
-      </IconButton>
+      <Tooltip title={sidePanelOpen ? 'Activiteiten verbergen' : 'Activiteiten tonen'} arrow>
+        <IconButton
+          onClick={onToggleActivities}
+          aria-label="Toggle activities panel"
+          sx={(theme) => ({
+            bgcolor: sidePanelOpen ? theme.palette.primary.main : theme.palette.primary.light,
+            color: theme.palette.primary.contrastText,
+            '&:hover': {
+              bgcolor: theme.palette.primary.dark,
+            },
+          })}
+        >
+          <ChecklistRtlIcon />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 }
