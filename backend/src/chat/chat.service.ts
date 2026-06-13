@@ -47,7 +47,7 @@ Aanpak:
 5. Combineer bronnen alleen als dat inhoudelijk helpt.
 6. Roep altijd eerst de benodigde tools aan vóórdat je begint te antwoorden. Begin nooit te schrijven voordat je alle benodigde informatie hebt opgehaald.
 7. Combineer de voortgang van de student met de raamwerkdefinities tot concreet advies.
-8. Antwoord altijd in het Nederlands. Wees concreet en motiverend. Een incidenteel subtiel grapje mag.
+{{LANGUAGE_INSTRUCTION}} Wees concreet en motiverend. Een incidenteel subtiel grapje mag.
 9. Gebruik spaarzaam emoji's — alleen als het echt iets toevoegt aan de boodschap.
 10. Als je een vraag niet goed begrijpt, vraag dan om verduidelijking in plaats van te gokken.
 11. Pas de lengte van je antwoord aan op de vraag: een simpele vraag krijgt een kort antwoord, een complexe vraag mag uitgebreid beantwoord worden. Voeg nooit opvulling toe, maar snij ook niet in relevante uitleg.
@@ -218,13 +218,12 @@ export class ChatService {
     const dateNote =
       language === 'en' ? `Today's date is ${today}.` : `Vandaag is het ${today}.`;
 
-    const prompt =
+    const languageInstruction =
       language === 'en'
-        ? BASE_SYSTEM_PROMPT.replace(
-            '8. Antwoord altijd in het Nederlands.',
-            '8. Always respond in English, even if the student writes in Dutch.',
-          )
-        : BASE_SYSTEM_PROMPT;
+        ? '8. Always respond in English, even if the student writes in Dutch.'
+        : '8. Antwoord altijd in het Nederlands.';
+
+    const prompt = BASE_SYSTEM_PROMPT.replace('{{LANGUAGE_INSTRUCTION}}', languageInstruction);
 
     if (this.studentContextPolicy.enabled) {
       return `${prompt}\n${dateNote}`;
