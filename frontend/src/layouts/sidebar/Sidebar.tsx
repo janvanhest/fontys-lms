@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
@@ -138,15 +139,17 @@ export function Sidebar() {
               >
                 Nieuw gesprek
               </Button>
-              <IconButton
-                onClick={() => {
-                  setSidebarOpen(false);
-                }}
-                aria-label="Zijbalk inklappen"
-                size="small"
-              >
-                <ChevronLeftIcon />
-              </IconButton>
+              <Tooltip title="Gesprekken verbergen" arrow>
+                <IconButton
+                  onClick={() => {
+                    setSidebarOpen(false);
+                  }}
+                  aria-label="Zijbalk inklappen"
+                  size="small"
+                >
+                  <ChevronLeftIcon />
+                </IconButton>
+              </Tooltip>
             </Box>
 
             <Typography
