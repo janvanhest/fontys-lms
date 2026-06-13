@@ -54,7 +54,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
         >
           <PsychologyIcon sx={{ color: 'primary.contrastText', fontSize: 32 }} />
         </Box>
-        <Typography variant="body2" color="text.secondary" textAlign="center">
+        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
           {language === 'en'
             ? 'Ask a question about your activities, deadlines, or study progress.'
             : 'Stel een vraag over je activiteiten, deadlines of studievoortgang.'}
