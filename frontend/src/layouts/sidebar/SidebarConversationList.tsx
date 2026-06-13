@@ -115,7 +115,7 @@ export function SidebarConversationList({
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   {conversation.title ? (
                     <Typography
-                      sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text' }}
+                      sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
                       onClick={(event) => {
                         if (conversation.id !== selectedConversationId) return;
                         event.stopPropagation();
