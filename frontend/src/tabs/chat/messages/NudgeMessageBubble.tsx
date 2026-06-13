@@ -23,9 +23,10 @@ export function NudgeMessageBubble({ action, messageId, onAction }: NudgeMessage
   const [animated, setAnimated] = useState(true);
 
   useEffect(() => {
+    setAnimated(true);
     const timer = setTimeout(() => { setAnimated(false); }, ANIMATION_DURATION_MS);
     return () => { clearTimeout(timer); };
-  }, []);
+  }, [messageId]);
 
   return (
     <Box sx={{ display: 'flex', pl: '44px' }}>

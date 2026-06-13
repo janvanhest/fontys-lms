@@ -38,6 +38,9 @@ individueel/.DS_Store
 # Vite / test cache
 .vite/
 coverage/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
 individueel/.DS_Store
 .DS_Store
 canvas_content/.seed-hash

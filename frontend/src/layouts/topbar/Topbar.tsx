@@ -48,7 +48,8 @@ export function Topbar() {
         <Tooltip title={sidebarOpen ? 'Gesprekken verbergen' : 'Gesprekken tonen'} arrow>
           <IconButton
           key={flashKey}
-          aria-label="Toggle sidebar"
+          aria-label={sidebarOpen ? 'Gesprekken verbergen' : 'Gesprekken tonen'}
+          aria-pressed={sidebarOpen}
           onClick={() => {
             setSidebarOpen(!sidebarOpen);
           }}

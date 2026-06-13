@@ -101,7 +101,8 @@ export function ChatTabHeader({
       <Tooltip title={sidePanelOpen ? 'Activiteiten verbergen' : 'Activiteiten tonen'} arrow>
         <IconButton
           onClick={onToggleActivities}
-          aria-label="Toggle activities panel"
+          aria-label={sidePanelOpen ? 'Activiteiten verbergen' : 'Activiteiten tonen'}
+          aria-pressed={sidePanelOpen}
           sx={(theme) => ({
             bgcolor: sidePanelOpen ? theme.palette.primary.main : theme.palette.primary.light,
             color: theme.palette.primary.contrastText,

@@ -94,7 +94,7 @@ export async function* streamChatMessage(
   language?: 'nl' | 'en',
   signal?: AbortSignal,
 ): AsyncGenerator<ChatSseEvent> {
-  const body: Record<string, string> = { message };
+  const body: { message: string; conversationId?: string; language?: 'nl' | 'en' } = { message };
   if (conversationId) body.conversationId = conversationId;
   if (language) body.language = language;
 
