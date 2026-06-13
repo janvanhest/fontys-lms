@@ -41,11 +41,20 @@ export function ChatComposer({ disabled, input, onChange, onKeyDown, onSend }: C
             endAdornment: (
               <InputAdornment position="end" sx={{ alignSelf: 'flex-end', pb: 0.5 }}>
                 <IconButton
-                  color="primary"
                   aria-label="Bericht verzenden"
                   onClick={onSend}
                   disabled={disabled || !input.trim()}
-                  size="small"
+                  sx={{
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    '&:hover': {
+                      bgcolor: 'primary.dark',
+                    },
+                    '&.Mui-disabled': {
+                      bgcolor: 'action.disabledBackground',
+                      color: 'action.disabled',
+                    },
+                  }}
                 >
                   <ArrowUpwardIcon />
                 </IconButton>
