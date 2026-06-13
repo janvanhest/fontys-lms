@@ -37,7 +37,7 @@ export function SidebarEdgeTab({ onClick }: SidebarEdgeTabProps) {
           userSelect: 'none',
         }}
       >
-        ☰ Gesprekken
+        Gesprekken
       </Typography>
     </ButtonBase>
   );

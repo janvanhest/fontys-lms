@@ -37,7 +37,7 @@ export function SidePanelEdgeTab({ onClick }: SidePanelEdgeTabProps) {
           userSelect: 'none',
         }}
       >
-        ☰ Activiteiten
+        Activiteiten
       </Typography>
     </ButtonBase>
   );
