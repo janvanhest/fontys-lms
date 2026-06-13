@@ -289,20 +289,14 @@ export class ChatService {
     const results: Anthropic.ToolResultBlockParam[] = [];
     const sources: ChatSource[] = [];
 
-    const REDACTED_KEYS = [
-      'password',
-      'pass',
-      'pwd',
-      'token',
-      'accesstoken',
-      'refreshtoken',
-      'authorization',
-      'auth',
-      'secret',
-      'apikey',
-    ];
+    const REDACTED_KEYS = ['password', 'pass', 'pwd', 'token', 'auth', 'secret', 'apikey', 'sessionid', 'jsessionid'];
 
     const normalizeKey = (key: string) => key.toLowerCase().replace(/[_\-. ]/g, '');
+
+    const isRedactedKey = (key: string): boolean => {
+      const normalized = normalizeKey(key);
+      return REDACTED_KEYS.some((redKey) => normalized.includes(redKey));
+    };
 
     const sanitizeToolInput = (input: unknown, maxLength = 500): string => {
       const redact = (value: unknown): unknown => {
@@ -310,7 +304,7 @@ export class ChatService {
         if (Array.isArray(value)) return value.map(redact);
         const obj: Record<string, unknown> = {};
         for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
-          obj[key] = REDACTED_KEYS.includes(normalizeKey(key)) ? '[REDACTED]' : redact(val);
+          obj[key] = isRedactedKey(key) ? '[REDACTED]' : redact(val);
         }
         return obj;
       };
