@@ -1,6 +1,6 @@
 import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
-import { fontysColors } from '@/themes/muiTheme';
+import { alpha } from '@mui/material/styles';
 
 type SidePanelEdgeTabProps = {
   onClick: () => void;
@@ -12,26 +12,26 @@ export function SidePanelEdgeTab({ onClick }: SidePanelEdgeTabProps) {
       focusRipple
       onClick={onClick}
       aria-label="Open activiteiten"
-      sx={{
+      sx={(theme) => ({
         width: 20,
         flexShrink: 0,
-        bgcolor: fontysColors.paars[50],
-        borderLeft: `2px solid ${fontysColors.paars[200]}`,
+        bgcolor: alpha(theme.palette.primary.main, 0.08),
+        borderLeft: `2px solid ${alpha(theme.palette.primary.main, 0.30)}`,
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
         pt: 2,
         '&:hover': {
-          bgcolor: fontysColors.paars[300],
+          bgcolor: alpha(theme.palette.primary.main, 0.20),
         },
-      }}
+      })}
     >
       <Typography
         variant="caption"
         sx={{
           writingMode: 'vertical-rl',
           transform: 'rotate(180deg)',
-          color: fontysColors.paars.main,
+          color: 'primary.main',
           fontWeight: 600,
           whiteSpace: 'nowrap',
           userSelect: 'none',
