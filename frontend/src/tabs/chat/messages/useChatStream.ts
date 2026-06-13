@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { streamChatMessage } from '@/api/chat';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   applyErrorMessage,
   createPendingMessages,
@@ -20,6 +21,7 @@ type UseChatStreamOptions = {
 
 export function useChatStream(conversationId?: string, options: UseChatStreamOptions = {}) {
   const { onConversationEstablished, onUiAction } = options;
+  const { language } = useLanguage();
   const hasConversation = Boolean(conversationId);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -87,7 +89,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       scheduleStatus(null);
 
       try {
-        for await (const sseEvent of streamChatMessage(text, conversationId, controller.signal)) {
+        for await (const sseEvent of streamChatMessage(text, conversationId, language, controller.signal)) {
           if (!isMountedRef.current) return;
           handleStreamEvent(sseEvent, streamingId, pendingSuggestions, {
             scheduleStatus,
@@ -128,6 +130,7 @@ export function useChatStream(conversationId?: string, options: UseChatStreamOpt
       isStreaming,
       isLoadingHistory,
       conversationId,
+      language,
       onConversationEstablished,
       onUiAction,
       scheduleStatus,
