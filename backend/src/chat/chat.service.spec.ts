@@ -859,4 +859,34 @@ describe('ChatService', () => {
       activityId: 'activity-123',
     });
   });
+
+  describe('buildSystemPrompt language', () => {
+    it('defaults to Dutch when language is undefined', async () => {
+      mockAnthropicStream.mockReturnValue(
+        makeStreamMock(['Antwoord.'], {
+          stop_reason: 'end_turn',
+          content: [{ type: 'text', text: 'Antwoord.' }],
+        }),
+      );
+
+      await collectEvents({ message: 'test' });
+
+      const streamCall = (mockAnthropicStream.mock.calls as Array<[{ system: Array<{ text: string }> }]>)[0]?.[0];
+      expect(streamCall?.system[0].text).toContain('Antwoord altijd in het Nederlands');
+    });
+
+    it('uses English instruction when language is "en"', async () => {
+      mockAnthropicStream.mockReturnValue(
+        makeStreamMock(['Answer.'], {
+          stop_reason: 'end_turn',
+          content: [{ type: 'text', text: 'Answer.' }],
+        }),
+      );
+
+      await collectEvents({ message: 'test', language: 'en' });
+
+      const streamCall = (mockAnthropicStream.mock.calls as Array<[{ system: Array<{ text: string }> }]>)[0]?.[0];
+      expect(streamCall?.system[0].text).toContain('Always respond in English');
+    });
+  });
 });
