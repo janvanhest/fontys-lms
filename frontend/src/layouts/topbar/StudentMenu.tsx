@@ -94,7 +94,7 @@ export function StudentMenu({ student }: Props) {
               sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
             >
               <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: '#E87722', flexShrink: 0 }} />
-              WK
+              WK <span style={{ fontSize: '1.5em', lineHeight: 1 }}>🏆</span>
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
@@ -115,10 +115,10 @@ export function StudentMenu({ student }: Props) {
             aria-label="Chatbot taal kiezen"
           >
             <ToggleButton value="nl" aria-label="Nederlands">
-              <span style={{ fontSize: '1.25em', lineHeight: 1 }}>🇳🇱</span>
+              <span style={{ fontSize: '2em', lineHeight: 1 }}>🇳🇱</span>
             </ToggleButton>
             <ToggleButton value="en" aria-label="English">
-              <span style={{ fontSize: '1.25em', lineHeight: 1 }}>🇬🇧</span>
+              <span style={{ fontSize: '2em', lineHeight: 1 }}>🇬🇧</span>
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
