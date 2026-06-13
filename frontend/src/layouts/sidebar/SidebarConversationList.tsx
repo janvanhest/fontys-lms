@@ -2,6 +2,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { alpha } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -74,15 +75,23 @@ export function SidebarConversationList({
             }}
             onMouseEnter={() => { setHoveredConversationId(conversation.id); }}
             onMouseLeave={() => { setHoveredConversationId(null); }}
-            sx={{
+            sx={(theme) => ({
               display: 'block',
               position: 'relative',
               borderRadius: 1.5,
               border: '1px solid',
               borderColor: 'divider',
-              bgcolor:
-                conversation.id === selectedConversationId ? 'action.selected' : 'transparent',
-            }}
+              bgcolor: 'transparent',
+              transition: 'box-shadow 0.15s ease, background-color 0.15s ease',
+              '&.Mui-selected': {
+                bgcolor: alpha(theme.palette.primary.main, 0.06),
+                borderColor: alpha(theme.palette.primary.main, 0.3),
+                boxShadow: `inset 3px 0 0 ${theme.palette.primary.main}`,
+              },
+              '&.Mui-selected:hover': {
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+              },
+            })}
           >
             {editingConversationId === conversation.id ? (
               <TextField
