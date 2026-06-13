@@ -3,7 +3,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { alpha } from '@mui/material/styles';
-import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -76,8 +75,8 @@ export function SidebarConversationList({
             onMouseEnter={() => { setHoveredConversationId(conversation.id); }}
             onMouseLeave={() => { setHoveredConversationId(null); }}
             sx={(theme) => ({
-              display: 'block',
-              position: 'relative',
+              display: 'flex',
+              alignItems: 'flex-start',
               borderRadius: 1.5,
               border: '1px solid',
               borderColor: 'divider',
@@ -112,69 +111,60 @@ export function SidebarConversationList({
                 }}
               />
             ) : (
-              <Box sx={{ pr: 7 }}>
-                {conversation.title ? (
-                  <Typography
-                    sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text' }}
-                    onClick={(event) => {
-                      if (conversation.id !== selectedConversationId) return;
-                      event.stopPropagation();
-                      onStartEditing(conversation);
-                    }}
-                    onDoubleClick={(event) => {
-                      event.stopPropagation();
-                      onStartEditing(conversation);
-                    }}
-                  >
-                    {conversation.title}
+              <>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  {conversation.title ? (
+                    <Typography
+                      sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text' }}
+                      onClick={(event) => {
+                        if (conversation.id !== selectedConversationId) return;
+                        event.stopPropagation();
+                        onStartEditing(conversation);
+                      }}
+                      onDoubleClick={(event) => {
+                        event.stopPropagation();
+                        onStartEditing(conversation);
+                      }}
+                    >
+                      {conversation.title}
+                    </Typography>
+                  ) : (
+                    <Skeleton variant="text" width="70%" sx={{ fontSize: 14 }} />
+                  )}
+                </Box>
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ml: 1, flexShrink: 0 }}
+                  onClick={(event) => { event.stopPropagation(); }}
+                >
+                  <Box sx={{ display: 'flex', visibility: hoveredConversationId === conversation.id ? 'visible' : 'hidden' }}>
+                    <IconButton
+                      size="small"
+                      aria-label="Gesprek bewerken"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onStartEditing(conversation);
+                      }}
+                    >
+                      <EditIcon fontSize="inherit" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      aria-label="Gesprek verwijderen"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setDeletingConversationId(conversation.id);
+                      }}
+                    >
+                      <DeleteIcon fontSize="inherit" />
+                    </IconButton>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatConversationDateLabel(conversation.createdAt)}
                   </Typography>
-                ) : (
-                  <Skeleton variant="text" width="70%" sx={{ fontSize: 14 }} />
-                )}
-              </Box>
+                </Box>
+              </>
             )}
-            <Chip
-              size="small"
-              label={formatConversationDateLabel(conversation.createdAt)}
-              variant="outlined"
-              color="default"
-              sx={{ mt: 1 }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 4,
-                right: 4,
-                display: 'flex',
-                visibility:
-                  hoveredConversationId === conversation.id &&
-                  editingConversationId !== conversation.id
-                    ? 'visible'
-                    : 'hidden',
-              }}
-              onClick={(event) => { event.stopPropagation(); }}
-            >
-              <IconButton
-                size="small"
-                aria-label="Gesprek bewerken"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onStartEditing(conversation);
-                }}
-              >
-                <EditIcon fontSize="inherit" />
-              </IconButton>
-              <IconButton
-                size="small"
-                aria-label="Gesprek verwijderen"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setDeletingConversationId(conversation.id);
-                }}
-              >
-                <DeleteIcon fontSize="inherit" />
-              </IconButton>
-            </Box>
           </ListItemButton>
         ))}
         {conversations.length === 0 && (
