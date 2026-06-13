@@ -121,7 +121,7 @@ export class ChatService {
           model: this.anthropicModel,
           max_tokens: 8192,
           system: [
-            { type: 'text', text: this.buildSystemPrompt(), cache_control: { type: 'ephemeral' } },
+            { type: 'text', text: this.buildSystemPrompt(dto.language), cache_control: { type: 'ephemeral' } },
           ],
           messages,
           tools: this.getAvailableTools(),
@@ -213,15 +213,24 @@ export class ChatService {
     };
   }
 
-  private buildSystemPrompt(): string {
+  private buildSystemPrompt(language: 'nl' | 'en' = 'nl'): string {
     const today = new Date().toISOString().slice(0, 10);
-    const dateNote = `Vandaag is het ${today}.`;
+    const dateNote =
+      language === 'en' ? `Today's date is ${today}.` : `Vandaag is het ${today}.`;
+
+    const prompt =
+      language === 'en'
+        ? BASE_SYSTEM_PROMPT.replace(
+            '8. Antwoord altijd in het Nederlands.',
+            '8. Always respond in English, even if the student writes in Dutch.',
+          )
+        : BASE_SYSTEM_PROMPT;
 
     if (this.studentContextPolicy.enabled) {
-      return `${BASE_SYSTEM_PROMPT}\n${dateNote}`;
+      return `${prompt}\n${dateNote}`;
     }
 
-    return `${BASE_SYSTEM_PROMPT}\n${dateNote}\n\n${this.studentContextPolicy.disabledPromptNote}`;
+    return `${prompt}\n${dateNote}\n\n${this.studentContextPolicy.disabledPromptNote}`;
   }
 
   private getAvailableTools() {
