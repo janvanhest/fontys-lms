@@ -47,7 +47,7 @@ Aanpak:
 5. Combineer bronnen alleen als dat inhoudelijk helpt.
 6. Roep altijd eerst de benodigde tools aan vóórdat je begint te antwoorden. Begin nooit te schrijven voordat je alle benodigde informatie hebt opgehaald.
 7. Combineer de voortgang van de student met de raamwerkdefinities tot concreet advies.
-8. Antwoord altijd in het Nederlands. Wees concreet en motiverend. Een incidenteel subtiel grapje mag.
+{{LANGUAGE_INSTRUCTION}} Wees concreet en motiverend. Een incidenteel subtiel grapje mag.
 9. Gebruik spaarzaam emoji's — alleen als het echt iets toevoegt aan de boodschap.
 10. Als je een vraag niet goed begrijpt, vraag dan om verduidelijking in plaats van te gokken.
 11. Pas de lengte van je antwoord aan op de vraag: een simpele vraag krijgt een kort antwoord, een complexe vraag mag uitgebreid beantwoord worden. Voeg nooit opvulling toe, maar snij ook niet in relevante uitleg.
@@ -111,7 +111,9 @@ export class ChatService {
     let lastStopReason: string | null = null;
     let durableAssistantText = '';
 
-    while (iterations < 6) {
+    const MAX_TOOL_ITERATIONS = 6;
+
+    while (iterations < MAX_TOOL_ITERATIONS) {
       yield { event: 'status', data: 'Nadenken...' };
 
       try {
@@ -119,7 +121,7 @@ export class ChatService {
           model: this.anthropicModel,
           max_tokens: 8192,
           system: [
-            { type: 'text', text: this.buildSystemPrompt(), cache_control: { type: 'ephemeral' } },
+            { type: 'text', text: this.buildSystemPrompt(dto.language), cache_control: { type: 'ephemeral' } },
           ],
           messages,
           tools: this.getAvailableTools(),
@@ -211,15 +213,23 @@ export class ChatService {
     };
   }
 
-  private buildSystemPrompt(): string {
+  private buildSystemPrompt(language: 'nl' | 'en' = 'nl'): string {
     const today = new Date().toISOString().slice(0, 10);
-    const dateNote = `Vandaag is het ${today}.`;
+    const dateNote =
+      language === 'en' ? `Today's date is ${today}.` : `Vandaag is het ${today}.`;
+
+    const languageInstruction =
+      language === 'en'
+        ? '8. Always respond in English, even if the student writes in Dutch.'
+        : '8. Antwoord altijd in het Nederlands.';
+
+    const prompt = BASE_SYSTEM_PROMPT.replace('{{LANGUAGE_INSTRUCTION}}', languageInstruction);
 
     if (this.studentContextPolicy.enabled) {
-      return `${BASE_SYSTEM_PROMPT}\n${dateNote}`;
+      return `${prompt}\n${dateNote}`;
     }
 
-    return `${BASE_SYSTEM_PROMPT}\n${dateNote}\n\n${this.studentContextPolicy.disabledPromptNote}`;
+    return `${prompt}\n${dateNote}\n\n${this.studentContextPolicy.disabledPromptNote}`;
   }
 
   private getAvailableTools() {
@@ -279,11 +289,39 @@ export class ChatService {
     const results: Anthropic.ToolResultBlockParam[] = [];
     const sources: ChatSource[] = [];
 
+    const REDACTED_KEYS = ['password', 'pass', 'pwd', 'token', 'auth', 'secret', 'apikey', 'sessionid', 'jsessionid'];
+
+    const normalizeKey = (key: string) => key.toLowerCase().replace(/[_\-. ]/g, '');
+
+    const isRedactedKey = (key: string): boolean => {
+      const normalized = normalizeKey(key);
+      return REDACTED_KEYS.some((redKey) => normalized.includes(redKey));
+    };
+
+    const sanitizeToolInput = (input: unknown, maxLength = 500): string => {
+      const redact = (value: unknown): unknown => {
+        if (!value || typeof value !== 'object') return value;
+        if (Array.isArray(value)) return value.map(redact);
+        const obj: Record<string, unknown> = {};
+        for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+          obj[key] = isRedactedKey(key) ? '[REDACTED]' : redact(val);
+        }
+        return obj;
+      };
+      try {
+        let json = JSON.stringify(redact(input));
+        if (json.length > maxLength) json = `${json.slice(0, maxLength)}…[truncated]`;
+        return json;
+      } catch {
+        return '[unserializable input]';
+      }
+    };
+
     for (const block of content) {
       if (block.type !== 'tool_use') continue;
 
       if (this.isDevelopment) {
-        this.logger.debug(`Tool call: ${block.name} | input: ${JSON.stringify(block.input)}`);
+        this.logger.debug(`Tool call: ${block.name} | input: ${sanitizeToolInput(block.input)}`);
       }
 
       let result: string;

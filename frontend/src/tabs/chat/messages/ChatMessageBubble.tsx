@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
 import Psychology from '@mui/icons-material/Psychology';
 import { studentInitials, type StudentProfile } from '@/api/student';
 import type { Message } from './useChatStream';
@@ -67,16 +68,20 @@ export function ChatMessageBubble({
         )}
         <Paper
           elevation={0}
-          sx={{
+          sx={(theme) => ({
             maxWidth: 680,
             px: 2,
             py: 1.5,
             borderRadius: 2,
             border: '1px solid',
-            borderColor: 'divider',
-            bgcolor: isStudent ? 'grey.100' : 'background.paper',
+            borderColor: isStudent
+              ? alpha(theme.palette.primary.main, 0.2)
+              : theme.palette.divider,
+            bgcolor: isStudent
+              ? alpha(theme.palette.primary.main, 0.08)
+              : theme.palette.background.paper,
             color: 'text.primary',
-          }}
+          })}
         >
           {message.isStreaming && !content ? (
             <Box sx={{ display: 'flex', gap: 0.75, py: 0.5 }}>

@@ -65,7 +65,8 @@ export async function deleteConversation(conversationId: string): Promise<void> 
 export async function* streamChatMessage(
   message: string,
   conversationId?: string,
+  language?: 'nl' | 'en',
   signal?: AbortSignal,
 ): AsyncGenerator<ChatSseEvent> {
-  yield* streamChatMessageRequest(backendUrl, message, conversationId, signal);
+  yield* streamChatMessageRequest(backendUrl, message, conversationId, language, signal);
 }

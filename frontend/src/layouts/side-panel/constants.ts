@@ -1,6 +1,6 @@
 import type { ActivityStatus, ActivityType, GroupKey } from './types';
 
-export const panelWidth = 320;
+export const panelWidth = 'clamp(280px, 18vw, 400px)';
 
 export const groupMeta: Record<GroupKey, { label: string; rangeLabel: string }> = {
   eerder: { label: 'eerder', rangeLabel: 'vóór deze week' },

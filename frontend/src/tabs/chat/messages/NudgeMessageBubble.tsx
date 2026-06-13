@@ -1,6 +1,8 @@
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import { alpha, keyframes } from '@mui/material/styles';
+import { useEffect, useState } from 'react';
+import { fontysColors } from '@/themes/muiTheme';
 import type { ChatUiAction } from './chatStreamHelpers';
 
 type NudgeMessageBubbleProps = {
@@ -9,32 +11,38 @@ type NudgeMessageBubbleProps = {
   onAction?: (messageId: string, action: string, payload?: Record<string, string>) => void;
 };
 
+const ANIMATION_DURATION_MS = 12_000;
+
+const nudgePulse = keyframes`
+  0%   { box-shadow: 0 0 0 0   ${alpha(fontysColors.magenta.main, 0.4)}; }
+  70%  { box-shadow: 0 0 0 8px ${alpha(fontysColors.magenta.main, 0)}; }
+  100% { box-shadow: 0 0 0 0   ${alpha(fontysColors.magenta.main, 0)}; }
+`;
+
 export function NudgeMessageBubble({ action, messageId, onAction }: NudgeMessageBubbleProps) {
+  const [animated, setAnimated] = useState(true);
+
+  useEffect(() => {
+    setAnimated(true);
+    const timer = setTimeout(() => { setAnimated(false); }, ANIMATION_DURATION_MS);
+    return () => { clearTimeout(timer); };
+  }, [messageId]);
+
   return (
     <Box sx={{ display: 'flex', pl: '44px' }}>
-      <Paper
-        elevation={0}
+      <Button
+        variant="outlined"
+        color="secondary"
+        size="small"
+        disabled={action.used === true}
+        onClick={() => onAction?.(messageId, action.action, action.payload)}
         sx={{
-          px: 1.5,
-          py: 1,
-          borderRadius: 2,
-          border: '1px solid',
-          borderColor: 'divider',
           bgcolor: 'background.paper',
+          animation: animated ? `${nudgePulse} 2s ease-in-out infinite` : 'none',
         }}
       >
-        <Chip
-          label={action.label}
-          size="small"
-          disabled={action.used === true}
-          onClick={
-            action.used
-              ? undefined
-              : () => onAction?.(messageId, action.action, action.payload)
-          }
-          sx={{ fontSize: '0.75rem' }}
-        />
-      </Paper>
+        {action.label}
+      </Button>
     </Box>
   );
 }

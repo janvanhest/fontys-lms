@@ -1,5 +1,6 @@
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
@@ -17,13 +18,13 @@ export function ChatComposer({ disabled, input, onChange, onKeyDown, onSend }: C
   return (
     <Box
       sx={{
-        px: { xs: 2, md: 3 },
         py: 2,
         borderTop: '1px solid',
         borderColor: 'divider',
         bgcolor: 'background.paper',
       }}
     >
+      <Container maxWidth={false} sx={{ maxWidth: { xs: '100%', md: 760, lg: 980, xl: 1200 } }}>
       <TextField
         fullWidth
         multiline
@@ -41,11 +42,20 @@ export function ChatComposer({ disabled, input, onChange, onKeyDown, onSend }: C
             endAdornment: (
               <InputAdornment position="end" sx={{ alignSelf: 'flex-end', pb: 0.5 }}>
                 <IconButton
-                  color="primary"
                   aria-label="Bericht verzenden"
                   onClick={onSend}
                   disabled={disabled || !input.trim()}
-                  size="small"
+                  sx={{
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    '&:hover': {
+                      bgcolor: 'primary.dark',
+                    },
+                    '&.Mui-disabled': {
+                      bgcolor: 'action.disabledBackground',
+                      color: 'action.disabled',
+                    },
+                  }}
                 >
                   <ArrowUpwardIcon />
                 </IconButton>
@@ -54,6 +64,7 @@ export function ChatComposer({ disabled, input, onChange, onKeyDown, onSend }: C
           },
         }}
       />
+      </Container>
     </Box>
   );
 }

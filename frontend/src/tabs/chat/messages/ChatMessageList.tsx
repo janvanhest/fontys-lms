@@ -1,8 +1,12 @@
+import PsychologyIcon from '@mui/icons-material/Psychology';
 import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import type { RefObject } from 'react';
 import type { StudentProfile } from '@/api/student';
 import type { Message } from './useChatStream';
+import { useLanguage } from '@/context/LanguageContext';
 import { useTypewriter } from './useTypewriter';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { getVisibleMessageContent } from './messageRenderState';
@@ -15,14 +19,53 @@ type ChatMessageListProps = {
 };
 
 export function ChatMessageList({ bottomRef, messages, student, onAction }: ChatMessageListProps) {
+  const { language } = useLanguage();
   const streamingMessage = messages.find((m) => m.isStreaming);
   const displayedContent = useTypewriter(
     streamingMessage?.content ?? '',
     Boolean(streamingMessage?.isStreaming),
   );
 
+  if (messages.length === 0) {
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1.5,
+          px: 3,
+          opacity: 0.5,
+        }}
+      >
+        <Box
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            bgcolor: 'primary.main',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <PsychologyIcon sx={{ color: 'primary.contrastText', fontSize: 32 }} />
+        </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+          {language === 'en'
+            ? 'Ask a question about your activities, deadlines, or study progress.'
+            : 'Stel een vraag over je activiteiten, deadlines of studievoortgang.'}
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
+    <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', py: 3 }}>
+      <Container maxWidth={false} sx={{ maxWidth: { xs: '100%', md: 760, lg: 980, xl: 1200 } }}>
       <Stack spacing={2.5}>
         {messages.map((message) => {
           const content = getVisibleMessageContent(message, displayedContent);
@@ -46,6 +89,7 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
         })}
         <div ref={bottomRef} />
       </Stack>
+      </Container>
     </Box>
   );
 }

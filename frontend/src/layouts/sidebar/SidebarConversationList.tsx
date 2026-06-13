@@ -2,7 +2,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
+import { alpha } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -72,17 +72,25 @@ export function SidebarConversationList({
             onClick={() => {
               onSelectConversation(conversation.id);
             }}
-            onMouseEnter={() => setHoveredConversationId(conversation.id)}
-            onMouseLeave={() => setHoveredConversationId(null)}
-            sx={{
-              display: 'block',
-              position: 'relative',
+            onMouseEnter={() => { setHoveredConversationId(conversation.id); }}
+            onMouseLeave={() => { setHoveredConversationId(null); }}
+            sx={(theme) => ({
+              display: 'flex',
+              alignItems: 'flex-start',
               borderRadius: 1.5,
               border: '1px solid',
               borderColor: 'divider',
-              bgcolor:
-                conversation.id === selectedConversationId ? 'action.selected' : 'transparent',
-            }}
+              bgcolor: 'transparent',
+              transition: 'box-shadow 0.15s ease, background-color 0.15s ease',
+              '&.Mui-selected': {
+                bgcolor: alpha(theme.palette.primary.main, 0.06),
+                borderColor: alpha(theme.palette.primary.main, 0.3),
+                boxShadow: `inset 3px 0 0 ${theme.palette.primary.main}`,
+              },
+              '&.Mui-selected:hover': {
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+              },
+            })}
           >
             {editingConversationId === conversation.id ? (
               <TextField
@@ -103,69 +111,60 @@ export function SidebarConversationList({
                 }}
               />
             ) : (
-              <Box sx={{ pr: 7 }}>
-                {conversation.title ? (
-                  <Typography
-                    sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text' }}
-                    onClick={(event) => {
-                      if (conversation.id !== selectedConversationId) return;
-                      event.stopPropagation();
-                      onStartEditing(conversation);
-                    }}
-                    onDoubleClick={(event) => {
-                      event.stopPropagation();
-                      onStartEditing(conversation);
-                    }}
-                  >
-                    {conversation.title}
+              <>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  {conversation.title ? (
+                    <Typography
+                      sx={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, cursor: 'text', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                      onClick={(event) => {
+                        if (conversation.id !== selectedConversationId) return;
+                        event.stopPropagation();
+                        onStartEditing(conversation);
+                      }}
+                      onDoubleClick={(event) => {
+                        event.stopPropagation();
+                        onStartEditing(conversation);
+                      }}
+                    >
+                      {conversation.title}
+                    </Typography>
+                  ) : (
+                    <Skeleton variant="text" width="70%" sx={{ fontSize: 14 }} />
+                  )}
+                </Box>
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ml: 1, flexShrink: 0 }}
+                  onClick={(event) => { event.stopPropagation(); }}
+                >
+                  <Box sx={{ display: 'flex', visibility: hoveredConversationId === conversation.id || conversation.id === selectedConversationId ? 'visible' : 'hidden' }}>
+                    <IconButton
+                      size="small"
+                      aria-label="Gesprek bewerken"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onStartEditing(conversation);
+                      }}
+                    >
+                      <EditIcon fontSize="inherit" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      edge="end"
+                      aria-label="Gesprek verwijderen"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setDeletingConversationId(conversation.id);
+                      }}
+                    >
+                      <DeleteIcon fontSize="inherit" />
+                    </IconButton>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatConversationDateLabel(conversation.createdAt)}
                   </Typography>
-                ) : (
-                  <Skeleton variant="text" width="70%" sx={{ fontSize: 14 }} />
-                )}
-              </Box>
+                </Box>
+              </>
             )}
-            <Chip
-              size="small"
-              label={formatConversationDateLabel(conversation.createdAt)}
-              variant="outlined"
-              color="default"
-              sx={{ mt: 1 }}
-            />
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 4,
-                right: 4,
-                display: 'flex',
-                visibility:
-                  hoveredConversationId === conversation.id &&
-                  editingConversationId !== conversation.id
-                    ? 'visible'
-                    : 'hidden',
-              }}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <IconButton
-                size="small"
-                aria-label="Gesprek bewerken"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onStartEditing(conversation);
-                }}
-              >
-                <EditIcon fontSize="inherit" />
-              </IconButton>
-              <IconButton
-                size="small"
-                aria-label="Gesprek verwijderen"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setDeletingConversationId(conversation.id);
-                }}
-              >
-                <DeleteIcon fontSize="inherit" />
-              </IconButton>
-            </Box>
           </ListItemButton>
         ))}
         {conversations.length === 0 && (
@@ -177,14 +176,14 @@ export function SidebarConversationList({
 
       <Dialog
         open={deletingConversationId !== null}
-        onClose={() => setDeletingConversationId(null)}
+        onClose={() => { setDeletingConversationId(null); }}
       >
         <DialogTitle>Gesprek verwijderen?</DialogTitle>
         <DialogContent>
           <DialogContentText>Dit kan niet ongedaan worden gemaakt.</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeletingConversationId(null)}>Annuleren</Button>
+          <Button onClick={() => { setDeletingConversationId(null); }}>Annuleren</Button>
           <Button
             color="error"
             onClick={() => {

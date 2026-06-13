@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
@@ -17,8 +18,9 @@ import {
 import { useLayout } from '@/context/useLayout';
 import { normalizeConversationTitleInput } from '@/utils/sidebarTitle';
 import { SidebarConversationList } from './SidebarConversationList';
+import { SidebarEdgeTab } from './SidebarEdgeTab';
 
-const sidebarWidth = 320;
+const sidebarWidth = 'clamp(260px, 18vw, 380px)';
 
 export function Sidebar() {
   const {
@@ -105,74 +107,90 @@ export function Sidebar() {
   );
 
   return (
-    <Box
-      sx={{
-        width: sidebarOpen ? sidebarWidth : 0,
-        flexShrink: 0,
-        overflow: 'hidden',
-        transition: 'width 0.2s ease',
-        borderRight: sidebarOpen ? '1px solid' : '0 solid transparent',
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
-      }}
-    >
+    <Box sx={{ display: 'flex', flexShrink: 0 }}>
       <Box
         sx={{
-          width: sidebarWidth,
-          height: '100%',
-          p: 2,
+          width: sidebarOpen ? sidebarWidth : 0,
+          overflow: 'hidden',
+          transition: 'width 0.2s ease',
+          borderRight: sidebarOpen ? '1px solid' : '0 solid transparent',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
         }}
       >
-        <Stack spacing={2}>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setSelectedConversationId(null);
-                setChatMountKey(`new-${String(Date.now())}`);
-                selectTab('chat');
-              }}
-              sx={{ flex: 1 }}
-            >
-              Nieuw gesprek
-            </Button>
-            <IconButton
-              onClick={() => { setSidebarOpen(false); }}
-              aria-label="Zijbalk inklappen"
-              size="small"
-            >
-              <ChevronLeftIcon />
-            </IconButton>
-          </Box>
+        <Box
+          sx={{
+            width: sidebarWidth,
+            height: '100%',
+            p: 2,
+          }}
+        >
+          <Stack spacing={2}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setSelectedConversationId(null);
+                  setChatMountKey(`new-${String(Date.now())}`);
+                  selectTab('chat');
+                }}
+                sx={{ flex: 1 }}
+              >
+                Nieuw gesprek
+              </Button>
+              <Tooltip title="Gesprekken verbergen" arrow>
+                <IconButton
+                  onClick={() => {
+                    setSidebarOpen(false);
+                  }}
+                  aria-label="Zijbalk inklappen"
+                  size="small"
+                >
+                  <ChevronLeftIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
 
-          <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.12em' }}>
-            Gesprekken
-          </Typography>
+            <Typography
+              variant="caption"
+              sx={{ color: 'text.secondary', fontWeight: 600, letterSpacing: '0.04em', display: 'block' }}
+            >
+              Gesprekken
+            </Typography>
 
-          {isLoading ? (
-            <CircularProgress size={20} sx={{ alignSelf: 'center' }} />
-          ) : (
-            <SidebarConversationList
-              conversations={conversations}
-              editingConversationId={editingConversationId}
-              editingTitle={editingTitle}
-              savingConversationId={savingConversationId}
-              selectedConversationId={selectedConversationId}
-              onCancelEditing={cancelEditing}
-              onDeleteConversation={handleDeleteConversation}
-              onEditTitleChange={setEditingTitle}
-              onSaveTitle={saveTitle}
-              onSelectConversation={(conversationId) => {
-                setSelectedConversationId(conversationId);
-                setChatMountKey(conversationId);
-                selectTab('chat');
-              }}
-              onStartEditing={startEditing}
-            />
-          )}
-        </Stack>
+            {isLoading ? (
+              <CircularProgress size={20} sx={{ alignSelf: 'center' }} />
+            ) : (
+              <SidebarConversationList
+                conversations={conversations}
+                editingConversationId={editingConversationId}
+                editingTitle={editingTitle}
+                savingConversationId={savingConversationId}
+                selectedConversationId={selectedConversationId}
+                onCancelEditing={cancelEditing}
+                onDeleteConversation={handleDeleteConversation}
+                onEditTitleChange={setEditingTitle}
+                onSaveTitle={saveTitle}
+                onSelectConversation={(conversationId) => {
+                  setSelectedConversationId(conversationId);
+                  setChatMountKey(conversationId);
+                  selectTab('chat');
+                }}
+                onStartEditing={startEditing}
+              />
+            )}
+          </Stack>
+        </Box>
       </Box>
+
+      {!sidebarOpen && (
+        <SidebarEdgeTab
+          onClick={() => {
+            setSidebarOpen(true);
+          }}
+        />
+      )}
     </Box>
   );
 }

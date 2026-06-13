@@ -5,9 +5,13 @@ import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { studentInitials, type StudentProfile } from '@/api/student';
+import { useAppTheme, type ThemeName } from '@/themes/ThemeContext';
+import { useLanguage, type ChatLanguage } from '@/context/LanguageContext';
 
 interface Props {
   student: StudentProfile | undefined;
@@ -15,8 +19,19 @@ interface Props {
 
 export function StudentMenu({ student }: Props) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const { themeName, setThemeName } = useAppTheme();
+  const { language, setLanguage } = useLanguage();
 
   const initials = student ? studentInitials(student.displayName) : '?';
+
+  const handleThemeChange = (_e: React.MouseEvent<HTMLElement>, value: ThemeName | null) => {
+    if (value !== null) setThemeName(value);
+  };
+
+  const handleLanguageChange = (_e: React.MouseEvent<HTMLElement>, value: ChatLanguage | null) => {
+    if (value !== null) setLanguage(value);
+  };
+
 
   return (
     <>
@@ -53,7 +68,63 @@ export function StudentMenu({ student }: Props) {
             {student?.email ?? ''}
           </Typography>
         </Box>
+
         <Divider />
+
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+            Thema
+          </Typography>
+          <ToggleButtonGroup
+            value={themeName}
+            exclusive
+            onChange={handleThemeChange}
+            size="small"
+            color="primary"
+            fullWidth
+            aria-label="Thema kiezen"
+          >
+            <ToggleButton value="fontysPurple" aria-label="Fontys Purple thema"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            >
+              <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: '#663366', flexShrink: 0 }} />
+              Fontys
+            </ToggleButton>
+            <ToggleButton value="kingsOrange" aria-label="Kings Orange thema"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            >
+              <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: '#E87722', flexShrink: 0 }} />
+              WK <span style={{ fontSize: '1.5em', lineHeight: 1 }}>🏆</span>
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        <Divider />
+
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+            Chatbot taal
+          </Typography>
+          <ToggleButtonGroup
+            value={language}
+            exclusive
+            onChange={handleLanguageChange}
+            size="small"
+            color="primary"
+            fullWidth
+            aria-label="Chatbot taal kiezen"
+          >
+            <ToggleButton value="nl" aria-label="Nederlands">
+              <span style={{ fontSize: '2em', lineHeight: 1 }}>🇳🇱</span>
+            </ToggleButton>
+            <ToggleButton value="en" aria-label="English">
+              <span style={{ fontSize: '2em', lineHeight: 1 }}>🇬🇧</span>
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        <Divider />
+
         <MenuItem disabled>
           <ListItemText>Uitloggen</ListItemText>
         </MenuItem>

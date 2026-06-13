@@ -91,12 +91,17 @@ export async function* streamChatMessage(
   backendUrl: string,
   message: string,
   conversationId?: string,
+  language?: 'nl' | 'en',
   signal?: AbortSignal,
 ): AsyncGenerator<ChatSseEvent> {
+  const body: { message: string; conversationId?: string; language?: 'nl' | 'en' } = { message };
+  if (conversationId) body.conversationId = conversationId;
+  if (language) body.language = language;
+
   const res = await fetch(`${backendUrl}/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, conversationId }),
+    body: JSON.stringify(body),
     signal,
   });
 

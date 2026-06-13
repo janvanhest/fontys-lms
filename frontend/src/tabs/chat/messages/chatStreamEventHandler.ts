@@ -46,8 +46,15 @@ export function handleStreamEvent(
       // the minimum-duration clock so rapid subsequent events (e.g. the next
       // iteration's 'status') cannot wipe this before it's ever rendered.
       forceStatus(getStatusFromToolCall(sseEvent.data));
-      const payload = JSON.parse(sseEvent.data) as { name: string };
-      const bubble = toolCallToBubble(payload.name);
+      let toolCallName: string | undefined;
+      try {
+        toolCallName = (JSON.parse(sseEvent.data) as { name: string }).name;
+      } catch (error) {
+        console.warn('[chatStreamEventHandler] Failed to parse tool_call payload', { data: sseEvent.data, error });
+        forceStatus(CHAT_WRITING_STATUS);
+        break;
+      }
+      const bubble = toolCallToBubble(toolCallName);
       if (bubble) {
         setMessages((prev) =>
           prev.map((m) =>
@@ -59,12 +66,19 @@ export function handleStreamEvent(
       }
       break;
     }
-    case 'tool_result':
+    case 'tool_result': {
       scheduleStatus(CHAT_WRITING_STATUS);
-      if (JSON.parse(sseEvent.data).name !== 'perform_ui_action') {
+      let toolResultName: string | undefined;
+      try {
+        toolResultName = (JSON.parse(sseEvent.data) as { name?: string }).name;
+      } catch {
+        // malformed data — treat as non-perform_ui_action so spacing is added
+      }
+      if (toolResultName !== 'perform_ui_action') {
         setMessages((prev) => appendToolResultSpacing(prev, currentStreamingId));
       }
       break;
+    }
     case 'text_delta':
       setMessages((prev) =>
         prev.map((m) =>

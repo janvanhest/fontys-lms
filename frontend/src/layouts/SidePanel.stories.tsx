@@ -55,4 +55,5 @@ export const Default: Story = {
 
 export const Collapsed: Story = {
   render: () => <SidePanelFrame sidePanelOpen={false} />,
+  name: 'Collapsed (with edge tab)',
 };

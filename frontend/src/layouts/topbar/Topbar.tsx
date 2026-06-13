@@ -1,4 +1,5 @@
-import MenuIcon from '@mui/icons-material/Menu';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import Tooltip from '@mui/material/Tooltip';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -35,7 +36,7 @@ export function Topbar() {
   }, [sidebarOpen]);
 
   return (
-    <AppBar position="static" elevation={0}>
+    <AppBar position="static" elevation={2} sx={{ position: 'relative', zIndex: 1 }}>
       <Toolbar
         sx={{
           gap: 2,
@@ -44,9 +45,11 @@ export function Topbar() {
           px: { xs: 2, md: 3 },
         }}
       >
-        <IconButton
+        <Tooltip title={sidebarOpen ? 'Gesprekken verbergen' : 'Gesprekken tonen'} arrow>
+          <IconButton
           key={flashKey}
-          aria-label="Toggle sidebar"
+          aria-label={sidebarOpen ? 'Gesprekken verbergen' : 'Gesprekken tonen'}
+          aria-pressed={sidebarOpen}
           onClick={() => {
             setSidebarOpen(!sidebarOpen);
           }}
@@ -57,14 +60,15 @@ export function Topbar() {
               animation: 'sidebarHint 0.5s ease-out 3',
               '@keyframes sidebarHint': {
                 '0%': { backgroundColor: 'transparent' },
-                '25%': { backgroundColor: 'rgba(255,255,255,0.28)' },
+                '25%': { backgroundColor: 'rgba(255,255,255,0.35)' },
                 '100%': { backgroundColor: 'transparent' },
               },
             }),
           }}
         >
-          <MenuIcon />
+          <MenuOpenIcon sx={{ transform: sidebarOpen ? 'none' : 'scaleX(-1)', transition: 'transform 0.2s' }} />
         </IconButton>
+        </Tooltip>
 
         <Typography
           variant="h6"

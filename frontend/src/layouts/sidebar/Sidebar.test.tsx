@@ -46,6 +46,38 @@ describe('Sidebar', () => {
     expect(html).toContain('Gesprekken');
   });
 
+  it('toont het randtabje als de sidebar gesloten is', () => {
+    useLayoutMock.mockReturnValue({
+      sidebarOpen: false,
+      setSidebarOpen: vi.fn(),
+      selectedConversationId: null,
+      setSelectedConversationId: vi.fn(),
+      selectTab: vi.fn(),
+      setChatMountKey: vi.fn(),
+    });
+    useQueryMock.mockReturnValue({ data: [], isLoading: false });
+
+    const html = renderToStaticMarkup(<Sidebar />);
+
+    expect(html).toContain('aria-label="Open gesprekken"');
+  });
+
+  it('verbergt het randtabje als de sidebar open is', () => {
+    useLayoutMock.mockReturnValue({
+      sidebarOpen: true,
+      setSidebarOpen: vi.fn(),
+      selectedConversationId: null,
+      setSelectedConversationId: vi.fn(),
+      selectTab: vi.fn(),
+      setChatMountKey: vi.fn(),
+    });
+    useQueryMock.mockReturnValue({ data: [], isLoading: false });
+
+    const html = renderToStaticMarkup(<Sidebar />);
+
+    expect(html).not.toContain('aria-label="Open gesprekken"');
+  });
+
   it('renders fetched conversations', () => {
     useLayoutMock.mockReturnValue({
       sidebarOpen: true,

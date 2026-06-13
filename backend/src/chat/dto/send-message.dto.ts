@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+
+export type ChatLanguage = 'nl' | 'en';
 
 export class SendMessageDto {
   @ApiProperty({ example: 'Wat is een professionele taak?' })
@@ -11,4 +13,9 @@ export class SendMessageDto {
   @IsUUID()
   @IsOptional()
   conversationId?: string;
+
+  @ApiPropertyOptional({ example: 'en', enum: ['nl', 'en'] })
+  @IsIn(['nl', 'en'])
+  @IsOptional()
+  language?: ChatLanguage;
 }
