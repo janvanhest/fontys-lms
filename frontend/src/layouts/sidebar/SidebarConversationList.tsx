@@ -136,7 +136,7 @@ export function SidebarConversationList({
                   sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ml: 1, flexShrink: 0 }}
                   onClick={(event) => { event.stopPropagation(); }}
                 >
-                  <Box sx={{ display: 'flex', visibility: hoveredConversationId === conversation.id ? 'visible' : 'hidden' }}>
+                  <Box sx={{ display: 'flex', visibility: hoveredConversationId === conversation.id || conversation.id === selectedConversationId ? 'visible' : 'hidden' }}>
                     <IconButton
                       size="small"
                       aria-label="Gesprek bewerken"
