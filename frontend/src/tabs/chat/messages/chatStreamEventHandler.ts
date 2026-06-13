@@ -49,7 +49,9 @@ export function handleStreamEvent(
       let toolCallName: string | undefined;
       try {
         toolCallName = (JSON.parse(sseEvent.data) as { name: string }).name;
-      } catch {
+      } catch (error) {
+        console.warn('[chatStreamEventHandler] Failed to parse tool_call payload', { data: sseEvent.data, error });
+        forceStatus(CHAT_WRITING_STATUS);
         break;
       }
       const bubble = toolCallToBubble(toolCallName);
