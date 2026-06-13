@@ -60,7 +60,7 @@ export function StudentMenu({ student }: Props) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Box sx={{ px: 2, py: 1, minWidth: 280 }}>
+        <Box sx={{ px: 2, py: 1, minWidth: 200 }}>
           <Typography variant="subtitle2" noWrap>
             {student?.displayName ?? '...'}
           </Typography>
@@ -84,11 +84,17 @@ export function StudentMenu({ student }: Props) {
             fullWidth
             aria-label="Thema kiezen"
           >
-            <ToggleButton value="fontysPurple" aria-label="Fontys Purple thema">
-              Fontys Purple
+            <ToggleButton value="fontysPurple" aria-label="Fontys Purple thema"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            >
+              <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: '#663366', flexShrink: 0 }} />
+              Fontys
             </ToggleButton>
-            <ToggleButton value="kingsOrange" aria-label="Kings Orange thema">
-              Kings Orange
+            <ToggleButton value="kingsOrange" aria-label="Kings Orange thema"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+            >
+              <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: '#E87722', flexShrink: 0 }} />
+              WK
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
@@ -109,10 +115,10 @@ export function StudentMenu({ student }: Props) {
             aria-label="Chatbot taal kiezen"
           >
             <ToggleButton value="nl" aria-label="Nederlands">
-              NL
+              <span style={{ fontSize: '1.25em', lineHeight: 1 }}>🇳🇱</span>
             </ToggleButton>
             <ToggleButton value="en" aria-label="English">
-              EN
+              <span style={{ fontSize: '1.25em', lineHeight: 1 }}>🇬🇧</span>
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
