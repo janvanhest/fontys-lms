@@ -1,5 +1,7 @@
+import PsychologyIcon from '@mui/icons-material/Psychology';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import type { RefObject } from 'react';
 import type { StudentProfile } from '@/api/student';
 import type { Message } from './useChatStream';
@@ -20,6 +22,41 @@ export function ChatMessageList({ bottomRef, messages, student, onAction }: Chat
     streamingMessage?.content ?? '',
     Boolean(streamingMessage?.isStreaming),
   );
+
+  if (messages.length === 0) {
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1.5,
+          px: 3,
+          opacity: 0.5,
+        }}
+      >
+        <Box
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            bgcolor: 'primary.main',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <PsychologyIcon sx={{ color: 'primary.contrastText', fontSize: 32 }} />
+        </Box>
+        <Typography variant="body2" color="text.secondary" textAlign="center">
+          Stel een vraag over je activiteiten, deadlines of studievoortgang.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 2, md: 3 }, py: 3 }}>
