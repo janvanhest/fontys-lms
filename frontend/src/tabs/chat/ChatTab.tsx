@@ -1,8 +1,10 @@
 import Box from '@mui/material/Box';
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import type { HboiActivity, HboiLayer } from '@/api/competences';
 import { studentProfileOptions } from '@/api/student';
 import { useLayout } from '@/context/useLayout';
+import { cellKey } from '@/tabs/competenties/competenceModel';
 import { useChatStream } from './messages/useChatStream';
 import { ChatComposer } from './ChatComposer';
 import { ChatMessageList } from './messages/ChatMessageList';
@@ -19,6 +21,7 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
     sidePanelContent,
     openSidePanel,
     highlightActivity,
+    highlightCompetence,
     activeTab,
     setSelectedConversationId,
   } = useLayout();
@@ -42,9 +45,12 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
         highlightActivity(payload.activityId);
       } else if (action === 'open_competences_panel') {
         openSidePanel({ type: 'competences' });
+      } else if (action === 'highlight_competence' && payload?.layer && payload.activity) {
+        openSidePanel({ type: 'competences' });
+        highlightCompetence(cellKey(payload.layer as HboiLayer, payload.activity as HboiActivity));
       }
     },
-    [openSidePanel, highlightActivity],
+    [openSidePanel, highlightActivity, highlightCompetence],
   );
 
   const { messages, isStreaming, isLoadingHistory, status, sendMessage, consumeAction } =

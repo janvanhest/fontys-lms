@@ -18,6 +18,7 @@ describe('PerformUiActionTool', () => {
       'open_activities_panel',
       'highlight_activity',
       'open_competences_panel',
+      'highlight_competence',
     ]);
     expect(PERFORM_UI_ACTION_TOOL_DEF.input_schema.properties.mode.enum).toEqual([
       'auto',

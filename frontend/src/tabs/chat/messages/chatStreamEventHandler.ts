@@ -28,6 +28,22 @@ type StreamEventHandlers = {
   onUiAction?: (action: string, payload?: Record<string, string>) => void;
 };
 
+// Bouwt de payload voor een ui_action: een activiteit (activityId) of een
+// competentie (laag + activiteit). Geeft undefined als er geen doel meegestuurd is.
+function toUiActionPayload(uiPayload: {
+  activityId?: string;
+  competenceLayer?: string;
+  competenceActivity?: string;
+}): Record<string, string> | undefined {
+  if (uiPayload.activityId) {
+    return { activityId: uiPayload.activityId };
+  }
+  if (uiPayload.competenceLayer && uiPayload.competenceActivity) {
+    return { layer: uiPayload.competenceLayer, activity: uiPayload.competenceActivity };
+  }
+  return undefined;
+}
+
 export function handleStreamEvent(
   sseEvent: ChatSseEvent,
   streamingId: string,
@@ -99,17 +115,17 @@ export function handleStreamEvent(
         mode: string;
         label: string;
         activityId?: string;
+        competenceLayer?: string;
+        competenceActivity?: string;
       };
+      const actionPayload = toUiActionPayload(uiPayload);
       if (uiPayload.mode === 'auto') {
-        onUiAction?.(
-          uiPayload.action,
-          uiPayload.activityId ? { activityId: uiPayload.activityId } : undefined,
-        );
+        onUiAction?.(uiPayload.action, actionPayload);
       } else {
         const action = {
           action: uiPayload.action as ChatUiAction['action'],
           label: uiPayload.label,
-          ...(uiPayload.activityId ? { payload: { activityId: uiPayload.activityId } } : {}),
+          ...(actionPayload ? { payload: actionPayload } : {}),
         };
         setMessages((prev) => [...prev, createNudgeMessage(action)]);
       }

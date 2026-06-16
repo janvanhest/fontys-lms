@@ -4,6 +4,7 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { alpha } from '@mui/material/styles';
 import { CompetenceLevelBar } from './CompetenceLevelBar';
 import { cellKey, progressStatusText, type CompetenceItem, type LayerGroup } from './competenceModel';
 
@@ -17,11 +18,13 @@ export function CompetenceLayerCard({
   selectedKey,
   onSelect,
   compact = false,
+  highlightedKey = null,
 }: {
   group: LayerGroup;
   selectedKey: string | null;
   onSelect: (item: CompetenceItem) => void;
   compact?: boolean;
+  highlightedKey?: string | null;
 }) {
   return (
     <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
@@ -52,19 +55,28 @@ export function CompetenceLayerCard({
         {group.items.map((item) => {
           const key = cellKey(item.layer, item.activity);
           const selected = key === selectedKey;
+          const highlighted = key === highlightedKey;
           return (
             <ButtonBase
               key={key}
+              data-competence-key={key}
               onClick={() => {
                 onSelect(item);
               }}
-              sx={{
+              sx={(theme) => ({
+                '@keyframes competenceCardHighlight': {
+                  '0%, 100%': {
+                    backgroundColor: selected ? theme.palette.action.selected : 'transparent',
+                  },
+                  '20%, 80%': { backgroundColor: alpha(theme.palette.primary.main, 0.18) },
+                },
                 display: 'block',
                 width: '100%',
                 textAlign: 'left',
                 bgcolor: selected ? 'action.selected' : 'transparent',
                 '&:hover': { bgcolor: 'action.hover' },
-              }}
+                ...(highlighted && { animation: 'competenceCardHighlight 1.2s ease-in-out' }),
+              })}
             >
               {compact ? (
                 <Box

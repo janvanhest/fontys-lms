@@ -6,6 +6,7 @@ import {
   type SidePanelContent,
 } from '@/context/layout-context';
 import { useHighlightActivity } from '@/hooks/useHighlightActivity';
+import { useHighlightCompetence } from '@/hooks/useHighlightCompetence';
 
 export function LayoutProvider({ children }: PropsWithChildren) {
   const [activeTab, setActiveTab] = useState<LayoutTab>('chat');
@@ -15,6 +16,7 @@ export function LayoutProvider({ children }: PropsWithChildren) {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [sidePanelContent, setSidePanelContent] = useState<SidePanelContent | null>(null);
   const { highlightedActivityId, highlightActivity } = useHighlightActivity();
+  const { highlightedCompetenceKey, highlightCompetence } = useHighlightCompetence();
 
   const selectTab = useCallback((tab: LayoutTab) => {
     setActiveTab(tab);
@@ -56,6 +58,8 @@ export function LayoutProvider({ children }: PropsWithChildren) {
       closeSidePanel,
       highlightedActivityId,
       highlightActivity,
+      highlightedCompetenceKey,
+      highlightCompetence,
     }),
     [
       activeTab,
@@ -69,6 +73,8 @@ export function LayoutProvider({ children }: PropsWithChildren) {
       closeSidePanel,
       highlightedActivityId,
       highlightActivity,
+      highlightedCompetenceKey,
+      highlightCompetence,
     ],
   );
 

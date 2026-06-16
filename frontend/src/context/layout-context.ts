@@ -22,6 +22,8 @@ export type LayoutContextValue = {
   closeSidePanel: () => void;
   highlightedActivityId: string | null;
   highlightActivity: (id: string) => void;
+  highlightedCompetenceKey: string | null;
+  highlightCompetence: (key: string) => void;
 };
 
 export const LayoutContext = createContext<LayoutContextValue | null>(null);

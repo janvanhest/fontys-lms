@@ -5,7 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { competenceFrameworkQueryOptions, competencesQueryOptions } from '@/api/competences';
 import { useLayout } from '@/context/useLayout';
@@ -18,18 +18,42 @@ import { CompetenceLayerCard } from '@/tabs/competenties/CompetenceLayerCard';
 import { CompetenceDetailPanel } from '@/tabs/competenties/CompetenceDetailPanel';
 
 export function CompetencesPanel() {
-  const { closeSidePanel } = useLayout();
+  const { closeSidePanel, highlightedCompetenceKey } = useLayout();
   const frameworkQuery = useQuery(competenceFrameworkQueryOptions);
   const progressQuery = useQuery(competencesQueryOptions);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const groups = frameworkQuery.data
-    ? buildLayerGroups(frameworkQuery.data, progressQuery.data ?? [])
-    : [];
+  const groups = useMemo(
+    () =>
+      frameworkQuery.data ? buildLayerGroups(frameworkQuery.data, progressQuery.data ?? []) : [],
+    [frameworkQuery.data, progressQuery.data],
+  );
   const selectedItem: CompetenceItem | null =
     groups
       .flatMap((group) => group.items)
       .find((item) => cellKey(item.layer, item.activity) === selectedKey) ?? null;
+
+  // Een competentie die de chatbot aanwijst: selecteren (detail opent) en in beeld
+  // scrollen. Spiegelt de highlight-flow van het activiteiten-paneel.
+  useEffect(() => {
+    if (!highlightedCompetenceKey) return;
+    const exists = groups.some((group) =>
+      group.items.some((item) => cellKey(item.layer, item.activity) === highlightedCompetenceKey),
+    );
+    if (!exists) return;
+
+    // De highlight komt van buiten React (de chatbot). Die hier in de selectie
+    // overnemen is bewust, net als de highlight-flow van het activiteiten-paneel.
+    // eslint-disable-next-line react-hooks/set-state-in-effect, react-x/set-state-in-effect
+    setSelectedKey(highlightedCompetenceKey);
+
+    requestAnimationFrame(() => {
+      scrollContainerRef.current
+        ?.querySelector(`[data-competence-key="${highlightedCompetenceKey}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [highlightedCompetenceKey, groups]);
 
   return (
     <>
@@ -60,7 +84,7 @@ export function CompetencesPanel() {
         </IconButton>
       </Box>
 
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1.5, py: 1.5 }}>
+      <Box ref={scrollContainerRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1.5, py: 1.5 }}>
         {frameworkQuery.isLoading || progressQuery.isLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
             <CircularProgress />
@@ -76,6 +100,7 @@ export function CompetencesPanel() {
                 key={group.layer}
                 group={group}
                 selectedKey={selectedKey}
+                highlightedKey={highlightedCompetenceKey}
                 compact
                 onSelect={(item) => {
                   const key = cellKey(item.layer, item.activity);
