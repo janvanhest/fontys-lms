@@ -3,9 +3,11 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CloseIcon from '@mui/icons-material/Close';
 import type { CompetenceItem } from './competenceModel';
 import { CompetenceEditDialog } from './CompetenceEditDialog';
 
@@ -19,7 +21,13 @@ const panelSx = {
   overflowY: { lg: 'auto' },
 } as const;
 
-export function CompetenceDetailPanel({ item }: { item: CompetenceItem | null }) {
+export function CompetenceDetailPanel({
+  item,
+  onClose,
+}: {
+  item: CompetenceItem | null;
+  onClose?: () => void;
+}) {
   const [isEditing, setIsEditing] = useState(false);
 
   if (!item) {
@@ -38,12 +46,21 @@ export function CompetenceDetailPanel({ item }: { item: CompetenceItem | null })
 
   return (
     <Paper variant="outlined" sx={panelSx}>
-      <Typography variant="overline" color="text.secondary">
-        {item.layer}
-      </Typography>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        {item.label}
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box>
+          <Typography variant="overline" color="text.secondary">
+            {item.layer}
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {item.label}
+          </Typography>
+        </Box>
+        {onClose ? (
+          <IconButton size="small" edge="end" onClick={onClose} aria-label="Sluit detail">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        ) : null}
+      </Box>
 
       <Stack spacing={1.5}>
         {levels.map((level) => {

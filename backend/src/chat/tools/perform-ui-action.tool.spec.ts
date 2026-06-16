@@ -17,6 +17,7 @@ describe('PerformUiActionTool', () => {
     expect(PERFORM_UI_ACTION_TOOL_DEF.input_schema.properties.action.enum).toEqual([
       'open_activities_panel',
       'highlight_activity',
+      'open_competences_panel',
     ]);
     expect(PERFORM_UI_ACTION_TOOL_DEF.input_schema.properties.mode.enum).toEqual([
       'auto',

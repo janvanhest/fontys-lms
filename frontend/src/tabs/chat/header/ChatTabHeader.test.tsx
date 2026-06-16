@@ -10,7 +10,8 @@ describe('ChatTabHeader', () => {
         isLoadingHistory={false}
         isStreaming={false}
         onToggleActivities={() => {}}
-        sidePanelOpen={false}
+        onToggleCompetences={() => {}}
+        activePanel={null}
         status={{ label: 'Activiteiten bekijken...', icon: 'activities' }}
       />,
     );
@@ -26,7 +27,8 @@ describe('ChatTabHeader', () => {
         isLoadingHistory={false}
         isStreaming={false}
         onToggleActivities={() => {}}
-        sidePanelOpen={false}
+        onToggleCompetences={() => {}}
+        activePanel={null}
         status={null}
       />,
     );

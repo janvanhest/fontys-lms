@@ -4,7 +4,7 @@ export const HIGHLIGHT_DURATION_MS = Number(import.meta.env.VITE_HIGHLIGHT_DURAT
 
 export type LayoutTab = 'chat' | 'activities' | 'challenge' | 'competenties' | 'stappenplan';
 
-export type SidePanelContent = { type: 'activities' };
+export type SidePanelContent = { type: 'activities' | 'competences' };
 
 export type LayoutContextValue = {
   activeTab: LayoutTab;

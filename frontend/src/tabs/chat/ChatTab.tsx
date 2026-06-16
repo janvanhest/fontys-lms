@@ -16,11 +16,14 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
   const {
     sidePanelOpen,
     setSidePanelOpen,
+    sidePanelContent,
     openSidePanel,
     highlightActivity,
     activeTab,
     setSelectedConversationId,
   } = useLayout();
+
+  const activePanel = sidePanelOpen ? (sidePanelContent?.type ?? null) : null;
 
   const handleConversationEstablished = useCallback(
     (nextConversationId: string) => {
@@ -37,6 +40,8 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
       } else if (action === 'highlight_activity' && payload?.activityId) {
         openSidePanel({ type: 'activities' });
         highlightActivity(payload.activityId);
+      } else if (action === 'open_competences_panel') {
+        openSidePanel({ type: 'competences' });
       }
     },
     [openSidePanel, highlightActivity],
@@ -92,13 +97,20 @@ export function ChatTab({ conversationId }: ChatTabProps = {}) {
         isLoadingHistory={isLoadingHistory}
         isStreaming={isStreaming}
         onToggleActivities={() => {
-          if (sidePanelOpen) {
+          if (activePanel === 'activities') {
             setSidePanelOpen(false);
           } else {
             openSidePanel({ type: 'activities' });
           }
         }}
-        sidePanelOpen={sidePanelOpen}
+        onToggleCompetences={() => {
+          if (activePanel === 'competences') {
+            setSidePanelOpen(false);
+          } else {
+            openSidePanel({ type: 'competences' });
+          }
+        }}
+        activePanel={activePanel}
         status={status}
       />
       <ChatMessageList

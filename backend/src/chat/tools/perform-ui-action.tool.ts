@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 export const PERFORM_UI_ACTION_TOOL_DEF = {
   name: 'perform_ui_action',
   description:
-    'Open or suggest a UI panel to the student, or highlight a specific activity. Use mode "auto" when the student explicitly asked; use "suggest" to show a clickable chip.',
+    'Open or suggest a UI element to the student: open the activities panel, highlight a specific activity, or open the competences panel. Use mode "auto" when the student explicitly asked; use "suggest" to show a clickable chip.',
   input_schema: {
     type: 'object' as const,
     required: ['action', 'mode', 'label'],
@@ -11,7 +11,7 @@ export const PERFORM_UI_ACTION_TOOL_DEF = {
     properties: {
       action: {
         type: 'string',
-        enum: ['open_activities_panel', 'highlight_activity'],
+        enum: ['open_activities_panel', 'highlight_activity', 'open_competences_panel'],
         description: 'Which action to perform',
       },
       mode: {
@@ -33,7 +33,7 @@ export const PERFORM_UI_ACTION_TOOL_DEF = {
 };
 
 export type PerformUiActionInput = {
-  action: 'open_activities_panel' | 'highlight_activity';
+  action: 'open_activities_panel' | 'highlight_activity' | 'open_competences_panel';
   mode: 'auto' | 'suggest';
   label: string;
   activityId?: string;

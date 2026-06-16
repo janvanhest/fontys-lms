@@ -16,10 +16,12 @@ export function CompetenceLayerCard({
   group,
   selectedKey,
   onSelect,
+  compact = false,
 }: {
   group: LayerGroup;
   selectedKey: string | null;
   onSelect: (item: CompetenceItem) => void;
+  compact?: boolean;
 }) {
   return (
     <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
@@ -30,13 +32,18 @@ export function CompetenceLayerCard({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'baseline',
+          gap: 1,
           bgcolor: 'action.hover',
         }}
       >
         <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
           {group.layer}
         </Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+        >
           {summary(group.items)}
         </Typography>
       </Box>
@@ -59,22 +66,57 @@ export function CompetenceLayerCard({
                 '&:hover': { bgcolor: 'action.hover' },
               }}
             >
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr auto auto',
-                  gap: 2,
-                  alignItems: 'center',
-                  px: 2,
-                  py: 1.25,
-                }}
-              >
-                <Typography variant="body2">{item.label}</Typography>
-                <CompetenceLevelBar cell={item.cell} progress={item.progress} />
-                <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-                  {progressStatusText(item.progress)}
-                </Typography>
-              </Box>
+              {compact ? (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 0.75,
+                    px: 2,
+                    py: 1.25,
+                  }}
+                >
+                  <Typography variant="body2">{item.label}</Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 1,
+                    }}
+                  >
+                    <CompetenceLevelBar cell={item.cell} progress={item.progress} />
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ whiteSpace: 'nowrap' }}
+                    >
+                      {progressStatusText(item.progress)}
+                    </Typography>
+                  </Box>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto auto',
+                    gap: 2,
+                    alignItems: 'center',
+                    px: 2,
+                    py: 1.25,
+                  }}
+                >
+                  <Typography variant="body2">{item.label}</Typography>
+                  <CompetenceLevelBar cell={item.cell} progress={item.progress} />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ whiteSpace: 'nowrap' }}
+                  >
+                    {progressStatusText(item.progress)}
+                  </Typography>
+                </Box>
+              )}
             </ButtonBase>
           );
         })}

@@ -20,7 +20,8 @@ type ChatTabHeaderProps = {
   isLoadingHistory: boolean;
   isStreaming: boolean;
   onToggleActivities: () => void;
-  sidePanelOpen: boolean;
+  onToggleCompetences: () => void;
+  activePanel: 'activities' | 'competences' | null;
   status: ChatStatus | null;
 };
 
@@ -53,9 +54,12 @@ export function ChatTabHeader({
   isLoadingHistory,
   isStreaming,
   onToggleActivities,
-  sidePanelOpen,
+  onToggleCompetences,
+  activePanel,
   status,
 }: ChatTabHeaderProps) {
+  const activitiesOpen = activePanel === 'activities';
+  const competencesOpen = activePanel === 'competences';
   return (
     <Box
       sx={{
@@ -98,22 +102,40 @@ export function ChatTabHeader({
         )}
       </Box>
 
-      <Tooltip title={sidePanelOpen ? 'Activiteiten verbergen' : 'Activiteiten tonen'} arrow>
-        <IconButton
-          onClick={onToggleActivities}
-          aria-label={sidePanelOpen ? 'Activiteiten verbergen' : 'Activiteiten tonen'}
-          aria-pressed={sidePanelOpen}
-          sx={(theme) => ({
-            bgcolor: sidePanelOpen ? theme.palette.primary.main : theme.palette.primary.light,
-            color: theme.palette.primary.contrastText,
-            '&:hover': {
-              bgcolor: theme.palette.primary.dark,
-            },
-          })}
-        >
-          <ChecklistRtlIcon />
-        </IconButton>
-      </Tooltip>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Tooltip title={competencesOpen ? 'Competenties verbergen' : 'Competenties tonen'} arrow>
+          <IconButton
+            onClick={onToggleCompetences}
+            aria-label={competencesOpen ? 'Competenties verbergen' : 'Competenties tonen'}
+            aria-pressed={competencesOpen}
+            sx={(theme) => ({
+              bgcolor: competencesOpen ? theme.palette.primary.main : theme.palette.primary.light,
+              color: theme.palette.primary.contrastText,
+              '&:hover': {
+                bgcolor: theme.palette.primary.dark,
+              },
+            })}
+          >
+            <SchoolRoundedIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={activitiesOpen ? 'Activiteiten verbergen' : 'Activiteiten tonen'} arrow>
+          <IconButton
+            onClick={onToggleActivities}
+            aria-label={activitiesOpen ? 'Activiteiten verbergen' : 'Activiteiten tonen'}
+            aria-pressed={activitiesOpen}
+            sx={(theme) => ({
+              bgcolor: activitiesOpen ? theme.palette.primary.main : theme.palette.primary.light,
+              color: theme.palette.primary.contrastText,
+              '&:hover': {
+                bgcolor: theme.palette.primary.dark,
+              },
+            })}
+          >
+            <ChecklistRtlIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
     </Box>
   );
 }

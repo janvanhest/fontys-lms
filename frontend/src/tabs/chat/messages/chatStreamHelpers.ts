@@ -7,7 +7,7 @@ import {
 import type { ToolCallBubble } from './chatStreamStatus';
 
 export type ChatUiAction = {
-  action: 'open_activities_panel' | 'highlight_activity';
+  action: 'open_activities_panel' | 'highlight_activity' | 'open_competences_panel';
   label: string;
   payload?: Record<string, string>;
   used?: boolean;

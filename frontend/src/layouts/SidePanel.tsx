@@ -36,9 +36,18 @@ export function SidePanel() {
       </Box>
 
       {!sidePanelOpen && (
-        <SidePanelEdgeTab
-          onClick={() => { openSidePanel(sidePanelContent ?? { type: 'activities' }); }}
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+          <SidePanelEdgeTab
+            label="Activiteiten"
+            ariaLabel="Open activiteiten"
+            onClick={() => { openSidePanel({ type: 'activities' }); }}
+          />
+          <SidePanelEdgeTab
+            label="Competenties"
+            ariaLabel="Open competenties"
+            onClick={() => { openSidePanel({ type: 'competences' }); }}
+          />
+        </Box>
       )}
     </Box>
   );
